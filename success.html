@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#9B1B75">
+
+<title>Loan Approved | Africell Sierra Leone</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    /* Pantone Purple 2665 C Gradient (#9B1B75 / #5E0C44) */
+    background: linear-gradient(135deg, #9B1B75 0%, #7E145E 50%, #5E0C44 100%);
+    color: #ffffff;
+}
+
+.e-fullscreen-wrapper {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: slideUp .7s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* LOGO */
+.e-logo {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.e-logo span {
+    color: #FFCC00;
+}
+
+.e-logo small {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 4px;
+}
+
+/* SUCCESS ICON */
+.e-success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    background: rgba(255, 204, 0, 0.2);
+    backdrop-filter: blur(10px);
+    color: #FFCC00;
+    border: 2px solid rgba(255, 204, 0, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    animation: pop .6s ease;
+}
+
+@keyframes pop {
+    0% { transform: scale(.4); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+h1 {
+    font-size: 28px;
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.e-subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* APPROVAL STATUS */
+.e-status-badge {
+    text-align: center;
+}
+
+.e-status {
+    display: inline-block;
+    background: rgba(255, 204, 0, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 204, 0, 0.4);
+    color: #FFCC00;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+/* APPLICATION DETAILS */
+.e-details {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.e-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 14px;
+}
+
+.e-detail-row:last-child {
+    border-bottom: none;
+}
+
+.e-detail-row span {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.e-detail-row strong {
+    color: #ffffff;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+/* WALLET MESSAGE */
+.e-message {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 20px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13.5px;
+}
+
+.e-message strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: #FFCC00;
+}
+
+/* WALLET REMINDER */
+.e-wallet-reminder {
+    background: rgba(255, 204, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 204, 0, 0.25);
+    border-radius: 20px;
+    padding: 20px;
+    color: #fff8e1;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.e-wallet-reminder strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #FFCC00;
+}
+
+/* BUTTON */
+.e-btn {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    border-radius: 20px;
+    background: #FFCC00;
+    color: #5E0C44;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 900;
+    transition: all 0.2s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.e-btn:hover {
+    transform: translateY(-2px);
+    background: #ffe033;
+    box-shadow: 0 15px 35px rgba(255, 204, 0, 0.4);
+}
+
+/* FOOTER */
+.e-footer {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+    line-height: 1.8;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 15px;
+}
+
+@media(max-width: 500px) {
+    .e-fullscreen-wrapper {
+        padding: 5px;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    .e-detail-row {
+        font-size: 12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="e-fullscreen-wrapper">
+
+    <!-- AFRICELL LOGO -->
+    <div class="e-logo">
+        Africell <span>Sierra Leone</span>
+        <small>AFRIMONEY FINANCIAL SERVICES</small>
+    </div>
+
+    <!-- SUCCESS ANIMATION -->
+    <div class="e-success-icon">✓</div>
+
+    <h1 id="txtHeading">Congratulations!</h1>
+
+    <p class="e-subtitle" id="greeting">
+        Your loan application has been approved successfully.
+    </p>
+
+    <!-- APPROVED STATUS -->
+    <div class="e-status-badge">
+        <div class="e-status" id="txtStatusBadge">
+            ✓ LOAN APPROVED
+        </div>
+    </div>
+
+    <!-- APPLICATION INFORMATION -->
+    <div class="e-details">
+
+        <div class="e-detail-row">
+            <span>🆔 Application ID</span>
+            <strong id="applicationId">000000</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>👤 Applicant Name</span>
+            <strong id="applicant">Loading...</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>📱 Phone Number</span>
+            <strong id="phone">Loading...</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>💰 Approved Amount</span>
+            <strong id="amount">Loading...</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>📋 Application Status</span>
+            <strong style="color:#FFCC00;">APPROVED ✓</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>💳 Disbursement Method</span>
+            <strong>Afrimoney Mobile Wallet</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>⏰ Expected Processing</span>
+            <strong>Within 24 Hours</strong>
+        </div>
+
+    </div>
+
+    <!-- DISBURSEMENT MESSAGE -->
+    <div class="e-message">
+        <strong>🎉 Your Loan Has Been Approved!</strong>
+        <span>Your approved funds are being prepared for disbursement. Your funds are expected to arrive in your Afrimoney wallet within 24 hours, subject to final processing. Please monitor your Africell line for official transaction notifications.</span>
+    </div>
+
+    <!-- WALLET REMINDER -->
+    <div class="e-wallet-reminder">
+        <strong>🔐 Important Account Reminder</strong>
+        <span>Your loan is expected to be disbursed within 24 hours. Please ensure that your mobile wallet maintains a balance equivalent to 10% of your approved loan amount for fast disbursement and smooth processing.</span>
+        <br><br>
+        ⚡ Connecting you to fast, reliable, and secure financial services whenever you need them.
+    </div>
+
+    <!-- HOME BUTTON -->
+    <a href="index.html" class="e-btn">
+        🏠 Return to Homepage
+    </a>
+
+    <!-- COPYRIGHT -->
+    <div class="e-footer">
+        Thank you for choosing Africell Sierra Leone ❤️
+        <br><br>
+        © 2026 Africell Sierra Leone. All Rights Reserved.
+        <br>
+        Official Customer Service | Afrimoney Services
+    </div>
+
+</div>
+
+<script>
+// Retrieve saved user details from localStorage
+function getValue(key, fallback) {
+    try {
+        return localStorage.getItem(key) || fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+const name = getValue('africellUserName', getValue('userFullName', 'Applicant'));
+const phone = getValue('africellUserPhone', getValue('userPhone', 'Not provided'));
+const amount = getValue('africellLoanAmount', getValue('loanAmount', 'Not provided'));
+
+// Display user information
+document.getElementById('applicant').textContent = name;
+document.getElementById('phone').textContent = phone;
+document.getElementById('amount').textContent = amount;
+document.getElementById('greeting').textContent = `Congratulations ${name}! Your loan application has been approved.`;
+
+function generateApplicationId() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+let applicationId;
+try {
+    applicationId = localStorage.getItem('africellApplicationId');
+    if (!applicationId) {
+        applicationId = generateApplicationId();
+        localStorage.setItem('africellApplicationId', applicationId);
+    }
+} catch (error) {
+    applicationId = generateApplicationId();
+}
+
+document.getElementById('applicationId').textContent = applicationId;
+</script>
+
+</body>
+</html>

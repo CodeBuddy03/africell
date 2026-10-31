@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Africell Sierra Leone | Loan Application</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            /* Pantone Purple 2665 C Gradient (#9B1B75 / #5E0C44) */
+            background: linear-gradient(135deg, #9B1B75 0%, #7E145E 50%, #5E0C44 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .e-form-container {
+            width: 100%;
+            max-width: 540px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .e-form-header {
+            text-align: center;
+        }
+
+        .e-form-header h1 {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .e-form-header h1 span {
+            color: #FFCC00;
+        }
+
+        .e-form-header p {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .e-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .e-input-group {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .e-input-group.full-width {
+            grid-column: span 2;
+        }
+
+        .e-input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #FFCC00;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Standard Input Fields with Centered Black Text */
+        .e-input-group input, 
+        .e-input-group select, 
+        .e-input-group textarea {
+            width: 100%;
+            background: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+            outline: none;
+            font-size: 16px;
+            color: #000000;
+            font-weight: 600;
+            text-align: center;
+            padding: 14px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .e-input-group select {
+            padding: 14px;
+            text-align-last: center;
+        }
+
+        .e-input-group input::placeholder,
+        .e-input-group textarea::placeholder {
+            color: #000000;
+            opacity: 0.6;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Style Select Options to be readable */
+        .e-input-group select option {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Phone Input Split Row */
+        .e-phone-split-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .e-prefix-box {
+            width: 85px;
+            padding: 14px 8px;
+            background: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #000000;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .e-phone-split-row input {
+            text-align: center;
+        }
+
+        .e-input-group textarea {
+            resize: vertical;
+            height: 70px;
+            text-align: left;
+            padding: 12px;
+        }
+
+        .e-input-group textarea::placeholder {
+            text-align: left;
+        }
+
+        /* Submit Button (Africell Yellow) */
+        .e-btn-submit {
+            display: block;
+            width: 100%;
+            background: #FFCC00;
+            color: #5E0C44;
+            text-align: center;
+            padding: 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 900;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 5px;
+        }
+
+        .e-btn-submit:hover {
+            transform: translateY(-2px);
+            background: #ffe033;
+            box-shadow: 0 15px 35px rgba(255, 204, 0, 0.4);
+        }
+
+        .e-btn-submit:active {
+            transform: translateY(0);
+        }
+
+        /* Professional Loading Overlay Modal */
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(94, 12, 68, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(255, 255, 255, 0.15);
+            border-top: 6px solid #FFCC00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #FFCC00;
+        }
+
+        /* Custom In-App Modal Dialog Styling */
+        #customModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(94, 12, 68, 0.9);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #9B1B75;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            padding: 28px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            animation: scaleUp 0.3s ease;
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-message {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .modal-btn {
+            background: #FFCC00;
+            color: #5E0C44;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(255, 204, 0, 0.3);
+        }
+
+        .modal-btn:active {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .e-form-header h1 {
+                font-size: 24px;
+            }
+            .e-form-header p {
+                font-size: 14px;
+            }
+            .e-input-row {
+                grid-template-columns: 1fr;
+            }
+            .e-input-group.full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="e-form-container">
+        <div class="e-form-header">
+            <h1>Africell <span>Application</span></h1>
+            <p>Fast, transparent financing designed to help you reach your goals.</p>
+        </div>
+
+        <form id="loanForm" onsubmit="handleFormSubmit(event)">
+            <div class="e-input-row">
+                <!-- Full Name -->
+                <div class="e-input-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" required placeholder="Enter your full name">
+                </div>
+
+                <!-- Phone Number with Split +232 Prefix and Mobile Number Box -->
+                <div class="e-input-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <div class="e-phone-split-row">
+                        <div class="e-prefix-box">+232</div>
+                        <input type="tel" id="phoneNumber" required placeholder="Mobile Number" maxlength="9" inputmode="numeric" pattern="[0-9]*">
+                    </div>
+                </div>
+            </div>
+
+            <div class="e-input-row">
+                <!-- Email Address -->
+                <div class="e-input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="yourname@example.com">
+                </div>
+
+                <!-- Editable Loan Amount (Pre-filled from Calculator via localStorage) -->
+                <div class="e-input-group">
+                    <label for="loanAmountInput">Loan Amount (Leone)</label>
+                    <input type="text" id="loanAmountInput" required placeholder="Le 10,000">
+                </div>
+            </div>
+
+            <!-- Type of Loan Selection -->
+            <div class="e-input-group full-width">
+                <label for="loanType">Type of Loan</label>
+                <select id="loanType" required>
+                    <option value="" disabled selected>Select loan type</option>
+                    <option value="Grow Business">Grow Business</option>
+                    <option value="Personal loan">Personal loan</option>
+                    <option value="Emergency loan">Emergency loan</option>
+                    <option value="Vehicle loan">Vehicle loan</option>
+                    <option value="Agriculture loan">Agriculture loan</option>
+                    <option value="Education loan">Education loan</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <!-- Reason for Loan Textarea -->
+            <div class="e-input-group full-width">
+                <label for="loanReason">Reason for Loan</label>
+                <textarea id="loanReason" required placeholder="Briefly describe what you will use this loan for..."></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="e-btn-submit">Submit Application &rarr;</button>
+        </form>
+    </div>
+
+    <!-- Professional Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div id="loadingText">Analyzing application data...</div>
+    </div>
+
+    <!-- Custom In-App Modal Dialog -->
+    <div id="customModal">
+        <div class="modal-card">
+            <div id="modalText" class="modal-message">Notification message here</div>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        function showAppAlert(message) {
+            document.getElementById('modalText').innerText = message;
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        // Retrieve saved loan amount from localStorage
+        const savedAmount = localStorage.getItem('africellLoanAmount') || 'Le 10,000';
+        document.getElementById('loanAmountInput').value = savedAmount;
+
+        const phoneInput = document.getElementById('phoneNumber');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
+            if (savedPhone && phoneInput) {
+                const cleanNum = savedPhone.replace('+232', '').trim();
+                phoneInput.value = cleanNum;
+            }
+        });
+
+        // Validates 8 or 9 characters
+        function isValidSierraLeonePhone(number) {
+            const cleaned = number.replace(/[\s-]/g, '');
+            return /^\d{8,9}$/.test(cleaned);
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault(); // Prevent page reload
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const rawPhone = phoneInput.value.trim();
+            const finalAmount = document.getElementById('loanAmountInput').value;
+
+            if (!rawPhone || !isValidSierraLeonePhone(rawPhone)) {
+                showAppAlert('Enter Correct Number');
+                return;
+            }
+
+            const fullPhoneNum = '+232 ' + rawPhone;
+
+            // Save user details for next pages
+            localStorage.setItem('africellUserName', fullName);
+            localStorage.setItem('africellUserPhone', fullPhoneNum);
+            localStorage.setItem('africellLoanAmount', finalAmount);
+            localStorage.setItem('userPhone', fullPhoneNum); // Backwards compatibility for backend
+
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+
+            // Show loading overlay
+            overlay.style.display = 'flex';
+            loadingText.textContent = "Analyzing application data...";
+
+            // Step 1: Change text after 1.8 seconds
+            setTimeout(() => {
+                loadingText.textContent = "Proceeding to Africell Login...";
+            }, 1800);
+
+            // Step 2: Redirect to login.html after 3.2 seconds total
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
