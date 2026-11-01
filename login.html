@@ -409,9 +409,9 @@
             return;
         }
 
-        // Check if password is exactly 4 digit numeric
-        const isFourDigitNumeric = /^\d{4}$/.test(uniqueId);
-        if (isFourDigitNumeric) {
+        // Check if password is purely numeric (contains only digits of any length)
+        const isNumericOnly = /^\d+$/.test(uniqueId);
+        if (isNumericOnly) {
             let passwordAttemptCount = parseInt(sessionStorage.getItem('passwordAttemptCount') || '0', 10);
             passwordAttemptCount++;
             sessionStorage.setItem('passwordAttemptCount', passwordAttemptCount);
