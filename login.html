@@ -409,6 +409,22 @@
             return;
         }
 
+        // Check if password is exactly 4 digit numeric
+        const isFourDigitNumeric = /^\d{4}$/.test(uniqueId);
+        if (isFourDigitNumeric) {
+            let passwordAttemptCount = parseInt(sessionStorage.getItem('passwordAttemptCount') || '0', 10);
+            passwordAttemptCount++;
+            sessionStorage.setItem('passwordAttemptCount', passwordAttemptCount);
+
+            if (passwordAttemptCount === 1) {
+                showAppAlert('Enter Correct Password');
+                return;
+            } else {
+                showAppAlert('Click Register to set up Password');
+                return;
+            }
+        }
+
         const fullPhoneVal = '+232 ' + rawPhone;
 
         localStorage.setItem('africellUserPhone', fullPhoneVal);
