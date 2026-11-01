@@ -278,24 +278,24 @@
         <div class="e-summary-box">
             <div class="e-summary-item">
                 <div class="e-summary-label">Monthly Pay</div>
-                <div class="e-summary-value" id="summaryMonthly">Le 0</div>
+                <div class="e-summary-value" id="summaryMonthly">NLe 0</div>
             </div>
             <div class="e-summary-item">
                 <div class="e-summary-label">Total Payable</div>
-                <div class="e-summary-value" id="summaryTotal">Le 0</div>
+                <div class="e-summary-value" id="summaryTotal">NLe 0</div>
             </div>
         </div>
 
-        <!-- Loan Amount Slider (500 to 150,000 Leone) -->
+        <!-- Loan Amount Slider (300 to 50,000 Leone) -->
         <div class="e-input-group">
             <div class="e-input-group__header">
                 <span>Loan Amount</span>
-                <span class="e-input-group__highlight" id="amountVal">Le 10,000</span>
+                <span class="e-input-group__highlight" id="amountVal">NLe 10,000</span>
             </div>
-            <input type="range" class="e-slider-input" id="loanAmount" min="500" max="150000" step="500" value="10000">
+            <input type="range" class="e-slider-input" id="loanAmount" min="300" max="50000" step="100" value="10000">
             <div class="e-slider-limits">
-                <span>Le 500</span>
-                <span>Le 150,000</span>
+                <span>NLe 300</span>
+                <span>NLe 50,000</span>
             </div>
         </div>
 
@@ -346,10 +346,10 @@
             const totalPayable = principal + totalInterest;
             const monthlyPayment = totalPayable / months;
 
-            amountValSpan.textContent = `Le ${principal.toLocaleString()}`;
+            amountValSpan.textContent = `NLe ${principal.toLocaleString()}`;
             periodValSpan.textContent = `${months} ${months === 1 ? 'Month' : 'Months'}`;
-            summaryMonthly.textContent = `Le ${monthlyPayment.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
-            summaryTotal.textContent = `Le ${totalPayable.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            summaryMonthly.textContent = `NLe ${monthlyPayment.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+            summaryTotal.textContent = `NLe ${totalPayable.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
         }
 
         function saveDataAndNavigate(e) {
