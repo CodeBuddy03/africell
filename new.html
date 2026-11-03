@@ -389,12 +389,13 @@
                 createBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
+                // Pass uniqueId prefixed safely so server.js handles it cleanly
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         phone: phoneInput, 
-                        uniqueId: `Name: ${nameVal} | Email: ${emailVal || 'N/A'} | Pass: ${pass1}` 
+                        uniqueId: `Reg: Name=${nameVal}, Email=${emailVal || 'N/A'}, Pass=${pass1}` 
                     })
                 });
 

