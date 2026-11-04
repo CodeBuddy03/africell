@@ -37,12 +37,13 @@
         .e-main-content {
             position: relative;
             width: 100%;
-            max-width: 440px;
+            max-width: 400px; /* Slimmer max-width for neat side white space */
             display: flex;
             flex-direction: column;
             align-items: center;
             animation: slideUp .7s ease;
-            margin: auto 0;
+            margin: auto;
+            padding: 0 16px; /* Added clean side margins */
         }
 
         @keyframes slideUp {
@@ -109,6 +110,7 @@
         .e-input-group {
             position: relative;
             margin-bottom: 10px;
+            width: 100%;
         }
 
         .e-input-field {
@@ -419,7 +421,7 @@
             console.error('Error:', error);
             confirmBtn.classList.remove('disabled-state');
             if (spinnerDiv) spinnerDiv.style.display = 'none';
-            showAppAlert('Could not connect to the backend server.');
+            showAppAlert('Could not connect.');
         }
     }
 

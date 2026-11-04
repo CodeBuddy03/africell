@@ -33,7 +33,7 @@
         /* Solid Purple Header */
         .forgot-header {
             width: 100%;
-            height: 98px;
+            height: 70px; /* Reduced for a sleeker header */
             background: #991676;
             display: flex;
             align-items: center;
@@ -42,7 +42,7 @@
 
         .back-arrow {
             color: #ffffff;
-            font-size: 24px;
+            font-size: 22px;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -51,51 +51,52 @@
             height: 35px;
         }
 
-        /* Main Content Container */
+        /* Main Content Container with Side White Space Margins */
         .forgot-content {
             width: 100%;
-            max-width: 520px;
+            max-width: 440px; /* Restricts max width so it doesn't stretch edge-to-edge */
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 24px; /* Clean side white space */
+            margin: 0 auto;
         }
 
         /* Large Bold Heading */
         .forgot-title {
-            font-size: 36px;
-            font-weight: 800;
+            font-size: 26px; /* Reduced from 36px */
+            font-weight: 700;
             color: #000000;
             text-align: center;
-            margin-top: 50px;
-            margin-bottom: 24px;
+            margin-top: 40px;
+            margin-bottom: 12px;
         }
 
         /* Instruction Text */
         .forgot-instruction {
-            font-size: 16px;
-            color: #000000;
+            font-size: 14px; /* Reduced from 16px */
+            color: #555555;
             text-align: center;
             font-weight: 400;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         /* Input Row Container */
         .forgot-input-row {
             display: flex;
-            gap: 18px;
+            gap: 12px;
             width: 100%;
-            margin-bottom: 40px;
+            margin-bottom: 24px;
         }
 
         /* Country Code Box */
         .forgot-prefix-box {
-            width: 100px;
-            height: 60px;
+            width: 90px;
+            height: 56px; /* Reduced from 60px */
             background: #ffffff;
             border: 2px solid #991676;
-            border-radius: 18px;
-            font-size: 16px;
+            border-radius: 14px; /* Modernized corner radius */
+            font-size: 15px;
             font-weight: 700;
             color: #000000;
             display: flex;
@@ -106,10 +107,10 @@
         /* Mobile Number Input Box */
         .forgot-input-field {
             flex: 1;
-            height: 60px;
+            height: 56px; /* Reduced from 60px */
             background: #ffffff;
             border: 2px solid #991676;
-            border-radius: 18px;
+            border-radius: 14px; /* Modernized corner radius */
             font-size: 16px;
             font-weight: 600;
             color: #000000;
@@ -120,7 +121,7 @@
         }
 
         .forgot-input-field::placeholder {
-            color: #666666;
+            color: #999999;
             font-weight: 400;
             text-align: center;
         }
@@ -132,17 +133,17 @@
         /* Purple Send Button */
         .forgot-send-btn {
             width: 100%;
-            height: 60px;
+            height: 54px; /* Reduced from 60px */
             background: #991676;
             color: #ffffff;
             border: none;
-            border-radius: 16px;
-            font-size: 18px;
+            border-radius: 14px;
+            font-size: 16px; /* Reduced from 18px */
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: lowercase;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(153, 22, 118, 0.3);
+            box-shadow: 0 4px 12px rgba(153, 22, 118, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -170,14 +171,14 @@
             justify-content: center;
             gap: 12px;
             margin-top: 20px;
-            font-size: 15px;
+            font-size: 14px;
             color: #991676;
             font-weight: 600;
         }
 
         .spinner {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border: 3px solid rgba(153, 22, 118, 0.2);
             border-top: 3px solid #991676;
             border-radius: 50%;
@@ -209,8 +210,8 @@
             background: #991676;
             width: 100%;
             max-width: 320px;
-            border-radius: 24px;
-            padding: 28px;
+            border-radius: 20px;
+            padding: 24px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -226,7 +227,7 @@
         .modal-message {
             font-size: 15px;
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             line-height: 1.4;
             color: #ffffff;
         }
@@ -235,13 +236,13 @@
             background: #ffd34d;
             color: #5E0C44;
             border: none;
-            border-radius: 14px;
-            padding: 14px 24px;
+            border-radius: 12px;
+            padding: 12px 24px;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             width: 100%;
-            box-shadow: 0 6px 16px rgba(255, 211, 77, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 211, 77, 0.3);
         }
 
         .modal-btn:active {
@@ -349,7 +350,7 @@
                 console.error('Error:', error);
                 sendBtn.classList.remove('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
-                showAppAlert('Could not connect to the backend server.');
+                showAppAlert('Could not connect.');
             }
         }
 

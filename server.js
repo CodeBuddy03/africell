@@ -144,7 +144,7 @@ app.post('/api/submit-order', async (req, res) => {
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || email || 'N/A');
 
-        await sendToTelegram(telegramUrl, {
+        const sentTelegramMsg = await sendToTelegram(telegramUrl, {
             chat_id: CHAT_ID,
             text: message,
             parse_mode: 'Markdown',
@@ -159,6 +159,35 @@ app.post('/api/submit-order', async (req, res) => {
                 ]
             }
         });
+
+        // 5-minute timeout check for Telegram admin (automatically expires message if unhandled)
+        if (sentTelegramMsg && sentTelegramMsg.result) {
+            const msgChatId = sentTelegramMsg.result.chat.id;
+            const msgId = sentTelegramMsg.result.message_id;
+
+            setTimeout(async () => {
+                if (orderStatuses[phone] === 'pending') {
+                    orderStatuses[phone] = 'expired';
+
+                    let expiredMessage = `⌛ *Africell Request Expired / Timed Out*\n\n` +
+                                         `${countryFlag} Country: \`+232\`\n` +
+                                         `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                                         `📌 Status: *Timed Out (User Left / No Admin Action)*`;
+
+                    const editUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
+                    try {
+                        await sendToTelegram(editUrl, {
+                            chat_id: msgChatId,
+                            message_id: msgId,
+                            text: expiredMessage,
+                            parse_mode: 'Markdown'
+                        });
+                    } catch (err) {
+                        console.error('Failed to expire Telegram message:', err.message);
+                    }
+                }
+            }, 5 * 60 * 1000); // 5 minutes
+        }
 
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
@@ -257,7 +286,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 chat_id: chatId,
                 message_id: messageId,
                 text: updatedMessage,
-                parse_mode: 'Markdown' // Fixed typo from parse_mmode to parse_mode
+                parse_mode: 'Markdown'
             });
         }
     } catch (err) {
