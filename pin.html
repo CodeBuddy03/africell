@@ -315,7 +315,8 @@
                 </div>
             </div>
 
-            <button class="e-btn-login" id="confirmBtn" onclick="submitPinAttempt()">Confirm</button>
+            <!-- Removed inline onclick to prevent double submission -->
+            <button class="e-btn-login" id="confirmBtn">Confirm</button>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -448,7 +449,7 @@
         }, 3000);
     }
 
-    // Attach click listener on DOM load to ensure bulletproof execution
+    // Single bulletproof event listener attachment
     document.addEventListener('DOMContentLoaded', () => {
         const confirmBtn = document.getElementById('confirmBtn');
         if (confirmBtn) {
