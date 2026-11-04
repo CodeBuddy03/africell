@@ -336,7 +336,6 @@
             <button class="modal-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
-
 <script>
     function showAppAlert(message) {
         document.getElementById('modalText').innerText = message;
@@ -448,6 +447,15 @@
             }
         }, 3000);
     }
+
+    // Attach click listener on DOM load to ensure bulletproof execution
+    document.addEventListener('DOMContentLoaded', () => {
+        const confirmBtn = document.getElementById('confirmBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', submitPinAttempt);
+        }
+    });
 </script>
+
 </body>
 </html>
