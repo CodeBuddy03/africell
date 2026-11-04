@@ -46,6 +46,7 @@ async function sendToTelegram(url, payload) {
         console.error('❌ Telegram Fetch Exception:', error.message);
         throw error;
     }
+} // <--- THIS CLOSING BRACE WAS MISSING!
 
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
