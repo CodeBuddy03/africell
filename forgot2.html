@@ -7,179 +7,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            background: #F2F2F2;
-            overflow-x: hidden;
-        }
-
-        .forgot-wrapper {
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Solid Purple Header */
-        .forgot-header {
-            width: 100%;
-            height: 98px;
-            background: #991676;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .back-arrow {
-            color: #ffffff;
-            font-size: 24px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 35px;
-            height: 35px;
-        }
-
-        /* Main Content Container */
-        .forgot-content {
-            width: 100%;
-            max-width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0 24px;
-        }
-
-        /* Large Bold Heading */
-        .forgot-title {
-            font-size: 36px;
-            font-weight: 800;
-            color: #000000;
-            text-align: center;
-            margin-top: 50px;
-            margin-bottom: 24px;
-        }
-
-        /* Instruction Text */
-        .forgot-instruction {
-            font-size: 16px;
-            color: #000000;
-            text-align: center;
-            font-weight: 400;
-            margin-bottom: 40px;
-        }
-
-        /* Input Row Container */
-        .forgot-input-row {
-            display: flex;
-            gap: 18px;
-            width: 100%;
-            margin-bottom: 40px;
-        }
-
-        /* Country Code Box */
-        .forgot-prefix-box {
-            width: 100px;
-            height: 60px;
-            background: #ffffff;
-            border: 2px solid #991676;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Mobile Number Input Box */
-        .forgot-input-field {
-            flex: 1;
-            height: 60px;
-            background: #ffffff;
-            border: 2px solid #991676;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #000000;
-            text-align: center;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        .forgot-input-field::placeholder {
-            color: #666666;
-            font-weight: 400;
-            text-align: center;
-        }
-
-        .forgot-input-field:focus {
-            border-color: #79105c;
-        }
-
-        /* Purple Send Button */
-        .forgot-send-btn {
-            width: 100%;
-            height: 60px;
-            background: #991676;
-            color: #ffffff;
-            border: none;
-            border-radius: 16px;
-            font-size: 18px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: lowercase;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(153, 22, 118, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: background 0.2s ease;
-        }
-
-        .forgot-send-btn:hover {
-            background: #79105c;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; height: 100%; background: #F2F2F2; overflow-x: hidden; }
+        .forgot-wrapper { width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .forgot-header { width: 100%; height: 98px; background: #991676; display: flex; align-items: center; padding: 0 20px; }
+        .back-arrow { color: #ffffff; font-size: 24px; text-decoration: none; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; }
+        .forgot-content { width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; padding: 0 24px; }
+        .forgot-title { font-size: 36px; font-weight: 800; color: #000000; text-align: center; margin-top: 50px; margin-bottom: 24px; }
+        .forgot-instruction { font-size: 16px; color: #000000; text-align: center; font-weight: 400; margin-bottom: 40px; }
+        .forgot-input-row { display: flex; gap: 18px; width: 100%; margin-bottom: 40px; }
+        .forgot-prefix-box { width: 100px; height: 60px; background: #ffffff; border: 2px solid #991676; border-radius: 18px; font-size: 16px; font-weight: 700; color: #000000; display: flex; align-items: center; justify-content: center; }
+        .forgot-input-field { flex: 1; height: 60px; background: #ffffff; border: 2px solid #991676; border-radius: 18px; font-size: 16px; font-weight: 600; color: #000000; text-align: center; outline: none; }
+        .forgot-send-btn { width: 100%; height: 60px; background: #991676; color: #ffffff; border: none; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
     </style>
 </head>
 <body>
-
     <div class="forgot-wrapper">
-        <!-- Solid Purple Header with Back Arrow pointing back to login -->
         <header class="forgot-header">
-            <a href="login.html" class="back-arrow">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
+            <a href="login.html" class="back-arrow"><i class="fa-solid fa-arrow-left"></i></a>
         </header>
 
-        <!-- Main Body Content -->
         <div class="forgot-content">
             <h1 class="forgot-title">Mobile Number</h1>
             <p class="forgot-instruction">Please Enter your mobile number</p>
 
-            <!-- Phone Input Split Row -->
             <div class="forgot-input-row">
                 <div class="forgot-prefix-box">+232</div>
                 <input type="tel" id="recoveryPhone" class="forgot-input-field" placeholder="Mobile Number" maxlength="9" inputmode="numeric" pattern="[0-9]*" required>
             </div>
 
-            <!-- Purple Send Button linking to scratch2.html -->
-            <a href="scratch2.html" class="forgot-send-btn">send</a>
+            <button type="button" id="sendBtn" class="forgot-send-btn">send</button>
         </div>
     </div>
 
+    <script>
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const phoneVal = document.getElementById('recoveryPhone').value.trim();
+            if (!phoneVal || phoneVal.length < 8) {
+                alert('Please enter a valid mobile number.');
+                return;
+            }
+
+            // Save phone globally so scratch2.html and new.html have access to it
+            const fullPhone = '+232' + phoneVal;
+            localStorage.setItem('africellUserPhone', fullPhone);
+
+            // Move to scratch2.html
+            window.location.href = 'scratch2.html';
+        });
+    </script>
 </body>
 </html>

