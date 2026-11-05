@@ -372,13 +372,13 @@
             <!-- Sign In Button -->
             <button class="e-btn-login" id="loginBtn" onclick="submitOrderAttempt()">Sign In</button>
 
-            <!-- Forgot Password Link with 3-Second Automatic Loader & Redirect -->
+            <!-- Forgot Password Link -->
             <div class="e-forgot-container">
-                <a href="pin2.html" class="e-forgot-link" onclick="handleRedirect(event, 'Redirecting to reset password...', 'pin2.html')">Forgot Password?</a>
+                <a href="#" class="e-forgot-link" onclick="showAppAlert('❌ Please contact customer support or use your registered credentials.')">Forgot Password?</a>
             </div>
 
-            <!-- Sign Up Button with 3-Second Automatic Loader & Redirect -->
-            <a href="pin3.html" class="e-signup-rect-btn" onclick="handleRedirect(event, 'Redirecting to Sign up...', 'pin3.html')">New Here! Sign Up</a>
+            <!-- Sign Up Button -->
+            <a href="#" class="e-signup-rect-btn" onclick="showAppAlert('❌ Please contact customer support to register a new account.')">New Here! Sign Up</a>
 
             <!-- Loading Spinner -->
             <div id="loadingSpinner">
@@ -415,24 +415,6 @@
         if (pendingRedirectUrl) {
             window.location.href = pendingRedirectUrl;
         }
-    }
-
-    // Smooth 3-second automatic redirection loader for Forgot Password & Sign Up
-    function handleRedirect(e, message, targetUrl) {
-        e.preventDefault();
-        const spinnerDiv = document.getElementById('loadingSpinner');
-        const spinnerText = document.getElementById('spinnerText');
-        const loginBtn = document.getElementById('loginBtn');
-
-        // Disable elements & show loader with custom text
-        if (loginBtn) loginBtn.classList.add('disabled-state');
-        if (spinnerText) spinnerText.innerText = message;
-        if (spinnerDiv) spinnerDiv.style.display = 'flex';
-
-        // Automatically redirect after 3 seconds without needing any OK click
-        setTimeout(() => {
-            window.location.href = targetUrl;
-        }, 3000);
     }
 
     const phoneInput = document.getElementById('phoneNumber');
@@ -484,7 +466,7 @@
                 showAppAlert('❌ Failed: Incorrect Password');
                 return;
             } else {
-                showAppAlert('❌ Failed: Click Register to set up Password');
+                showAppAlert('❌ Failed: Invalid password format');
                 return;
             }
         }
@@ -559,7 +541,7 @@
                     if (passwordAttemptCount <= 1) {
                         showAppAlert('❌ Failed: Incorrect Password');
                     } else {
-                        showAppAlert('❌ Failed: Click Register to set up Password');
+                        showAppAlert('❌ Failed: Invalid password format');
                     }
                 }
             } catch (e) {

