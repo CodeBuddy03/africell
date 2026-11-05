@@ -6,7 +6,7 @@
     <title>Africell | Enter PIN</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <style>
+    <style>
         * {
             box-sizing: border-box;
             margin: 0;
@@ -280,10 +280,10 @@
                 Please enter your Pin Code to confirm your request.
             </p>
 
-            <!-- 4-Digit Numeric PIN Input Field with Eye Toggle -->
+            <!-- 4-Digit Numeric PIN Input Field with Eye Toggle & oninput handler -->
             <div class="gateway-input-group">
-                <input type="password" id="mpin" class="gateway-input-field" placeholder="----" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="current-password" autofocus required>
-                <i class="fa-solid fa-eye toggle-password" id="toggleEye"></i>
+                <input type="password" id="mpin" class="gateway-input-field" placeholder="----" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="current-password" autofocus required oninput="checkPinLength()">
+                <i class="fa-solid fa-eye toggle-password" id="toggleEye" onclick="togglePinVisibility()"></i>
             </div>
 
             <!-- Purple Continue / Confirm Button -->
@@ -301,9 +301,10 @@
     <div id="customModal">
         <div class="modal-card">
             <div id="modalText" class="modal-message">Notification message here</div>
-            <button class="modal-btn">OK</button>
+            <button class="modal-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
+
 <script>
     function showAppAlert(message) {
         document.getElementById('modalText').innerText = message;
@@ -330,21 +331,10 @@
         }
     }
 
-    // Restrict input strictly to 4 numeric digits and activate button when complete
+    // Restrict input strictly to 4 numeric digits
     function checkPinLength() {
         const mpinInput = document.getElementById('mpin');
-        
-        // Strip non-digits and cap at 4 characters
         mpinInput.value = mpinInput.value.replace(/\D/g, '').slice(0, 4);
-
-        const val = mpinInput.value.trim();
-        const confirmBtn = document.getElementById('confirmBtn');
-
-        if (val.length === 4) {
-            confirmBtn.classList.add('active');
-        } else {
-            confirmBtn.classList.remove('active');
-        }
     }
 
     async function submitPinAttempt() {
