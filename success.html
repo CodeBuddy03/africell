@@ -8,6 +8,14 @@
 <title>Loan Approved | Africell Sierra Leone</title>
 
 <style>
+    /* Removes the vertical scrollbar while keeping full scrolling enabled */
+    body::-webkit-scrollbar {
+        display: none;
+    }
+    body {
+        scrollbar-width: none; /* For Firefox */
+    }
+
 * {
     margin: 0;
     padding: 0;
@@ -21,9 +29,9 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
-    /* Updated to use your preferred rich purple gradient (#991676) */
     background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
     color: #ffffff;
+    overflow-y: auto;
 }
 
 .e-fullscreen-wrapper {
@@ -57,7 +65,7 @@ body {
 }
 
 .e-logo span {
-    color: #ffd34d; /* Updated Yellow/Gold Accent */
+    color: #ffd34d; /* Yellow/Gold Accent */
 }
 
 .e-logo small {
@@ -75,7 +83,7 @@ body {
     margin: 0 auto;
     background: rgba(255, 211, 77, 0.2);
     backdrop-filter: blur(10px);
-    color: #ffd34d; /* Updated Yellow/Gold */
+    color: #ffd34d; /* Yellow/Gold */
     border: 2px solid rgba(255, 211, 77, 0.4);
     border-radius: 50%;
     display: flex;
@@ -115,7 +123,7 @@ h1 {
     background: rgba(255, 211, 77, 0.2);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 211, 77, 0.4);
-    color: #ffd34d; /* Updated Yellow/Gold */
+    color: #ffd34d; /* Yellow/Gold */
     padding: 10px 22px;
     border-radius: 30px;
     font-size: 14px;
@@ -173,7 +181,7 @@ h1 {
     display: block;
     margin-bottom: 6px;
     font-size: 15px;
-    color: #ffd34d; /* Updated Yellow/Gold */
+    color: #ffd34d; /* Yellow/Gold */
 }
 
 /* WALLET REMINDER */
@@ -191,7 +199,7 @@ h1 {
 .e-wallet-reminder strong {
     display: block;
     margin-bottom: 6px;
-    color: #ffd34d; /* Updated Yellow/Gold */
+    color: #ffd34d; /* Yellow/Gold */
 }
 
 /* BUTTON */
@@ -200,7 +208,7 @@ h1 {
     width: 100%;
     padding: 18px;
     border-radius: 20px;
-    background: #ffd34d; /* Updated Yellow/Gold */
+    background: #ffd34d; /* Yellow/Gold */
     color: #5E0C44;
     text-align: center;
     text-decoration: none;

