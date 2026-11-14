@@ -26,34 +26,35 @@
             justify-content: center;
             align-items: center;
             overflow-y: auto;
-            padding: 16px;
+            padding: 0; /* Zero padding to touch screen edges completely */
         }
 
         .e-form-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 100%;
             min-height: 100%;
             background: #FFFFFF;
             border-radius: 0;
-            padding: 24px 20px;
+            padding: 24px 16px; /* Flush layout with minimal horizontal safety padding */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             border: none;
             box-shadow: none;
-            margin: auto;
+            margin: 0;
         }
 
         .top-stack { text-align: center; width: 100%; margin-bottom: 12px; }
-
-        .e-form-header h1 {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-            color: #991676;
-            width: 100%;
-        }
+.e-form-header h1 {
+    font-size: 22px; /* Reduced from 26px to guarantee single-line fit */
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    color: #991676;
+    width: 100%;
+    white-space: nowrap; /* Forces the text to stay strictly on one line */
+}
+        
 
         .e-form-header p {
             font-size: 13px;
@@ -76,6 +77,7 @@
             border-radius: 12px;
             margin-bottom: 14px;
             text-align: center;
+            width: 100%;
         }
 
         .e-form-body {
@@ -90,6 +92,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
+            width: 100%;
         }
 
         .e-input-group {
@@ -98,6 +101,7 @@
             border-radius: 14px;
             padding: 10px 14px;
             transition: all 0.2s ease;
+            width: 100%;
         }
 
         .e-input-group:focus-within {
@@ -106,7 +110,7 @@
             box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15);
         }
 
-        .e-input-group.full-width { grid-column: span 2; }
+        .e-input-group.full-width { grid-column: span 2; width: 100%; }
 
         .e-input-group label {
             display: block;
@@ -148,6 +152,7 @@
             flex-wrap: wrap;
             gap: 6px;
             margin-top: 4px;
+            width: 100%;
         }
 
         .loan-pill {
@@ -196,6 +201,7 @@
             padding-top: 14px;
             border-top: 1px solid #E5E7EB;
             margin-top: 10px;
+            width: 100%;
         }
 
         #loadingOverlay {
