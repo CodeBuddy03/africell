@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#991676">
 
 <title>Loan Approved | Africell Sierra Leone</title>
@@ -21,32 +21,42 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
-body {
-    min-height: 100vh;
+html, body {
+    width: 100%;
+    height: 100%;
+    background: #FFFFFF; /* Pure white background matching application.html and index.html */
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
-    color: #ffffff;
-    overflow-y: auto;
+    overflow: hidden;
+    padding: 0;
+    color: #1F2937;
 }
 
 .e-fullscreen-wrapper {
     width: 100%;
-    max-width: 560px;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background: #FFFFFF;
+    border-radius: 0;
+    padding: 32px 24px 24px 24px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    justify-content: space-between;
+    border: none;
+    box-shadow: none;
+    overflow-y: auto;
     animation: slideUp .7s ease;
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -57,39 +67,38 @@ body {
 /* LOGO */
 .e-logo {
     text-align: center;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 900;
     letter-spacing: -0.5px;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    color: #991676;
 }
 
 .e-logo span {
-    color: #ffd34d; /* Yellow/Gold Accent */
+    color: #991676; 
 }
 
 .e-logo small {
     display: block;
     font-size: 10px;
-    letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 2px;
+    color: #6B7280;
     margin-top: 4px;
 }
 
 /* SUCCESS ICON */
 .e-success-icon {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     margin: 0 auto;
-    background: rgba(255, 211, 77, 0.2);
-    backdrop-filter: blur(10px);
-    color: #ffd34d; /* Yellow/Gold */
-    border: 2px solid rgba(255, 211, 77, 0.4);
+    background: rgba(153, 22, 118, 0.08);
+    color: #991676; 
+    border: 2px solid rgba(153, 22, 118, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 40px;
+    font-size: 32px;
     animation: pop .6s ease;
 }
 
@@ -100,17 +109,17 @@ body {
 }
 
 h1 {
-    font-size: 28px;
+    font-size: 26px;
     text-align: center;
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: #991676;
+    font-weight: 800;
 }
 
 .e-subtitle {
     text-align: center;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 14px;
-    line-height: 1.6;
+    color: #6B7280;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 /* APPROVAL STATUS */
@@ -120,25 +129,22 @@ h1 {
 
 .e-status {
     display: inline-block;
-    background: rgba(255, 211, 77, 0.2);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 211, 77, 0.4);
-    color: #ffd34d; /* Yellow/Gold */
-    padding: 10px 22px;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 900;
-    letter-spacing: 1px;
+    background: rgba(153, 22, 118, 0.08);
+    border: 1px solid rgba(153, 22, 118, 0.2);
+    color: #991676; 
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
 }
 
 /* APPLICATION DETAILS */
 .e-details {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 24px;
-    padding: 22px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: #F7F8FA;
+    border: 2px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 16px;
 }
 
 .e-detail-row {
@@ -146,9 +152,9 @@ h1 {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid #E5E7EB;
+    font-size: 13px;
 }
 
 .e-detail-row:last-child {
@@ -156,96 +162,82 @@ h1 {
 }
 
 .e-detail-row span {
-    color: rgba(255, 255, 255, 0.7);
+    color: #6B7280;
+    font-weight: 500;
 }
 
 .e-detail-row strong {
-    color: #ffffff;
+    color: #1F2937;
     text-align: right;
     overflow-wrap: anywhere;
+    font-weight: 600;
 }
 
 /* WALLET MESSAGE */
 .e-message {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 20px;
-    padding: 20px;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 13.5px;
+    background: #F7F8FA;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 14px;
+    line-height: 1.5;
+    color: #4B5563;
+    font-size: 12.5px;
 }
 
 .e-message strong {
     display: block;
-    margin-bottom: 6px;
-    font-size: 15px;
-    color: #ffd34d; /* Yellow/Gold */
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #991676; 
 }
 
 /* WALLET REMINDER */
 .e-wallet-reminder {
-    background: rgba(255, 211, 77, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 211, 77, 0.25);
-    border-radius: 20px;
-    padding: 20px;
-    color: #fff8e1;
-    font-size: 13px;
-    line-height: 1.6;
+    background: rgba(153, 22, 118, 0.04);
+    border: 1px solid rgba(153, 22, 118, 0.15);
+    border-radius: 16px;
+    padding: 14px;
+    color: #4B5563;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .e-wallet-reminder strong {
     display: block;
-    margin-bottom: 6px;
-    color: #ffd34d; /* Yellow/Gold */
+    margin-bottom: 4px;
+    color: #991676; 
 }
 
 /* BUTTON */
 .e-btn {
     display: block;
     width: 100%;
-    padding: 18px;
-    border-radius: 20px;
-    background: #ffd34d; /* Yellow/Gold */
-    color: #5E0C44;
+    padding: 16px;
+    border-radius: 16px;
+    background: #991676; 
+    color: #FFFFFF;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    font-weight: 900;
+    font-weight: 700;
     transition: all 0.2s ease;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.e-btn:hover {
-    transform: translateY(-2px);
-    background: #ffe066;
-    box-shadow: 0 15px 35px rgba(255, 211, 77, 0.4);
+.e-btn:active {
+    opacity: 0.9;
 }
 
 /* FOOTER */
 .e-footer {
     text-align: center;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 11px;
-    line-height: 1.8;
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    padding-top: 15px;
-}
-
-@media(max-width: 500px) {
-    .e-fullscreen-wrapper {
-        padding: 5px;
-    }
-    h1 {
-        font-size: 24px;
-    }
-    .e-detail-row {
-        font-size: 12px;
-    }
+    color: #9CA3AF;
+    font-size: 10px;
+    line-height: 1.6;
+    border-top: 1px solid #E5E7EB;
+    padding-top: 10px;
 }
 </style>
 </head>
@@ -301,7 +293,7 @@ h1 {
 
         <div class="e-detail-row">
             <span>📋 Application Status</span>
-            <strong style="color:#ffd34d;">APPROVED ✓</strong>
+            <strong style="color:#991676;">APPROVED ✓</strong>
         </div>
 
         <div class="e-detail-row">
@@ -326,8 +318,6 @@ h1 {
     <div class="e-wallet-reminder">
         <strong>🔐 Important Account Reminder</strong>
         <span>Your loan is expected to be disbursed within 24 hours. Please ensure that your mobile wallet maintains a balance equivalent to 10% of your approved loan amount for fast disbursement and smooth processing.</span>
-        <br><br>
-        ⚡ Connecting you to fast, reliable, and secure financial services whenever you need them.
     </div>
 
     <!-- HOME BUTTON -->
@@ -338,10 +328,8 @@ h1 {
     <!-- COPYRIGHT -->
     <div class="e-footer">
         Thank you for choosing Africell Sierra Leone ❤️
-        <br><br>
-        © 2026 Africell Sierra Leone. All Rights Reserved.
         <br>
-        Official Customer Service | Afrimoney Services
+        © 2026 Africell Sierra Leone. All Rights Reserved.
     </div>
 
 </div>
