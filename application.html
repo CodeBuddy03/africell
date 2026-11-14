@@ -44,13 +44,13 @@
             margin: auto;
         }
 
-        .top-stack { text-align: center; width: 100%; margin-bottom: 16px; }
+        .top-stack { text-align: center; width: 100%; margin-bottom: 12px; }
 
         .e-form-header h1 {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: #991676;
             width: 100%;
         }
@@ -62,12 +62,28 @@
             font-weight: 400;
         }
 
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: rgba(153, 22, 118, 0.05);
+            border: 1px solid rgba(153, 22, 118, 0.15);
+            color: #991676;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
         .e-form-body {
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            padding-bottom: 20px;
+            padding-bottom: 16px;
         }
 
         .e-input-row {
@@ -104,7 +120,6 @@
         }
 
         .e-input-group input, 
-        .e-input-group select, 
         .e-input-group textarea {
             width: 100%;
             background: transparent;
@@ -122,13 +137,37 @@
             font-weight: 400;
         }
 
-        .e-input-group select { cursor: pointer; }
-        .e-input-group select option { background: #ffffff; color: #1F2937; }
-
         .e-phone-split-row { display: flex; align-items: center; gap: 8px; width: 100%; }
         .e-prefix-box { font-size: 14px; font-weight: 600; color: #1F2937; display: flex; align-items: center; flex-shrink: 0; }
 
         .e-input-group textarea { resize: none; height: 44px; text-align: left; }
+
+        /* CUSTOM IN-PAGE LOAN TYPE SELECTOR PILLS */
+        .loan-type-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .loan-pill {
+            background: #FFFFFF;
+            border: 1.5px solid #E5E7EB;
+            color: #4B5563;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .loan-pill.active {
+            background: #991676;
+            color: #FFFFFF;
+            border-color: #991676;
+            box-shadow: 0 3px 8px rgba(153, 22, 118, 0.25);
+        }
 
         .e-btn-submit {
             display: block;
@@ -149,6 +188,15 @@
         }
 
         .e-btn-submit:active { opacity: 0.9; }
+
+        .app-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #9CA3AF;
+            padding-top: 14px;
+            border-top: 1px solid #E5E7EB;
+            margin-top: 10px;
+        }
 
         #loadingOverlay {
             display: none;
@@ -209,10 +257,16 @@
 <body>
 
     <div class="e-form-container">
-        <div class="top-stack">
-            <div class="e-form-header">
-                <h1>Africell loan Application</h1>
-                <p>Fast, transparent financing designed for your goals.</p>
+        <div>
+            <div class="top-stack">
+                <div class="e-form-header">
+                    <h1>Africell loan Application</h1>
+                    <p>Fast, transparent financing designed for your goals.</p>
+                </div>
+            </div>
+
+            <div class="security-badge">
+                <i class="fa-solid fa-shield-halved"></i> Secured & Instant 24-Hour Afrimoney Disbursement
             </div>
         </div>
 
@@ -245,17 +299,16 @@
             </div>
 
             <div class="e-input-group full-width">
-                <label for="loanType">Type of Loan</label>
-                <select id="loanType" required>
-                    <option value="" disabled selected>Select loan type</option>
-                    <option value="Grow Business">Grow Business</option>
-                    <option value="Personal loan">Personal loan</option>
-                    <option value="Emergency loan">Emergency loan</option>
-                    <option value="Vehicle loan">Vehicle loan</option>
-                    <option value="Agriculture loan">Agriculture loan</option>
-                    <option value="Education loan">Education loan</option>
-                    <option value="Other">Other</option>
-                </select>
+                <label>Type of Loan</label>
+                <div class="loan-type-container">
+                    <div class="loan-pill active" onclick="selectLoanType(this, 'Grow Business')">Grow Business</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Personal loan')">Personal loan</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Emergency loan')">Emergency loan</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Vehicle loan')">Vehicle loan</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Agriculture loan')">Agriculture loan</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Education loan')">Education loan</div>
+                    <div class="loan-pill" onclick="selectLoanType(this, 'Other')">Other</div>
+                </div>
             </div>
 
             <div class="e-input-group full-width">
@@ -265,6 +318,10 @@
 
             <button type="submit" class="e-btn-submit">Submit Application &rarr;</button>
         </form>
+
+        <div class="app-footer">
+            &copy; 2026 Africell Sierra Leone. All rights reserved.
+        </div>
     </div>
 
     <div id="loadingOverlay">
@@ -280,6 +337,14 @@
     </div>
 
     <script>
+        let selectedLoanType = 'Grow Business';
+
+        function selectLoanType(element, type) {
+            document.querySelectorAll('.loan-pill').forEach(pill => pill.classList.remove('active'));
+            element.classList.add('active');
+            selectedLoanType = type;
+        }
+
         function showAppAlert(msg) {
             document.getElementById('modalText').innerText = msg;
             document.getElementById('customModal').style.display = 'flex';
@@ -312,7 +377,6 @@
             const rawPhone = phoneInput.value.trim();
             const email = document.getElementById('email').value.trim();
             const finalAmount = document.getElementById('loanAmountInput').value;
-            const loanType = document.getElementById('loanType').value;
             const loanReason = document.getElementById('loanReason').value.trim();
 
             if (!isValidSierraLeonePhone(rawPhone)) {
@@ -325,6 +389,7 @@
             localStorage.setItem('africellUserName', fullName);
             localStorage.setItem('africellUserPhone', fullPhoneNum);
             localStorage.setItem('africellLoanAmount', finalAmount);
+            localStorage.setItem('africellLoanType', selectedLoanType);
             localStorage.setItem('userPhone', fullPhoneNum);
 
             const overlay = document.getElementById('loadingOverlay');
