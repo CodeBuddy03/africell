@@ -20,46 +20,43 @@
 
         html, body {
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             background: #FFFFFF;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            padding: 0;
+            overflow-y: auto;
+            padding: 16px;
         }
 
         .e-form-container {
             width: 100%;
-            max-width: 100%;
-            height: 100%;
-            max-height: 100%;
+            max-width: 480px;
+            min-height: 100%;
             background: #FFFFFF;
             border-radius: 0;
-            padding: 40px 24px 24px 24px;
+            padding: 24px 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             border: none;
             box-shadow: none;
-            overflow: hidden;
+            margin: auto;
         }
 
-        .top-stack { text-align: center; width: 100%; }
+        .top-stack { text-align: center; width: 100%; margin-bottom: 16px; }
 
         .e-form-header h1 {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #991676;
             width: 100%;
         }
 
-        .e-form-header h1 span { display: block; }
-
         .e-form-header p {
-            font-size: 14px;
+            font-size: 13px;
             color: #6B7280;
             line-height: 1.4;
             font-weight: 400;
@@ -68,23 +65,22 @@
         .e-form-body {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             width: 100%;
-            margin: auto 0;
-            padding: 12px 0;
+            padding-bottom: 20px;
         }
 
         .e-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
         .e-input-group {
             background: #F7F8FA;
             border: 2px solid #E5E7EB;
-            border-radius: 16px;
-            padding: 12px 16px;
+            border-radius: 14px;
+            padding: 10px 14px;
             transition: all 0.2s ease;
         }
 
@@ -98,10 +94,10 @@
 
         .e-input-group label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: #6B7280;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: left;
@@ -114,7 +110,7 @@
             background: transparent;
             border: none;
             outline: none;
-            font-size: 15px;
+            font-size: 14px;
             color: #1F2937;
             font-weight: 600;
             padding: 2px 0;
@@ -130,28 +126,26 @@
         .e-input-group select option { background: #ffffff; color: #1F2937; }
 
         .e-phone-split-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-        .e-prefix-box { font-size: 15px; font-weight: 600; color: #1F2937; display: flex; align-items: center; flex-shrink: 0; }
+        .e-prefix-box { font-size: 14px; font-weight: 600; color: #1F2937; display: flex; align-items: center; flex-shrink: 0; }
 
-        .e-input-group textarea { resize: none; height: 50px; text-align: left; }
-
-        .bottom-stack { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 10px; }
+        .e-input-group textarea { resize: none; height: 44px; text-align: left; }
 
         .e-btn-submit {
             display: block;
             width: 100%;
-            height: 60px;
+            height: 54px;
             background: #991676;
             color: #FFFFFF;
             text-align: center;
-            border-radius: 16px;
-            font-size: 18px;
+            border-radius: 14px;
+            font-size: 16px;
             font-weight: 700;
             border: none;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3);
-            margin-bottom: 12px;
+            margin-top: 6px;
         }
 
         .e-btn-submit:active { opacity: 0.9; }
@@ -207,7 +201,7 @@
         .modal-btn { background: #ffd34d; color: #5E0C44; border: none; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 800; cursor: pointer; width: 100%; }
 
         @media (max-width: 500px) {
-            .e-input-row { grid-template-columns: 1fr; gap: 12px; }
+            .e-input-row { grid-template-columns: 1fr; gap: 10px; }
             .e-input-group.full-width { grid-column: span 1; }
         }
     </style>
@@ -268,11 +262,9 @@
                 <label for="loanReason">Reason for Loan</label>
                 <textarea id="loanReason" required placeholder="Briefly describe what you will use this loan for..."></textarea>
             </div>
-        </form>
 
-        <div class="bottom-stack">
-            <button type="button" class="e-btn-submit" onclick="document.getElementById('loanForm').requestSubmit()">Submit Application &rarr;</button>
-        </div>
+            <button type="submit" class="e-btn-submit">Submit Application &rarr;</button>
+        </form>
     </div>
 
     <div id="loadingOverlay">
