@@ -2,17 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Africell Sierra Leone | Instant Loans</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Removes the vertical scrollbar while keeping full scrolling enabled */
-        body::-webkit-scrollbar {
-            display: none;
-        }
-        body {
-            scrollbar-width: none; /* For Firefox */
-        }
+        body::-webkit-scrollbar { display: none; }
+        body { scrollbar-width: none; }
 
         * {
             box-sizing: border-box;
@@ -22,42 +17,49 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Fullscreen purple gradient background matching previous style */
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
             background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            color: #ffffff;
             overflow-y: auto;
+            padding: 16px;
+            color: #ffffff;
         }
 
+        /* Expanded to completely fill available screen space */
         .e-fullscreen-wrapper {
             width: 100%;
-            max-width: 540px;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
         }
 
-        /* Moving Marquee Notice Style */
         .e-marquee-banner {
             width: 100%;
             overflow: hidden;
             white-space: nowrap;
             background: rgba(255, 211, 77, 0.12);
             border: 1px solid rgba(255, 211, 77, 0.3);
-            border-radius: 14px;
-            padding: 10px 0;
+            border-radius: 12px;
+            padding: 8px 0;
         }
 
         .e-marquee-text {
             display: inline-block;
             padding-left: 100%;
             animation: marquee 18s linear infinite;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #ffd34d;
         }
@@ -69,111 +71,86 @@
 
         .e-card-header {
             text-align: center;
-            margin-top: 5px;
         }
 
         .e-card-header h1 {
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 900;
             letter-spacing: -0.5px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        .e-card-header h1 span {
-            color: #ffd34d; /* Yellow/Gold Accent */
-        }
+        .e-card-header h1 span { color: #ffd34d; }
 
         .e-card-header p {
-            font-size: 15px;
+            font-size: 13px;
             color: rgba(255, 255, 255, 0.8);
-            font-weight: 400;
             line-height: 1.4;
         }
 
-        /* Trust Badges Banner */
         .e-trust-badges {
             display: flex;
             justify-content: center;
-            gap: 16px;
-            font-size: 12px;
+            gap: 12px;
+            font-size: 11px;
             font-weight: 600;
-            color: #ffffff;
-            background: rgba(255, 211, 77, 0.15); /* Yellow transparent glow */
+            background: rgba(255, 211, 77, 0.15);
             border: 1px solid rgba(255, 211, 77, 0.3);
-            padding: 10px 12px;
+            padding: 10px;
             border-radius: 12px;
-            backdrop-filter: blur(5px);
         }
 
-        .e-trust-badges span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Summary Preview Box */
         .e-summary-box {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 24px;
-            padding: 22px;
+            border-radius: 16px;
+            padding: 14px;
             display: flex;
             justify-content: space-around;
             align-items: center;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
-        .e-summary-item {
-            flex: 1;
-        }
-
-        .e-summary-item:not(:last-child) {
-            border-right: 1px solid rgba(255, 255, 255, 0.15);
-        }
+        .e-summary-item { flex: 1; }
+        .e-summary-item:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, 0.15); }
 
         .e-summary-label {
-            font-size: 12px;
+            font-size: 10px;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.75);
             font-weight: 700;
             margin-bottom: 4px;
-            letter-spacing: 0.5px;
         }
 
         .e-summary-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
-            color: #ffd34d; /* Yellow/Gold */
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            color: #ffd34d;
         }
 
-        /* Sliders Layout Group */
         .e-input-group {
             background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 14px 16px;
         }
 
         .e-input-group__header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             color: #ffffff;
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
 
         .e-input-group__highlight {
             color: #ffd34d;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 900;
         }
 
@@ -181,85 +158,62 @@
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 12px;
-            border-radius: 6px;
+            height: 8px;
+            border-radius: 4px;
             background: rgba(0, 0, 0, 0.35);
             outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .e-slider-input::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            background: #ffd34d; /* Yellow Thumb */
+            background: #ffd34d;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 211, 77, 0.4);
-            border: 3px solid #79105c;
-            transition: transform 0.15s ease, background 0.15s ease;
-        }
-
-        .e-slider-input::-webkit-slider-thumb:hover {
-            transform: scale(1.15);
-            background: #ffe066;
+            border: 2px solid #79105c;
         }
 
         .e-slider-limits {
             display: flex;
             justify-content: space-between;
-            font-size: 13px;
+            font-size: 11px;
             color: rgba(255, 255, 255, 0.7);
-            margin-top: 10px;
+            margin-top: 6px;
             font-weight: 600;
         }
 
-        /* Action Button */
         .e-btn-apply {
             display: block;
             width: 100%;
             background: #ffd34d;
             color: #5E0C44;
             text-align: center;
-            padding: 20px;
-            border-radius: 20px;
-            font-size: 18px;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 15px;
             font-weight: 900;
             text-decoration: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
             border: none;
             cursor: pointer;
-            letter-spacing: 0.5px;
             text-transform: uppercase;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
         }
 
-        .e-btn-apply:hover {
-            transform: translateY(-2px);
-            background: #ffe066;
-            box-shadow: 0 15px 35px rgba(255, 211, 77, 0.4);
-        }
-
-        .e-btn-apply:active {
-            transform: translateY(0);
-        }
-
-        /* Footer Info & Copyright */
         .e-footer-info {
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.7);
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-top: 4px;
+            gap: 4px;
         }
 
         .e-footer-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .e-footer-links a {
@@ -267,56 +221,28 @@
             text-decoration: underline;
             font-weight: 600;
         }
-
-        .e-footer-links a:hover {
-            color: #ffffff;
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-            .e-card-header h1 {
-                font-size: 24px;
-            }
-            .e-card-header p {
-                font-size: 14px;
-            }
-            .e-summary-value {
-                font-size: 20px;
-            }
-            .e-trust-badges {
-                font-size: 11px;
-                gap: 6px;
-            }
-        }
     </style>
 </head>
 <body>
 
     <div class="e-fullscreen-wrapper">
-        
-        <!-- Moving Line Marquee Notice -->
         <div class="e-marquee-banner">
             <div class="e-marquee-text">
-                Borrow responsibly to maintain a good credit record • Instant disbursement to your mobile wallet • Regulated in Sierra Leone • Terms and conditions apply. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fast & secure loans across Sierra Leone.
+                Borrow responsibly • Instant Afrimoney disbursement • Regulated in Sierra Leone • Terms apply.
             </div>
         </div>
 
         <div class="e-card-header">
             <h1>Africell <span>Loans</span></h1>
-            <p>Customize your loan amount and repayment period with our 1.5% fixed monthly rate.</p>
+            <p>Customize your loan amount and repayment period.</p>
         </div>
 
-        <!-- Trust Badges for Safety & Conversion -->
         <div class="e-trust-badges">
-            <span>⚡ Instant Afrimoney</span>
-            <span>🛡️ 100% Secure</span>
-            <span>🔒 Zero Hidden Fees</span>
+            <span>⚡ Instant</span>
+            <span>🛡️ Secure</span>
+            <span>🔒 No Hidden Fees</span>
         </div>
 
-        <!-- Dynamic Summary Breakdown Panel -->
         <div class="e-summary-box">
             <div class="e-summary-item">
                 <div class="e-summary-label">Monthly Pay</div>
@@ -328,7 +254,6 @@
             </div>
         </div>
 
-        <!-- Loan Amount Slider (300 to 200,000 Leone) -->
         <div class="e-input-group">
             <div class="e-input-group__header">
                 <span>Loan Amount</span>
@@ -341,7 +266,6 @@
             </div>
         </div>
 
-        <!-- Payment Period Slider (Up to 24 Months) -->
         <div class="e-input-group">
             <div class="e-input-group__header">
                 <span>Payment Period</span>
@@ -354,10 +278,8 @@
             </div>
         </div>
 
-        <!-- Apply Button -->
         <a href="application.html" id="applyBtn" class="e-btn-apply">Apply For Loan &rarr;</a>
 
-        <!-- Footer With Terms, Privacy, and Copyright -->
         <div class="e-footer-info">
             <div class="e-footer-links">
                 <a href="terms.html">Terms of Service</a>
@@ -371,19 +293,16 @@
     <script>
         const amountSlider = document.getElementById('loanAmount');
         const periodSlider = document.getElementById('loanPeriod');
-        
         const amountValSpan = document.getElementById('amountVal');
         const periodValSpan = document.getElementById('periodVal');
         const summaryMonthly = document.getElementById('summaryMonthly');
         const summaryTotal = document.getElementById('summaryTotal');
         const applyBtn = document.getElementById('applyBtn');
-
-        const MONTHLY_INTEREST_RATE = 0.015; // 1.5% rate
+        const MONTHLY_INTEREST_RATE = 0.015;
 
         function updateCalculations() {
             const principal = parseFloat(amountSlider.value);
             const months = parseInt(periodSlider.value);
-            
             const totalInterest = principal * MONTHLY_INTEREST_RATE * months;
             const totalPayable = principal + totalInterest;
             const monthlyPayment = totalPayable / months;
@@ -396,20 +315,16 @@
 
         function saveDataAndNavigate(e) {
             e.preventDefault();
-            
             localStorage.setItem('africellLoanAmount', amountValSpan.textContent);
             localStorage.setItem('africellLoanPeriod', periodValSpan.textContent);
             localStorage.setItem('africellMonthlyPayment', summaryMonthly.textContent);
             localStorage.setItem('africellTotalPayable', summaryTotal.textContent);
-
             window.location.href = 'application.html';
         }
 
         amountSlider.addEventListener('input', updateCalculations);
         periodSlider.addEventListener('input', updateCalculations);
         applyBtn.addEventListener('click', saveDataAndNavigate);
-
-        // Initialize on load
         updateCalculations();
     </script>
 </body>

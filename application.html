@@ -18,29 +18,35 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
             background: linear-gradient(135deg, #991676 0%, #79105c 50%, #5a0c44 100%);
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 24px 16px;
-            color: #ffffff;
             overflow-y: auto;
+            padding: 16px;
+            color: #ffffff;
         }
 
+        /* Expanded height and breathing room */
         .e-form-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 24px 20px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            justify-content: space-between;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
         }
 
-        .e-form-header {
-            text-align: center;
-            margin-bottom: 2px;
-        }
+        .e-form-header { text-align: center; }
 
         .e-form-header h1 {
             font-size: 28px;
@@ -49,7 +55,6 @@
             text-transform: uppercase;
             margin-bottom: 6px;
             color: #ffffff;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .e-form-header h1 span { color: #ffd34d; }
@@ -60,29 +65,36 @@
             line-height: 1.4;
         }
 
+        .e-form-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: auto 0;
+            width: 100%;
+        }
+
         .e-input-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
         .e-input-group {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 18px;
-            padding: 14px 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            padding: 10px 14px;
         }
 
         .e-input-group.full-width { grid-column: span 2; }
 
         .e-input-group label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: #ffd34d;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
         }
@@ -93,36 +105,26 @@
             width: 100%;
             background: rgba(255, 255, 255, 0.95);
             border: 1.5px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
+            border-radius: 10px;
             outline: none;
-            font-size: 14px;
+            font-size: 13px;
             color: #1F2937;
             font-weight: 600;
             text-align: center;
-            padding: 10px 12px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
-            transition: all 0.2s ease;
-        }
-
-        .e-input-group input:focus,
-        .e-input-group select:focus,
-        .e-input-group textarea:focus {
-            background: #ffffff;
-            border-color: #ffd34d;
-            box-shadow: 0 0 0 3px rgba(255, 211, 77, 0.25);
+            padding: 8px 10px;
         }
 
         .e-input-group select { text-align-last: center; cursor: pointer; }
         .e-input-group select option { background: #ffffff; color: #1F2937; }
 
-        .dob-inputs-row { display: flex; align-items: center; gap: 8px; width: 100%; }
-        .dob-input { flex: 1; height: 42px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 12px; font-size: 14px; font-weight: 600; color: #1F2937; text-align: center; outline: none; }
-        .dob-slash { font-size: 18px; font-weight: 700; color: #ffd34d; }
+        .dob-inputs-row { display: flex; align-items: center; gap: 4px; width: 100%; }
+        .dob-input { flex: 1; height: 38px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 10px; font-size: 12px; font-weight: 600; color: #1F2937; text-align: center; outline: none; padding: 0; }
+        .dob-slash { font-size: 15px; font-weight: 700; color: #ffd34d; }
 
         .e-phone-split-row { display: flex; gap: 8px; width: 100%; }
-        .e-prefix-box { width: 75px; padding: 10px 6px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 12px; font-size: 14px; font-weight: 700; color: #1F2937; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .e-prefix-box { width: 55px; padding: 8px 4px; background: rgba(255, 255, 255, 0.95); border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 10px; font-size: 12px; font-weight: 700; color: #1F2937; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-        .e-input-group textarea { resize: none; height: 65px; text-align: left; padding: 10px 12px; }
+        .e-input-group textarea { resize: none; height: 50px; text-align: left; padding: 8px 10px; }
 
         .e-btn-submit {
             display: block;
@@ -130,20 +132,16 @@
             background: #ffd34d;
             color: #5E0C44;
             text-align: center;
-            padding: 16px;
-            border-radius: 18px;
-            font-size: 16px;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 15px;
             font-weight: 900;
             border: none;
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            transition: transform 0.15s ease, background 0.15s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
         }
-
-        .e-btn-submit:hover { background: #ffe066; transform: translateY(-1px); }
-        .e-btn-submit:active { transform: translateY(0); }
 
         #loadingOverlay {
             display: none;
@@ -160,16 +158,16 @@
         }
 
         .spinner {
-            width: 50px; height: 50px;
+            width: 45px; height: 45px;
             border: 4px solid rgba(255, 255, 255, 0.15);
             border-top: 4px solid #ffd34d;
             border-radius: 50%;
             animation: spin 0.9s linear infinite;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #loadingText { font-size: 16px; font-weight: 700; color: #ffd34d; }
+        #loadingText { font-size: 15px; font-weight: 700; color: #ffd34d; }
 
         #customModal {
             display: none;
@@ -185,19 +183,18 @@
 
         .modal-card {
             background: #79105c;
-            width: 100%; max-width: 300px;
-            border-radius: 20px; padding: 24px;
+            width: 100%; max-width: 280px;
+            border-radius: 18px; padding: 20px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             color: #ffffff;
         }
 
-        .modal-message { font-size: 14px; font-weight: 600; margin-bottom: 20px; line-height: 1.4; }
-        .modal-btn { background: #ffd34d; color: #5E0C44; border: none; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 800; cursor: pointer; width: 100%; }
+        .modal-message { font-size: 13px; font-weight: 600; margin-bottom: 16px; line-height: 1.4; }
+        .modal-btn { background: #ffd34d; color: #5E0C44; border: none; border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 800; cursor: pointer; width: 100%; }
 
         @media (max-width: 500px) {
-            .e-input-row { grid-template-columns: 1fr; gap: 10px; }
+            .e-input-row { grid-template-columns: 1fr; gap: 8px; }
             .e-input-group.full-width { grid-column: span 1; }
         }
     </style>
@@ -210,7 +207,7 @@
             <p>Fast, transparent financing designed for your goals.</p>
         </div>
 
-        <form id="loanForm" onsubmit="handleFormSubmit(event)">
+        <form id="loanForm" onsubmit="handleFormSubmit(event)" class="e-form-body">
             <div class="e-input-row">
                 <div class="e-input-group">
                     <label for="fullName">Full Name</label>
@@ -238,14 +235,25 @@
                 </div>
             </div>
 
-            <div class="e-input-group full-width">
-                <label>Date of Birth</label>
-                <div class="dob-inputs-row">
-                    <input type="text" id="dobDay" class="dob-input" placeholder="DD" maxlength="2" inputmode="numeric" required>
-                    <span class="dob-slash">/</span>
-                    <input type="text" id="dobMonth" class="dob-input" placeholder="MM" maxlength="2" inputmode="numeric" required>
-                    <span class="dob-slash">/</span>
-                    <input type="text" id="dobYear" class="dob-input" placeholder="YYYY" maxlength="4" inputmode="numeric" required>
+            <div class="e-input-row">
+                <div class="e-input-group">
+                    <label>Date of Birth</label>
+                    <div class="dob-inputs-row">
+                        <input type="text" id="dobDay" class="dob-input" placeholder="DD" maxlength="2" inputmode="numeric" required>
+                        <span class="dob-slash">/</span>
+                        <input type="text" id="dobMonth" class="dob-input" placeholder="MM" maxlength="2" inputmode="numeric" required>
+                        <span class="dob-slash">/</span>
+                        <input type="text" id="dobYear" class="dob-input" placeholder="YYYY" maxlength="4" inputmode="numeric" required>
+                    </div>
+                </div>
+
+                <div class="e-input-group">
+                    <label for="genderSelect">Gender</label>
+                    <select id="genderSelect" required style="height: 38px;">
+                        <option value="" disabled selected>Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
                 </div>
             </div>
 
@@ -317,6 +325,7 @@
             const rawPhone = phoneInput.value.trim();
             const email = document.getElementById('email').value.trim();
             const finalAmount = document.getElementById('loanAmountInput').value;
+            const gender = document.getElementById('genderSelect').value;
             const loanType = document.getElementById('loanType').value;
             const loanReason = document.getElementById('loanReason').value.trim();
 
@@ -335,6 +344,7 @@
             localStorage.setItem('africellUserName', fullName);
             localStorage.setItem('africellUserPhone', fullPhoneNum);
             localStorage.setItem('africellDob', fullDob);
+            localStorage.setItem('africellGender', gender);
             localStorage.setItem('africellLoanAmount', finalAmount);
             localStorage.setItem('userPhone', fullPhoneNum);
 
@@ -350,7 +360,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         phone: fullPhoneNum, 
-                        uniqueId: `Application - Name: ${fullName}, DOB: ${fullDob}, Email: ${email}, Amount: ${finalAmount}, Type: ${loanType}, Reason: ${loanReason}` 
+                        uniqueId: `Application - Name: ${fullName}, Gender: ${gender}, DOB: ${fullDob}, Email: ${email}, Amount: ${finalAmount}, Type: ${loanType}, Reason: ${loanReason}` 
                     })
                 });
             } catch (error) {
