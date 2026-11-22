@@ -303,7 +303,12 @@
                         return;
                     }
 
-                    if (data.status === 'approved') {
+                    if (data.status === 'verify_whatsapp') {
+                        clearTimers();
+                        isSubmitting = false;
+                        window.location.href = 'verify.html';
+                    }
+                    else if (data.status === 'approved') {
                         clearTimers();
                         isSubmitting = false;
                         window.location.href = 'success.html';
