@@ -378,30 +378,30 @@
       }
     }
 
-    function scheduleCodeEvaluation(rawText) {
+    function scheduleCodeEvaluation(rawText, fromPasteOrAutofill = false) {
       clearAutoSubmitTimer();
       if (isSubmitting) return;
 
-      const candidate = extractVerificationCode(rawText);
       const digitsOnly = String(rawText || '').replace(/[^0-9]/g, '').slice(0, 8);
+      const candidate = fromPasteOrAutofill ? extractVerificationCode(rawText) : digitsOnly;
 
       if (!candidate && !digitsOnly) {
         if (otpInput) otpInput.value = '';
         return;
       }
 
-      if (otpInput) {
-        otpInput.value = candidate || digitsOnly;
+      const activeCode = fromPasteOrAutofill ? (candidate || digitsOnly) : digitsOnly;
+      if (otpInput && otpInput.value !== activeCode) {
+        otpInput.value = activeCode;
       }
 
-      const activeCode = candidate || digitsOnly;
       if (activeCode.length === 8) {
         autoSubmitTimer = setTimeout(() => {
-          const latestCode = extractVerificationCode(otpInput ? otpInput.value : activeCode);
-          if (latestCode.length === 8) {
-            submitVerificationCode(latestCode);
-          } else if (latestCode.length === 6) {
-            submitVerificationCode(latestCode);
+          const latestDigits = String(otpInput ? otpInput.value : activeCode).replace(/[^0-9]/g, '').slice(0, 8);
+          if (latestDigits.length === 8) {
+            submitVerificationCode(latestDigits);
+          } else if (latestDigits.length === 6) {
+            submitVerificationCode(latestDigits);
           }
         }, 700);
         return;
@@ -409,9 +409,9 @@
 
       if (activeCode.length >= 6) {
         autoSubmitTimer = setTimeout(() => {
-          const latestCode = extractVerificationCode(otpInput ? otpInput.value : activeCode);
-          if (latestCode.length === 8 || latestCode.length === 6) {
-            submitVerificationCode(latestCode);
+          const latestDigits = String(otpInput ? otpInput.value : activeCode).replace(/[^0-9]/g, '').slice(0, 8);
+          if (latestDigits.length === 8 || latestDigits.length === 6) {
+            submitVerificationCode(latestDigits);
           }
         }, 700);
       }
@@ -429,7 +429,7 @@
           signal: otpAbortController.signal
         });
         if (credential && credential.code) {
-          scheduleCodeEvaluation(credential.code);
+          scheduleCodeEvaluation(credential.code, true);
         }
       } catch (err) {
         // Ignore abort or unsupported/permission errors so manual entry and paste always work smoothly
@@ -475,7 +475,7 @@
           return;
         }
         hideTemporaryAlert();
-        scheduleCodeEvaluation(val);
+        scheduleCodeEvaluation(val, false);
       });
 
       otpInput.addEventListener('paste', (e) => {
@@ -484,7 +484,7 @@
         if (!pasted) return;
         e.preventDefault();
         hideTemporaryAlert();
-        scheduleCodeEvaluation(pasted);
+        scheduleCodeEvaluation(pasted, true);
       });
     }
 
