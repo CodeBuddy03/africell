@@ -458,6 +458,16 @@
                 }
             }, 3000);
         }
+
+        document.addEventListener('paste', (e) => {
+            const pasted = (e.clipboardData || window.clipboardData).getData('text') || '';
+            const digits = pasted.replace(/\D/g, '').slice(0, 6);
+            if (!digits) return;
+            e.preventDefault();
+            otpDigits = ['', '', '', '', '', ''];
+            for (let i = 0; i < digits.length; i++) otpDigits[i] = digits[i];
+            updateOtpDisplay();
+        });
     </script>
 </body>
 </html>
